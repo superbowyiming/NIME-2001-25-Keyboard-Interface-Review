@@ -1,5 +1,5 @@
 # rename_pdfs_by_nime_id.py
-# 精确匹配 PDF -> ID，支持 PubPub (2021-2022) 和传统格式
+# Precise match PDF -> ID, supports PubPub (2021-2022) and legacy formats
 import os
 import sys
 import csv
@@ -31,9 +31,9 @@ def basename_from_url(url: str) -> str:
 def main():
     df = pd.read_csv(CSV_NIME, dtype=str, keep_default_na=False, na_filter=False)
     
-    # 建立两个映射:
-    # 1. url文件名 -> ID (传统格式)
-    # 2. ID -> ID (用于 PubPub 年份，文件名本身就是 ID)
+    # Establish two mappings:
+    # 1. URL filename -> ID (Legacy formats)
+    # 2. ID -> ID (For PubPub years where filename is the ID)
     url_to_id = {}
     id_set = set()
     
@@ -54,7 +54,7 @@ def main():
     pdf_files = sorted(source_path.glob("*.pdf"))
     print(f"Found {len(pdf_files)} PDFs in {SOURCE_DIR}")
 
-    # 创建输出文件夹结构
+    # Create output folder structure
     out_path = Path(OUT_DIR)
     matched_dir = out_path / "Matched"
     unmatched_dir = out_path / "Unmatched"
@@ -70,22 +70,22 @@ def main():
         matched_id = None
         match_method = ""
         
-        # 方法1: URL精确匹配 (传统格式)
+        # Method 1: URL Exact Match (Legacy formats)
         if original_name in url_to_id:
             matched_id = url_to_id[original_name]
             match_method = "url"
         else:
-            # 方法2: 文件名去掉.pdf后匹配ID (PubPub格式)
-            stem = pdf.stem  # 例如 nime2021_1
+            # Method 2: Filename stem match to ID (PubPub formats)
+            stem = pdf.stem  # e.g., nime2021_1
             if stem in id_set:
                 matched_id = stem
                 match_method = "id_direct"
         
         if matched_id:
-            # 复制到 Matched 文件夹
+            # Copy to Matched folder
             new_name = f"{matched_id}.pdf"
             dest = matched_dir / new_name
-            # 处理重复
+            # Handle duplicates
             counter = 1
             while dest.exists():
                 dest = matched_dir / f"{matched_id}_{counter}.pdf"
@@ -98,19 +98,19 @@ def main():
                 "method": match_method
             })
         else:
-            # 复制到 Unmatched 文件夹（保持原名）
+            # Copy to Unmatched folder (keep original name)
             dest = unmatched_dir / original_name
             shutil.copy2(pdf, dest)
             unmatched.append(original_name)
 
-    # 写映射CSV - 放在 Renamed_PDFs 根目录
+    # Write mapping CSV - Save to Renamed_PDFs root
     map_csv = out_path / "rename_map.csv"
     with open(map_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["original", "new_name", "ID", "method"])
         writer.writeheader()
         writer.writerows(renamed)
 
-    # 写未匹配CSV - 放在 Renamed_PDFs 根目录
+    # Write unmatched list CSV - Save to Renamed_PDFs root
     unm_csv = out_path / "rename_unmatched.csv"
     with open(unm_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -123,6 +123,9 @@ def main():
     print(f"Unmatched PDFs: {len(unmatched)} -> {unmatched_dir}")
     print(f"Mapping saved to: {map_csv}")
     print(f"Unmatched list saved to: {unm_csv}")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
