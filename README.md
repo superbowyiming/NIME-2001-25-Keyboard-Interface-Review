@@ -4,27 +4,30 @@ Automated workflow for building, intelligently scoring, and screening a corpus o
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Using Provided Data)
+
+The repository includes the pre-extracted text corpus in [Keyboard_Interface_Texts/](Keyboard_Interface_Texts/). You can run the analysis immediately without the original PDF files.
 
 1. **Setup Environment**:
    ```bash
    pip install -r requirements.txt
    ```
-2. **Execute Pipeline**:
-   Run the scripts in the following order:
+2. **Run Analysis**:
    ```bash
-   python rename_pdfs_by_nime_id.py
-   python filter_renamed_pdfs_combined.py
-   python extract_keyboard_pdfs_to_txt.py
+   # Generate the screening report (KWIC)
    python kwic_screening.py
-   # After manual labeling in CSV:
+   
+   # After manual labeling in 'kwic_context_screening.csv':
    python merge_screening_with_metadata.py
    ```
 
 ---
 
-## 🔍 Overview
-This project provides a robust pipeline to transform unordered NIME paper collections into a filtered, high-quality text corpus for systematic review. It addresses common challenges like messy file naming, bibliography noise, and extraction artifacts.
+## 🔍 Project Structure
+- `Keyboard_Interface_Texts/`: The processed text corpus (Ready for analysis).
+- `Metadata_Filtered_Results/`: Final output storage.
+- `*.py`: Processing and analysis scripts.
+- **Note**: The `Renamed_PDFs/` and `NIME Papers/` directories are excluded (~17GB) to comply with GitHub limits.
 
 ---
 
@@ -36,26 +39,20 @@ To ensure high accuracy and coverage, the pipeline cross-references multiple dat
 
 ---
 
-## ⚙️ Processing Pipeline
+## ⚙️ Rebuilding from Scratch
+If you have access to the original NIME PDF archives, you can rebuild the corpus using these scripts:
 
-### 1. Standardization & File Alignment
-**Script**: [rename_pdfs_by_nime_id.py](rename_pdfs_by_nime_id.py)
-Standardizes raw PDF filenames into a consistent `nimeYYYY_Author.pdf` format. It employs a dual-mapping system to handle both legacy URL-based filenames and modern PubPub IDs, ensuring every paper aligns perfectly with its metadata.
+1. **Standardization**: [rename_pdfs_by_nime_id.py](rename_pdfs_by_nime_id.py)  
+   Standardizes raw PDF filenames (`nimeYYYY_Author.pdf`) using a dual-mapping system for legacy and modern PubPub IDs.
+2. **Filtering**: [filter_renamed_pdfs_combined.py](filter_renamed_pdfs_combined.py)  
+   Categorizes papers and performs critical pre-screening by removing bibliographies to eliminate false positive keyword hits.
+3. **Extraction**: [extract_keyboard_pdfs_to_txt.py](extract_keyboard_pdfs_to_txt.py)  
+   Converts curated PDFs into plain text using the **`pypdf`** engine, which specifically resolves the "word spacing bug" found in NIME 2013 papers.
 
-### 2. Taxonomy-based Filtering
-**Script**: [filter_renamed_pdfs_combined.py](filter_renamed_pdfs_combined.py)
-Filters the corpus into thematic categories (e.g., `organ_piano/`) while performing critical pre-screening:
-- **Reference Removal**: Automatically truncates text at the "References" or "Citations" section to eliminate false positives from bibliographies.
-- **Instrument Dependency**: Keywords like `Interface` or `Layout` are only flagged if they co-occur with specific instrument terms (Piano, Organ, Accordion, etc.).
+---
 
-### 3. High-Fidelity Text Extraction
-**Script**: [extract_keyboard_pdfs_to_txt.py](extract_keyboard_pdfs_to_txt.py)
-Converts curated PDFs into plain text using the **`pypdf`** engine.
-- **Key Solution**: This engine specifically fixes the "word spacing bug" found in NIME 2013 papers, where older extractors would produce run-on words (e.g., `keyboardplayer`).
-
-### 4. Intelligent KWIC Screening & Scoring
-**Script**: [kwic_screening.py](kwic_screening.py)
-Generates a Keyword In Context (KWIC) report and applies a heuristic scoring model to help prioritize relevant research.
+## 🔬 Scoring Logic (kwic_screening.py)
+The pipeline applies a heuristic scoring model to prioritize relevant research within the text corpus.
 
 **Mathematical Foundation (IDF Weights):**
 The script calculates the **Inverse Document Frequency (IDF)** for each keyword across the corpus to ignore common terms and highlight rare instruments:
