@@ -1,0 +1,595 @@
+WebChucK: Computer Music Programming on the Web
+Michael R. Mulshine
+CCRMA, Stanford University
+Stanford, CA, United States
+mulshine@ccrma.stanford.edu
+Ge Wang
+CCRMA, Stanford University
+Stanford, CA, United States
+ge@ccrma.stanford.edu
+Jack Atherton
+CCRMA, Stanford University
+Stanford, CA, United States
+lja@ccrma.stanford.edu
+Chris Chafe
+CCRMA, Stanford University
+Stanford, CA, United States
+cc@ccrma.stanford.edu
+Terry Feng
+CCRMA, Stanford University
+Stanford, CA, United States
+tzfeng@ccrma.stanford.edu
+Celeste Betancur
+CCRMA, Stanford University
+Stanford, CA, United States
+celes@ccrma.stanford.edu
+Figure 1: From left to right: WebChucK IDE, A browser-based "wind machine," controlling ChucK from
+Javascript code, web-hosted virtual instruments written in ChucK.
+ABSTRACT
+WebChucK isChucK—a strongly-timed computermusicpro-
+gramming language—running on the web. Recent advance-
+ments in browser technology (including WebAssembly and
+the Web Audio API’s AudioWorklet interface) have en-
+abled languages written in C/C++ (like ChucK) to run in
+web browsers with nearly native-code performance. Early
+adopters have explored the many practical and creative
+possibilities that WebChucK enables, ranging from a We-
+bChucK integrated development environment to interactive
+browser-basedaudiovisualexperiences. WebChucKhasalso
+been adopted as the programming platform in an introduc-
+tory computer music course at Stanford University. Im-
+portantly, by running in any browser, WebChucK broad-
+ens and simplifies access to computer music programming,
+opening the door for new users and creative workflows. In
+this paper, we discuss WebChucK and its applications to
+date, explain how the tool was designed and implemented,
+and evaluate the unique affordances of combining computer
+music programming with a web development workflow.
+WebChucK portal:
+https://chuck.stanford.edu/webchuck/
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’23, 31 May–2 June, 2023, Mexico City, Mexico.
+Author Keywords
+WebChucK,ChucK,audioprogramming, webprogramming,
+web audio, browser IDE, accessibility
+CCS Concepts
+•Applied computing →Sound and music comput-
+ing; •Informationsystems →Web interfaces;•Human-
+centered computing→Systems and tools for interaction
+design;
+1. WHAT IS WEBCHUCK?
+Computer music programming languages began on main-
+frame computers and evolved their way into desktops, lap-
+tops, mobile phones, and more. But until recently, fully-
+programmable audio synthesis on the web was not feasible,
+primarily due to limitations of the web platform. Browsers
+have not been powerful enough to tackle high CPU-load
+tasks like digital signal processing and other low-level audio
+code (often written in C/C++, which browsers don’t na-
+tively support). On top of this, lack of cross-compatibility
+between browsers has limited the scope and potential im-
+pact of web-based audio development.
+Fortunately, advancements and widespread adoption of
+key features of the Web Audio API[10] (such as theAu-
+dioWorklet1 interface) and other tools (likeemscripten2,
+which enable C/C++ libraries to be compiled into We-
+1https://developer.mozilla.org/en-US/docs/Web/API/
+AudioWorklet
+2https://emscripten.org/
+bAssembly3 binaries) have opened a pathway for computer
+musiclanguageswritteninCandC++torunontheweb.[8][9][7]
+Additionally, some intrepid exploration of what it means to
+do audio programming on the web has led to the creation
+of a slew of tools and web experiences.
+WithWebChucK,wemergethelow-levelcontrolcapabili-
+ties and expressiveness of the computer music programming
+language ChucK with the ease, accessibility, interactivity,
+portability, and ubiquity offered by the web. Specifically,
+this introduces several advantages:
+1. WebChucK brings a fully-featured computer music
+programming to the web, and along with it capa-
+bilities such as unit generators, unit analyzers, audio
+DSP, music interaction design tools
+2. It combines the sample-synchronous, strongly-timed,
+and concurrent features of the ChucK language with
+the workflow and trappings (web pages, web GUIs,
+high performance graphics, collaboration) of the web
+3. Like other web-based programming tools, it broad-
+ens the reach and accessibility of audio and highly-
+synchronized audiovisual programming for educators,
+artists, and audiences around the world
+This paper will be most useful for users of ChucK, but
+also highlights (via use-case examples) some of the key af-
+fordances that audio programming on the web, in general,
+may bring to the community. To learn more about ChucK,
+get started on the ChucK website.4
+1.1 A Brief History of WebChucK
+The ChucK programming language [17] was initially re-
+leased in 2003 [16], marking this year as the 20th anniver-
+sary of ChucK. Over this period, ChucK has been used
+in sound synthesis, instrument design, laptop orchestras,
+mobile music apps, audiovisual and VR design, generative
+music systems, and many more artistic, educational, and
+research contexts. The defining features of ChucK are:
+•A sample-precise unified timing mechanism for multi-
+rate event and control processing. Thisstrongly-timed
+property of the language effectively removes the dis-
+tinction between audio and control rate traditionally
+found in languages such as CSound, Max/MSP, and
+SuperCollider.
+•Asimplebutpowerfulconcurrentprogrammingmodel
+based on time—allowing for audio programs to be ex-
+pressed precisely and in parallel.
+•A live coding environment (and way of thinking) that
+supportsrapidexperimentation, teaching/learning, and
+performance.
+ChucK was designed with the idea that the form of a
+tool shapes the way we think [15]. ChucK exists in var-
+ious forms including command-linechuck, miniAudicle (a
+graphical IDE; [13]), ChiP (ChucK on the iPhone; [14]),
+FaucK (ChucK in FAUST; [18]), Chunity (ChucK in Unity;
+[5]), and more recently, ChAI (ChucK for AI, in early de-
+velopment) and WebChucK. The development of the latter
+resulted from a collective effort:
+•After a number of attempts by the ChucK community
+to compile the C++ code base from ChucK to We-
+bAssembly usingemscripten, Jack Atherton, then a
+3https://webassembly.org/
+4https://chuck.stanford.edu/
+Ph.D. candidate in Ge Wang’s Music, Computing, De-
+sign research group, achieved this in 2020 and devised
+the core functionality of WebChucK.
+•Soon after, Mike Mulshine began creating web-based
+audiovisualart, tutorials, anddemos5 usingWebChucK
+andp5.js, andorganizedambassadorialeffortstobring
+WebChucK to new audiences.
+•In 2022, Chris Chafe transitioned from using ChucK
+to WebChucK as a teaching tool at Stanford Univer-
+sity’s popular Music 220a course “The Foundations of
+Computer-Generated Sound."6
+•Terry Feng and Celeste Betancur developed the We-
+bChucK IDE in 2022, and designed tools for real-time
+visualization and code-based GUI-generation for the
+IDE.
+1.2 Using WebChucK
+There are two general approaches to using WebChucK:
+1. As aweb-based programming toolfor sound de-
+sign, interaction design, composition, and teaching
+2. As acomponentin larger web-based artworks, tools,
+and games.
+Figure 2: The WebChucK IDE running some 808
+kick synthesis.
+Using ChucK as aweb-based programming toolen-
+tails simply navigating to the dedicated WebChucK IDE7,
+pictured in Figure 2), and writing ChucK code. The IDE
+provides the ability to perform typical ChucK-environment
+actions like starting the virtual machine, adding and remov-
+ing ChucK shreds, and printing to the ChucK console. This
+form factor is friendly to students, creative prototypers, and
+anyone wishing to “jump in” and start coding without in-
+stalling any software. An activity monitor displays all cur-
+rently running shreds and enables users to selectively add
+or remove them from the virtual machine. Audio and other
+data files can be loaded into WebChucK for use from code.
+The second approach, using WebChucK as acomponent
+within a larger web-based project, involves embedding the
+ChucK WebAssembly (Wasm) module and JavaScript inter-
+face. The latter provides a suite of “getter” and “setter”
+methods to modify or retrieve global variables in ChucK
+fromabrowserscript, enablingatwo-wayworkflowinwhich
+web page elements can both control or be controlled by
+5https://mikemulshine.com/webchuck-demo/
+6https://ccrma.stanford.edu/courses/220a/
+7https://chuck.stanford.edu/webchuck/
+ChucK code. For example, it is possible to control au-
+dio synthesis parameters using GUI elements, mouse move-
+ment, keyboard input, and MIDI controllers. Working in
+tandem with JavaScript libraries (likep5.js or Three.js) and
+other web UI development platforms, WebChucK supports
+a tightly-synchronized audiovisual workflow for web-based
+art and other creative applications. Lastly, it is impor-
+tant to note that WebChucK runs entirely on the client-
+sidebrowser, requiringnobackendserver-sidesupportother
+than a static HTML web page.
+1.3 Example Use Cases
+To give a sense of WebChucK in action, here are some ex-
+ample use cases:
+1. Quickprototyping: anyonewithasupportedbrowser
+can navigate to the online IDE
+2. Sharing: Upon being asked to produce some wind
+sound for the Stanford Symphony Orchestra’s perfor-
+mance of Richard Strauss’sDon Quixote, Chris pro-
+totyped a generative wind machine with a scrolling
+interactive spectrogram with WebChucK and basic
+HTML/JavaScript. He simply sent the link to the
+Orchestra.8 For context, compare these two methods:
+•Existing method of sharing ChucK code:
+– “Here is a ChucK file..."
+– “GotothisURL,downloadandinstallChucK..."
+– “Open miniAudicle, start Virtual Machine,
+openthefile, hit’plus’(orrunitinaterminal
+emulator)..."
+– “If it doesn’t work, let us know!"9
+•New method of sharing with WebChucK:
+– "Here’s a URL."
+3. Creating virtual instruments: Connect a MIDI
+keyboard, and start playing immediately. Jack’s Tim-
+bre Library10 for ChucK (hosted on the web) provides
+severalexamplesofweb-basedvirtualsynthsinaction.
+4. Teaching:Studentscanstartcodingaudiorightaway.
+WebChucK removes much of the technical overhead
+of operating systems, software installation, terminals,
+GUIs, and audio interfaces.
+5. Doing computer music in new ways:In our expe-
+rience, WebChucK isn’t just a more portable version
+of ChucK, but affords some new functionalities and
+ways of working that didn’t exist or weren’t feasible
+before. We describe some examples of this in Section
+4.
+To learn more about how to embed WebChucK in your
+own web project, work through a few simple tutorials here:
+https://chuck.stanford.edu/webchuck/tutorial/
+2. RELATED WORK
+Three primary approaches to programming with audio on
+the web exist. The first approach involves embedding audio
+onawebpageviatheHTML <audio> element. Thisenables
+simple playback of audio files, triggered by user interaction
+8https://ccrma.stanford.edu/~cc/windMachine/
+9One could imagine a similar workflow for languages like
+Max/MSP or SuperCollider.
+10Timbre Library link: https://ccrma.stanford.edu/
+~lja/timbre-library/
+with UI elements like buttons orautoplay. Dynamic real-
+time control of this audio is limited.
+The second approach is to use and extend the Web Audio
+API.The p5.js libraryhasimplementedtheirownJavaScript
+wrapper around Web Audio calledp5.sound11, which pro-
+vides a set of easy-to-use audio playback, synthesis, and
+analysis functions to web developers, like p5.SoundFile,
+p5.Oscillator, p5.Envelope, and more.Three.js provides
+an analogous tool in their Audio object, which primarily
+provides functions to manipulate the playback of audio files.
+Similarly, Tone.js12 extends the Web Audio API and offers
+handy methods (e.g. viaTone.Transport) for dealing with
+musical timing in JavaScript.
+More advanced and musically-tailored web-based audio
+platforms and live-coding languages have been developed by
+extending the Web Audio API, including Tidal Cycles13 (a
+live-coding tool for music generation developed in Haskell
+and compiled into JavaScript[12]), Gibber14 (a live audio
+programming language with a great depth of sound and mu-
+sic generation capabilities and unique text-animated graph-
+ical UI), CodeCircle[20] (shown to be a useful tool in pro-
+totyping instruments on the web), Estuary[3] (a live-coding
+platform that enables the simultaneous use of many live
+coding languages at once, as an “ensemble"), and Strudel[4]
+(an alternative to Tidal Cycles with an algorithmic compo-
+sition focus). These useful and expressive tools each offer
+unique affordances for programming audio in a web-based
+IDE, live coding and performance, and audio development
+projects. Built in JavaScript around the Web Audio API,
+they make audio control more accessible for web develop-
+ers and artists, despite lacking some of the low-level au-
+dio programming control (e.g. sample-by-sample synthesis)
+and flexibility of a full-fledged computer music program-
+ming languages like ChucK, Super Collider, Csound, and
+others.
+The third approach involves porting an entire computer
+music language to the web using tools (e.g.emscripten) to
+create a WebAssembly binary and run it via Web Audio’s
+AudioWorklet interface[6]. ChucK is not the only computer
+music programming language that now runs in this manner
+in the browser. Others include the functional audio signal
+processing language FAUST[1], with their custom IDE[2]
+tailored for compiling and exporting FAUST code as audio
+programs ready for use in a variety of other environments
+(fromiOSappstofirmwareonmicrocontrollerslikeTeensy).
+The Csound IDE[19]15 brings Barry Vercoe’s Csound to the
+web as a user-friendly social audio programming environ-
+ment. The graph-oriented live coding language (nicknamed
+Glicol16) compiles desktop Glicol into WebAssembly run-
+ning via the AudioWorklet interface and provides a sleek
+and modern IDE. Additionally, there have been community
+efforts bring SuperCollider and Pure Data17 to the web.
+The developers of ChucK are excited to join the fold in
+bringing audio programming languages to the web.
+3. DESIGN AND IMPLEMENTATION
+At its core, WebChucK is ChucK running as a WebAssem-
+bly binary in a AudioWorkletNode18, inheriting the ben-
+11https://p5js.org/reference/#/libraries/p5.sound
+12https://tonejs.github.io/
+13https://tidalcycles.org/
+14https://gibber.cc/
+15https://ide.csound.com/
+16https://glicol.org/
+17https://github.com/sebpiq/WebPd
+18https://developer.chrome.com/blog/
+audio-worklet-design-pattern/
+efits of WebAssembly’s high-performance virtual machine
+as well as its managed container and fine-grained security
+model. Compiled directly from the ChucK source (C/C++)
+using emscripten, webchuck.wasm contains ChucK’s com-
+piler, virtual machine, class libraries, unit generators, and
+unit analyzers.
+Next, anaccompanyingwebchuck.js componentprovides
+JavaScript bindings to approximately 50 entry points into
+the C++ ChucK runtime as embedded in theWasm module.
+It also handles messages passed through the port message
+interfacebetweenthebrowserthreadandan AudioWorkletN-
+ode. webchuck.js also defines theChuckNode and Chuck-
+SubNode classes, each of which extends Web Audio’sAu-
+dioWorkletProcessor and manages the ChucK core from
+within theAudioWorklet thread.
+A WebChucK host (webchuck_host.js) provides helper
+functions for starting the Web Audio environment, initial-
+izing a ChucK instance within that environment as well as
+messaging mechanisms. The host associateswebchuck.js’s
+ChuckNode to anAudioWorkletNode that can be modularly
+connected to the audio routing graph in the browser’s audio
+context (AudioContext). In general, this host serves as a
+API for the ChucK runtime.
+webchuck.wasm,webchuck.js, andsomeformof webchuck_-
+host.js exist in all WebChucK projects; the latest released
+version is made accessible online19. Embedding these com-
+ponents makes it straightforward to do the following in a
+web development context:
+1. Write normal ChucK code, passed as strings or
+files to the ChucK runtime. This enables the dynamic
+addition of ChucK shreds during the lifetime of the
+web page. Each shred has an ID enabling the removal
+or replacement of shreds with some simple data man-
+agement.
+2. Communicate between ChucK and JavaScript.
+Running ChucK on the browser can useful as a self-
+contained audio engine, but further control and flexi-
+bility is possible via a collection of “getter” and “set-
+ter” methods that allow developers to modify vari-
+ables or trigger events between ChucK and web-based
+elements in real-time. This two-way communication
+enables the creation of web pages with synchronized
+and controllable audio and UI events (e.g., a slider on
+a web page can directly control a synthesis parame-
+ter in ChucK; meanwhile, precisely timed events in
+ChucK can drive web-based graphics and visualiza-
+tion).
+3. Take advantage of familiar workflows. Audio,
+MIDI, and other data files can be loaded into the
+ChucK node for playback, sonification, or other cre-
+ative uses. The WebChucK JavaScript API provides
+a few simple methods for file data to be accessed from
+within ChucK. Furthermore, achuckPrint() method
+pipes anything printed in ChucK code to the browser
+console, for debugging and general output.
+Preparing the ChucK code base for compilation to We-
+bChucK involved some reworking of the source. While
+the vast majority of ChucK functionality is present in We-
+bChucK, at the time of this writing the following native
+ChucK functionalities are selectively disabled:
+•HID devices (keyboard, mouse, joystick)
+•serial communication
+19https://chuck.stanford.edu/webchuck/src/
+•network communication (including Open Sound Con-
+trol)
+•OTF server (used to receive commands like “shred”
+over the network)
+•ChucK watchdog (detects possible time-less infinite
+loops)
+•ChucK shell (interactive prompt mode)
+While these functionalities are currently not supported
+in WebChucK itself, several of these (HID, serial, network
+communication, OSC) can be implemented in JavaScript
+and communicated to ChucK.
+4. APPLICATIONS AND EV ALUATION
+We feel that an evaluation of a tool like WebChucK is most
+meaningfully carried out by an examination of what people
+have been able to build and do with it, considering both the
+unique affordances and limitations encountered as result of
+using the tool.
+Many students and several artists have begun to explore
+and demonstrate the varied uses of WebChucK. Chris Chafe
+taughtCCRMA’spopular“IntroductiontoComputer-Generated
+Sound” course entirely with WebChucK in the fall quar-
+ter of 2022. Student projects ranged from compositional
+exercises in data sonification to full-fledged browser-based
+instruments. Some notable student projects (pictured in
+Figure 3) include:
+1. Chauvet Cave Beep Ploc Symphony20, by Luna
+Valentin: Adatasonificationprojectexaminingtheef-
+fect of increased extreme weather phenomena on the
+ecological balance of caves in France, previously in-
+habited by our Paleolithic ancestors 36,000 years ago.
+2. Image Sonifier21, by Cole Simmons: An image-to-
+sound converter that uploads an image from the user,
+retrieves various parameters like minimum and max-
+imum hue and saturation, and sonifies the calculated
+data with ChucK.
+3. Barrel Synth: A Feedback-Based Browser In-
+strument22, by Josh Mitchell: A unique virtual in-
+strument taking influence from Tom Mudd’s Gutter
+Synthesis algorithm[11]. A bank of sliders allows you
+to control the gain (and, therefore, feedback) between
+asetofchaoticduffingoscillatorsandmodalresonators
+routed to and from one another.
+Figure 3: Left to right: Chauvet Cave Beep Ploc,
+Image Sonifier, Barrel Synth: A Feedback-Based
+Browser Instrument.
+20https://ccrma.stanford.edu/~luna/220a/fp
+21https://image-sonification.vercel.app/
+22https://ccrma.stanford.edu/~jomitch/220a/fp
+These projects all combined real-time audio generation
+in ChucK with web-based UI elements like buttons, slid-
+ers, graphs, images, and more, and can run in browser en-
+vironments across platforms. Typically, ChucK develop-
+ers need to go through a substantial process to incorpo-
+rate ChucK natively in audiovisual environments such as
+Unity, or set up an Open Sound Control pipeline between
+ChucK code and graphics generated in another program
+(C++, Processing, OpenFrameworks etc,). Instead, We-
+bChucK places ChucK squarely in the world of WebAssem-
+bly and web UI/UX, immediately making WebChucK pro-
+grams compatible across operating systems. This allows
+ChucK to be extended in web plugins, extensions, modules,
+web games, or audiovisual creations, as the course projects
+above demonstrate. Reflecting on his own experiences in
+the same course, co-author Terry Feng23 notes that We-
+bChucK is a “one size fits all" tool, specifically in the way
+it unifies audio and visual development workflows into one
+environment to serve a user base across many platforms.
+Celeste Betancur24, an avid ChucK programmer and live-
+coding performing artist, suggested that one of the core ad-
+vantages of using ChucK on the web is in the powerful tim-
+ing and scheduling workflow it enables. By contrast, using
+JavaScript alone, the timing of events is achieved via func-
+tions like setTimeout() and setInterval(), which delay
+or perform the execution of a script at specific time inter-
+vals. Similarly, the Web Audio API provides timing mech-
+anisms that specify when a node starts or stops its pro-
+cessing via the parent classAudioScheduledSourceNode’s
+start([time]) and stop([time]) functions, or schedule
+parameterautomationvia AudioParam’ssetValueAtTime(),
+linearRampToValueAtTime(), and other functions. These
+methods require a rather clunky mode of development and
+no granular control over timing and scheduling. ChucK,
+on the other hand, provides sample-accurate control of how
+time progresses on any number of threads (“shreds"). This
+allows powerful schedulers and the ability to communicate
+Events and variables to the browser-based UI (e.g., musi-
+cal events in ChucK triggering graphical events on the web
+page).
+Celeste also reflects that WebChucK is a helpful tool
+for prototyping live computer-music performance. One can
+quickly trial creative ideas with ChucK code in the browser
+without having to manage a desktop development workflow
+(e.g., command line, audio settings, file systems etc.).
+5. CONCLUSION AND FUTURE WORK
+5.1 What have we learned so far?
+WebChucK is a viable (and often fun) way to ChucK. There
+are some limitations that come with the medium of web
+browsers (e.g., network security, which so far has precluded
+native networking features). At the same time, WebChucK
+has added to the ecosystem in terms of what one can do
+with ChucK and expandedwho can work—and has access
+to—the medium of programmable sound and music. We-
+bChucK lets users code with ChucK on their favorite mod-
+ernbrowsers, bothondesktopplatforms(macOS,Windows,
+Linux) and on mobile phones (iOS and Android). It lever-
+ages the sonic and musical affordances of ChucK with the
+many features of the web, making possible new and more
+accessible modes of audiovisual application development.
+As discussed in Section 2.1, there exist many different
+ways to ChucK. The choice of tools (WebChucK, command
+23https://fenglyfe.com/
+24https://www.celestebetancur.com/
+line ChucK, miniAudicle, Chunity, etc.) depends on the
+task at hand. In other words, WebChucK is not intended
+to be a replacement for any existing tool, but rather an
+expansion to the collective toolbox.
+5.2 Future Work
+Momentum favors the development of WebChucK at this
+time, with ongoing efforts to ensure full-feature parity with
+the ChucK on the desktop (e.g., including network commu-
+nication like OSC, multichannel audio support, and variable
+sample rate) and with miniAudicle and its varied IDE fea-
+tures. Also, more tutorials are being created help users
+incorporate ChucK into their web projects.25
+A fully usable WebChucK IDE, similar top5.js’s online
+editor, has already been developed by Terry Feng, Celeste
+Betancur, Mike Mulshine, and others. More work will be
+done to improve the IDE, including implementing a caching
+file system to organize full projects and enable users to re-
+turn to all of their previous work between browser sessions.
+An audiovisual IDE combining WebChucK andp5.js is also
+in the works, opening the door for students and artists to
+freely and easily prototype highly synchronized audiovisual
+systems.
+Modeled after Google Docs, Overleaf, or Jupyter Note-
+book, the authors would like to develop a collaborative
+online WebChucK editor (codenamedWebChucK Note-
+book), to enable users to work on the same ChucK project
+together simultaneously and remotely, embedding runnable
+ChucK code inline with text and figures. This could be es-
+pecially useful for educators teaching audio programming,
+ChucK development teams, or artistic collaborators.
+WebChucK will continue to be co-developed via its var-
+ious uses in computer music courses and artistic applica-
+tions. Asmorepeopleadoptthewebasanaccessiblecreative-
+computing medium, one might ponder:
+How much Web could a WebChucK ChucK, if weall could
+ChucK on the Web?
+6. ACKNOWLEDGMENTS
+The authors want to acknowledge and thank CCRMA (at
+Stanford University) for supporting its students and re-
+searcherswhohavecontributedtothedevelopmentofChucK
+and WebChucK over the years. Special appreciate goes to
+the slew of web audio programmers, including especially
+Hongchan Choi, for developing the AudioWorklet interface,
+thus enabling ChucK and other computer music program-
+ming languages (Csound, FAUST, Glicol) to run on the
+web.
+7. ETHICAL STANDARDS
+WebChucK and Chuck has been developed with the support
+of CCRMA’s departmental funding, curricular student re-
+search, and volunteer contributions. The authors are aware
+of no potential conflicts of interest. The students using
+early-stage WebChucK were doing so to learn audio pro-
+gramming in a curricular context and were never treated as
+test subjects.
+8. REFERENCES
+[1] Faust, a functional programming language for sound
+synthesis and audio processing.
+https://faust.grame.fr/.
+25https://chuck.stanford.edu/webchuck/tutorial/
+[2] Faust, web-based functional sound sythesis
+programming ide.https://faust.grame.fr/.
+[3] Estuary 0.3: Collaborative audio-visual live coding
+with a multilingual browser-based platform. Zenodo,
+June 2022.
+[4] Strudel: Algorithmic Patterns for the Web. Zenodo,
+June 2022.
+[5] J. Atherton and G. Wang. Chunity: Integrated
+audiovisual programming in unity. InNew Interfaces
+for Musical Expression, pages 102–107. Virginia Tech,
+June 2018.
+[6] H. Choi. Audio worklet: The future of web audio. In
+International Conference on Music and Computing,
+2018.
+[7] Q. Lan and A. R. Jensenius. Glicol: A graph-oriented
+live coding language developed with rust,
+webassembly and audioworklet. InWeb Audio
+Conference, 2021.
+[8] V. Lazzarini, E. Costello, S. Yi, and J. Fitch. Csound
+on the web. InLinux Audio Conference, 2014.
+[9] S. Letz, S. Denoux, and Y. Orlarey. Faust audio dsp
+language in the web. 2015.
+[10] Mozilla. Web Audio API.https://developer.
+mozilla.org/en-US/docs/Web/API/Web_Audio_API.
+[11] T. Mudd. Gutter synthesis.
+https://github.com/tommmmudd/guttersynthesis,
+2018.
+[12] C. Roberts and M. Pachon-Puentes. Bringing the
+tidalcycles mini-notation to the browser. InWeb
+Audio Conference, 2019.
+[13] S. Salazar, G. Wang, and P. R. Cook. miniaudicle and
+chuck shell: New interfaces for chuck development
+and performance. InInternational Computer Music
+Conference, 2006.
+[14] G. Wang. Ocarina: Designing the iPhone’s Magic
+Flute. Computer Music Journal, 38(2):8–21, 06 2014.
+[15] G. Wang.Artful Design: Technology in Search of the
+Sublime. Stanford University Press, 2018.
+[16] G. Wang and P. R. Cook. Chuck: A concurrent,
+on-the-fly audio programming language. In
+International Computer Music Conference, 2003.
+[17] G. Wang, P. R. Cook, and S. Salazar. Chuck: A
+strongly timed computer music language.Computer
+Music Journal, 39(4):10–29, 2015.
+[18] G. Wang and R. Michon. Fauck!! hybridizing the
+faust and chuck audio programming languages. In
+Sound and Music Computing, 2016.
+[19] S. Yi, H. Sigurðsson, and E. Costello. Csound
+web-ide. InWeb Audio Conference, 2019.
+[20] M. Zbyszynski, M. Grierson, and M. J. Yee-King.
+Rapid prototyping of new instruments with codecircle.
+In New Interfaces for Musical Expression, 2017.

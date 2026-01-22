@@ -1,0 +1,475 @@
+Sensors G ADC Computer
+AtoMIC Pro : a Multiple Sensor Acquisition Device
+Emmanuel Fléty
+Education and Creation Departments
+Ircam - Centre Pompidou – 1 pl. Igor Stravinsky
+75004 Paris – France
+emmanuel.flety@ircam.fr
+Abstract
+Research and musical creation with gestural-oriented
+interfaces have recently seen a renewal of interest and
+activity at Ircam [1][2]. In the course of several musical
+projects, undertaken by young composers attending the
+one-year Course in Composition and Computer Music or by
+guests artists, Ircam Education and Creation departments
+have proposed various solutions for gesture-controlled
+sound synthesis and processing. In this article, we describe
+the technical aspects of AtoMIC Pro, an Analog to MIDI
+converter proposed as a re-usable solution for digitizing
+several sensors in different contexts such as interactive
+sound installation or virtual instruments.
+The main direction of our researches, and of this one in
+particular, is to create tools that can be fully integrated into
+an artistic project as a real part of the composition and
+performance processes.
+Keywords
+Gestural controller, Sensor, MIDI, Music.
+SOLUTION FOR MULTI-SENSOR ACQUISITION
+Introduction
+Gestural controllers are often based on sensors which
+generate analog electrical signals [3]. For controlling sound
+synthesis or sound effects with such a controller, the
+sensors’ analog signals must find a way to enter the
+computer in charge of the process. Unfortunately, those
+signals cannot directly be transformed into a digital form :
+they need to be conditioned. This operation of course
+depends of the sensor’s type, its voltage range or its
+impedance, among other factors. Also, sometimes, the
+analog signal has to be filtered, amplified or gated. All
+these steps are usually specific to each gestural controller,
+even if some sensors are more often used than others.
+Moreover, signal conditioning requires certain skills which
+makes it difficult for non-technical people to design custom
+controllers.
+In most cases, the chain composing a controller can be
+summed up as shown in figure 1. It is obvious that the
+Analog to Digital Conversion could be factored, as well as
+some of the conditioning processes which could be
+achieved digitally (filtering and amplification for instance).
+The next question regards the protocol used for transmitting
+the digital value to the computer. In the musical domain,
+the MIDI standard1 has been created for that purpose. It was
+basically used for connecting master keyboards to sound
+generators, but continuous controllers were soon added to
+the keyboard such as breath controller, modulation wheel or
+pitch wheel. We chose to use MIDI for exporting the
+sensor’s data to the computer because this standard is fully
+implemented in a computer’s software and hardware.
+However, we had to keep in mind the several drawbacks of
+MIDI such as its seven bit quantification and its slow
+bitrate allowing only about a thousand messages per
+second.
+Figure 1 : Simplified structure of a gestural controller
+Design of a new sensor to MIDI converter
+In 1998, we needed to convert sensors’ data to MIDI for
+live electronic music pieces, so we looked for commercial
+products able to do this operation. At that time, the
+available products featured either too much latency, low
+samplerate or not enough configurability2. So we decided to
+build our own analog to MIDI converter that would be able
+to manage multiple sensors, be stand-alone, be easy to
+configure and operate as much as possible in real-time.
+While our main criterion were high samplerate and low
+latency, we also kept in mind the on-stage use of the device,
+which means robustness and full MIDI compatibility. As a
+matter of fact, the use of such a tool is not confined to a
+direct connection to a computer but could also simply drive
+a MIDI device such as a sound generator, a sampler, or an
+sound effects processor. Thus, it was very important to
+allow the user to configure accurately the message sent by
+the unit and not to constrain him to have a dedicated
+hardware such as a computer.
+After taking into consideration what had been designed in
+the past [4][5], we proposed several improvements – while
+recognizing that this development would have to be a
+compromise between efficiency, speed and resolution on
+the one hand, and on the other hand versatility and cost.
+The latter is important because we thought from the very
+beginning about making this device available to several
+“targets” and not only to gestural controller specialists.
+1 MIDI : Musical Instrument Digital Interface
+2 Refer to Table 1. next page.
+Table 1 : Comparison of some existing analog to MIDI converters
+Interface ADB I/O AtoMIC Pro Digitizer (I-Cube) MIDIBox MidiCreator SensorLab
+Manufacturer BeeHive Ircam Infusion Systems NOTAM York Elect. Center STEIM
+Platform Macintosh Any Any Any Any Any
+Max SR [Hz] < 90 1000 / Nb active inputs 200 / 225 (12/8 bits) Approx 400 120 250
+Analog IN 4 32 32 8 8 32,2x3 (US)
+Digital IN 4/6/8 8 - 16 8 8x16
+Input Res. 8 bits 10/7 bits 12/8 bits 8 bits 8 bits 8/14 bits US
+Outputs max 8 8 switches + 4 MIDI 8 switches + MIDI 6 + MIDI MIDI MIDI
+Size (HWD)[mm] 29x122x65 38x165x225 34x121x94 20x100x100 (PCB) 41x227x166 35x200x100
+Thus, we designed the AtoMIC Pro which is a device able
+to convert thirty-two 0 to 5 volt analog signals into MIDI
+messages. Eight logic inputs (i.e. 0 or 5V only) were also
+added in order to keep the use of analog inputs only for
+continuous sensors. Eight logic outputs can also be
+controlled by MIDI messages to trigger on/off processes
+like lights, relays or DC motors.
+The AtoMIC Pro features a liquid crystal display and a
+keypad so that the user can configure the behavior of each
+analog input directly on the unit without the need of a
+computer. Each input can have a particular configuration in
+which the user specifies, for example, the MIDI message to
+be sent, its MIDI channel, and its MIDI port. The
+configuration of all the 32 inputs is called a patch and up to
+15 patches can be stored and named in a non-volatile
+memory. A patch can be recalled at any time, by selecting it
+in the “File” menu, or with a MIDI message sent by an host
+system. Since the patch is stored internally, there is no need
+to dump it as it takes only 500 µs to load. Thus, it’s
+possible to change the whole configuration of the device in
+real time between two notes of a score, even with a fast
+tempo.
+Figure 2 : The AtoMIC Pro unit
+The patch setup can also be done within the Max/MSP
+software and dynamically dumped to the AtoMIC Pro. In
+version 2.0, we have added more remote control messages
+to drive the unit from the computer in order to synchronize
+it with an electronic score. Thus, it’s possible to save the
+current patch, reset the unit, and activate or deactivate an
+input from the computer while the device is on stage.
+In order to make electrical signal debugging easier, the
+AtoMIC Pro also features signal monitoring on its LCD.
+One screen allows the user to monitor the digitized value of
+a dedicated analog input on a 20 level horizontal bargraph.
+Another screen displays the whole 32 inputs on small seven
+level vertical bargraphes, as illustrated in figure 3.
+Figure 3 : Signal monitoring
+The electrical signals enter the unit through lockable Sub-D
+plugs to guaranty the connections. Although this choice
+implies soldering wires to the plug, this kind of connector is
+very standard, cheap and secure. However, to provide a
+mean of easily connecting and disconnecting sensors, we
+built an extension that makes the bridge between three pin
+sensors3 and the Sub-D connectors.
+3 Such as the sensors proposed by Infusion Systems, designer of the
+I-Cube Digitizer.
+< Display Ch: 01 >
+Min Max
+
+< Display all >
+|||
+|||
+ay all >
+||
+||
+
+Improvements
+Since MIDI is painfully slow, it’s quite difficult to keep
+sufficient bandwidth when many sensors are digitized on
+t h es a m eM I D Ip o r t .B e c a u s eo ft h a t ,w ed e c i d e dt o
+implement data filtering inside the unit so that only useful
+samples are sent to the computer. For instance, in electro-
+acoustic music we often need to trigger events to
+synchronize the computer and the performer. The triggering
+operation is usually done by the performer who “tells” the
+machine he has reached a certain position in the score. The
+triggering can also be used to change parameters in the
+sound synthesis algorithm during the piece. Triggering is
+often done with a master keyboard sustain pedal, which is
+just a switch, i.e. a binary state sensor giving either 0 volt or
+5 volts. Changing the pedal state will only generate one
+MIDI message and will not slow down the messages rate.
+But sometimes, it’s not possible or desirable to use such a
+pedal, for instance when the performer cannot use his feet.
+Roland Auzet, percussionist, wrote a piece for Zarb, a
+single head drum played while sitting cross-legged [6][7].
+In that position, it is impossible to use a pedal for
+triggering. We decided to implement a trigger sensor
+directly on the drum, at a position that would not modify
+the percussionist’s playing and without modifying the
+instrument itself. For this we chose to use an FSR sensor
+(Force Sensitive Resistor), which is a flat 2.5 cm diameter
+mechanical pressure sensor whose electrical resistance
+decreases continuously with the pressure.
+Figure 4 : FSR sensor
+In order to make that sensor binary we need to setup a
+threshold. That can be done within the software running on
+the computer, but that would mean that continuous data
+would flow through MIDI before getting into the software,
+slowing down the system’s bandwidth. Instead, we chose to
+threshold the signal directly inside AtoMIC Pro and this has
+led to dramatic improvements in system performance.
+The problem of different sensors’ dynamic ranges
+The output from sensors can be quite different – current,
+voltage or ohmic resistance for example – but in most
+cases, it is quite easy to convert the sensor signal into
+voltage. Even so, the dynamic range can be very different
+between two “identical” sensors. In the first version of
+AtoMIC Pro we chose to implement a configurable voltage
+reference for the A/D converter4 so that the conversion
+scale could be adapted to different sensors’ configurations.
+The configurable voltage reference helps to compensate for
+different dynamic ranges, as shown in figure 5, where the
+voltage reference has been changed from 5 volts to 4 volts,
+i.e. adapted to the largest dynamic within the sensor’s
+population. However, this fixes only a part of the problem
+since the other sensors loose resolution as their dynamic
+range is not equal to the voltage reference.
+Figure 5 : Adapting the voltage reference
+To solve that, one solution could be to amplify the signals,
+as a mixing table does. However, this means that external
+electronic circuits have to be designed and we wanted to
+have a fully integrated solution.
+To get rid of this problem, we tried switching the voltage
+reference from one analog input to another. This didn’t
+work because the A/D converter needs a stable voltage
+reference before being able to do the conversion and
+changing the voltage reference on the fly generates clicks
+and noise which is a disaster for the stability of the resultant
+digital value.
+In version 2.0 we have implemented a custom scaled zoom
+on the digital value to take advantage of the 10 bit
+resolution of the A/D converter. First, the voltage reference
+is set to the largest dynamic among the sensors connected
+to the unit. Then, the user can select the sensor’s range
+within the 10 bit dynamic by specifying a window size and
+an offset. The selected range can then be converted into 7
+bit MIDI data without greatly increasing the quantification
+step, as demonstrated in figure 6.
+4 The voltage reference specifies the upper boundary of the A/D
+converter’s conversion scale, as shown on figure 3.
+Input number
+5 1023
+Digital valueInput voltage (V) A/D Conversion
+0
+4
+1 8 95
+
+Figure 6 : Zooming the signal range
+Data filtering and conversion tables
+We have also added two filters and a noise suppressor. The
+filters will reduce the number of MIDI messages sent when
+the signal is not stable, like a low-pass filter. This is done
+either by down sampling the analog signal of the sensor or
+by applying a speed limitation algorithm to the digital
+value. The noise suppressor creates a band centered around
+the last sent value of the sensor and will not send MIDI data
+if the signal changes within the band, thus eliminating
+certain signal noise.
+Figure 7 : Noise suppressor canceling
+unwanted MIDI messages
+The sub sampling operation, as well as the speed limitation
+filter are configurable over a range of 128 possibilities for
+maximum flexibility. The use of the sub sampling filter
+underlines that it’s possible to setup different sample rate
+for each sensor, specifying different priorities and time
+resolutions, which is very useful since not all sensors have
+the same bandwidth or activity. A temperature sensor, for
+instance, does not need to be sampled each cycle as a
+motion sensor might.
+Conversion tables have also been added in order to apply a
+mathematical function to the digitized value of a sensor.
+The function can be Linear, Logarithmic or Exponential.
+The Linear function does not affect the value while the
+Logarithmic/Exponential functions can turn an
+exponential/logarithmic response into a linear one (i.e. by
+applying the inverse function to the response of the sensor).
+A custom table can also be edited or drawn on the computer
+then dumped to the unit.
+MIDI aspects
+All the MIDI messages defined by the standard have been
+implemented in the AtoMIC Pro. While the Control
+Change message is the most often used, messages like
+Pitch Bend (accepting 14 bits values) and Note On/Note Off
+are also available, among the others. The Note messages
+can be configured as triggered messages or as velocity
+detection messages. Thus, a continuous voltage can be
+transformed into a binary sensor with adjustable
+thresholds5. The same sensor can also produce a continuous
+envelope on which a maximum is detected and associated
+to the note’s velocity. During sustain (i.e. while the sensor
+remains solicited), aPolyphonic Aftertouch message can be
+sent if selected, as illustrated in figure 8.
+Figure 8 : Note On message generation
+As mentioned above, the unit can be remote controlled by
+System Exclusive messages. A new setup of parameters can
+be dynamically dumped to change the whole configuration
+on the fly. Previously stored configurations can be recalled
+by a simple Program Change message. The current setup
+can be remotely saved allowing the user to update the
+whole configuration without the need to be close to the unit
+to perform the saving operation, which is really useful for
+stage applications where the unit and the computer are
+geographically separated.
+Some MIDI routing has been implemented in version 2.0 to
+take advantage of the four MIDI outputs situated on the rear
+panel. Thus, it is possible to select the destination of a
+MIDI message among any combination of the four ports
+(i.e. 16 possibilities).
+5 As previously described in paragraph “Improvements”
+Sensor
+0
+2* Λ(noise)
+t
+Noise band
+Sensor signal
+Sampled value
+Sampled value +
+MIDI Message
+1023
+Digital value
+(10 bits)
+MIDI conversion
+0
+MIDI data
+(7 bits)
+127
+Window size
+=
+real sensor
+range
+Offset
+t
+Envelope
+Actual
+NOTE OFF
+threshold
+Max
+Relative NOTE OFF
+threshold
+t NOTE OFF
+NOTE ON message
+is generated
+NOTE OFF message
+is generated Polyphonic
+pressure
+0
+Technical aspects and last improvements
+The unit is driven by a 16 MHz Micro controller Unit
+(MCU). In version 1.0, we used the highest-end MCU from
+Microchip™ which includes a 8 bit analog to digital
+converter. The eight bit value was right-shifted to a seven
+bit value to be compatible with MIDI, leaving the
+possibility to send an eight bit value throughSystem
+Exclusive messages. In version 2.0, we use a new, more
+powerful and pin compatible MCU that features not only
+more RAM and ROM but also a 10 bit A/D converter.
+RAM and ROM expansion gave us the possibility to
+improve the data filtering and to add new features to the
+device for more configurability. The 10 bit A/D converter
+increases the resolution of the analog to MIDI conversion.
+The digital value can be exported by System Exclusive
+messages, by a 14 bit Pitch Bend m e s s a g e( o nt h e1 0m o s t
+significant bits) but also by two Control Change messages
+sending MSBs and LSBs on two different controller
+numbers.
+As mentioned in the previous paragraph, we have added
+hash tables to transform the sensors’ response curves. A
+MIDI spy was also implemented to display all arriving
+MIDI messages, which can be very useful for debugging a
+MIDI installation.
+AtoMIC Pro is now widely used for designing new gestural
+controllers, for managing interactive sound installations
+using sensors, as well as in theaters.
+AtoMIC Pro has also recently been used for a psycho-
+acoustic experiment in which a 128 people evaluate
+different criteria during a concert [8]. Each person has a
+plastic box equipped with a fader that codes the criteria
+evaluated on a linear scale. The analog value of each
+potentiometer is converted into MIDI by four AtoMIC Pro
+units. The MIDI data and the concert are synchronously
+recorded on a computer running Digital Performer™ in
+order to post-analyze the answers through time and
+correlate them with the piece structure [9].
+The envelope analysis algorithm was also improved and
+debugged thanks to a project of Patrice Moullet [10], called
+“l’Omni” which is a controller using 108 piezoelectric
+sensors mounted on a dome 1.2 meters in diameter. Four
+AtoMIC Pros are in charge of the velocity detection and
+Note On generation for all the sensors6, resulting a real-time
+polyphony7 up to 32 notes.
+Future improvements
+The current MCU is underused since its clock frequency
+could be doubled with the consequence of almost dividing
+by two the internal processing time 8, and thus improving
+the real-time aspect. We are now thinking about an AtoMIC
+version 3 with potential support of other protocols such as
+m-LAN or UDP. We are thinking in particular about the
+Open Sound Control protocol [11] which is now widely
+6 Conditioning hardware for the piezoelectric sensors designed by
+Jean-Loup Dirstein.
+7 With a latency less than 10 ms.
+8 Currently 110 µs per active analog input.
+used by several programs and is simple to implement.
+Moreover, Ethernet provides a standard and very efficient
+way to transmit high speed data – meaning that a single
+analog to MIDI interface might be able to sample more
+sensors with a better resolution.
+CONCLUSION
+In this article we tried to describe our recent developments
+of an analog to MIDI converter as a tool for use in the
+contexts of electronic music and live performance. This tool
+has always been developed within a compromise of time
+and complexity, so it is far from perfect. Nevertheless, we
+always kept in mind that this kind of device is to be used in
+an artistic context, not just in laboratory experiments. Our
+main satisfaction is that AtoMIC Pro has been used several
+times in various pieces.
+In spite of some drawbacks, this device has been fully
+integrated as a part of the compositional process, and used
+at its maximum capabilities. Analog to MIDI conversion is
+not something new, and we want to emphasize that our
+work was also achieved thanks to past developments by
+people at Infusion Systems and Steim, among others.
+We would like to emphasize that this kind of development
+needs a tight relationship between the composer and the
+technical staff in order to obtain the right tools, not only in
+terms of capabilities but also in terms of shape and
+esthetics.
+ACKNOWLEDGMENTS
+We would like to thank all the people who collaborated to
+the design of AtoMIC Pro. Thanks to Marcelo Wanderley,
+Thomas Helie, Christophe Vergez, David Ralley and
+Benjamin Thigpen for their constructive criticism,
+comments and suggestions.
+REFERENCES
+Articles and conferences
+[1] Fléty, E., and M.-H. Serra. 1998. “Recent use of
+gestural sensors for Ircam musical creations.”
+Proceedings of the Journées d'Informatique
+Musicale,JIM98 - La Londe-les-Maures –
+France, pp. D3-1-D3-4.
+[2] Wanderley, M. M., M.-H. Serra, and M. Battier.
+“Gestural Control at Ircam.” Submitted for
+publication.
+[3] Wanderley, M. 1998. “Gesture - Sensors -
+Feedback: Some Comments on the Design of
+Gestural Interfaces.”Technical report, Ircam
+Centre Pompidou.
+[4] Starkier, M and Prevot P. “Real-Time Gestural
+Control”. In Proc. of the 1986 International
+Computer Music Conference. San Francisco,
+Calif.: International Computer Music
+Association, pages 423–426, 1986.
+[5] Waiswisz, M. “The Hands, a Set of Remote
+MIDI-Controllers”. In Proc. of the 1985
+International Computer Music Conference. San
+Francisco, Calif.: International Computer Music
+Association, pages 313–318, 1985.
+[9] McAdams, S. 2001. “Shape and time : perception
+through a musical piece”. Conference on Art and
+Science. Presented during Festival Agora 2001 in
+Paris, France, with the collaboration of the
+University of San Diego, California, USA.
+[11] Freed, A. and Wright, M. “Open SoundControl:
+A New Protocol for Communicating with Sound
+Synthesizers” In Proc. of the 1997 International
+Computer Music Conference. San Francisco,
+Calif.
+Artistic events
+[6] Auzet, R. 1997. “OROC.PAT” Musical piece for
+Zarb and live electronics. Composed in 1997
+during Ircam Course in Composition and
+Computer Music.
+[7] Auzet, R. 1999-2000. “Le cirque du Tambour.”
+Performance for percussion, live electronics,
+video and acrobats . Premiered in December
+1998 in Châlon / Saône, France.
+[8] Reynolds, R. 2001. “Angel of Death”. Musical
+piece for piano and live electronics. Premiered in
+June 2001 at the Centre Pompidou, Paris, France.
+[10] Moullet, P. 2001. “ l’Omni II”. Interactive sound
+installation. Exposed at the “Cité de la Musique”,
+Paris, France.

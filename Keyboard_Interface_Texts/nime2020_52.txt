@@ -1,0 +1,684 @@
+T orqueT uner: A self contained module for designing rotary
+haptic force feedback for digital musical instruments
+Mathias Kirkegaard, Mathias Bredholt, Christian Frisson, Marcelo M. Wanderley
+Input Devices and Musical Interaction Lab - IDMIL
+Centre for Interdisciplinary Research in Music Media and T echnology - CIRMMT
+McGill University , Canada
+{mathias.kirkegaard;mathias.bredholt}@mail.mcgill.ca
+{christian.frisson;marcelo.wanderley}@mcgill.ca
+Figure 1: TorqueTuner as a rotary force feedback joint be-
+tween two T-Sticks
+ABSTRACT
+TorqueTuner is an embedded module that allows Digital
+Musical Instrument (DMI) designers to map sensors to pa-
+rameters of haptic eﬀects and dynamically modify rotary
+force feedback in real-time. We embedded inside Torque-
+Tuner a collection of haptic eﬀects (Wall, Magnet, Detents,
+Spring, Friction, Spin, Free) and a bi-directional interface
+through libmapper, a software library for making connec-
+tions between data signals on a shared network. To increase
+aﬀordability and portability of force-feedback implementa-
+tions in DMI design, we designed our platform to be wire-
+less, self-contained and built from commercially available
+components. To provide examples of modularity and porta-
+bility, we integrated TorqueTuner into a standalone haptic
+knob and into an existing DMI, the T-Stick. We imple-
+mented 3 musical applications (Pitch wheel, Turntable and
+Exciter), by mapping sensors to sound synthesis in audio
+programming environment SuperCollider. While the origi-
+nal goal was to simulate the haptic feedback associated with
+turning a knob, we found that the platform allows for fur-
+ther expanding interaction possibilities in application sce-
+narios where rotary control is familiar.
+Author Keywords
+digital musical instruments, haptic feedback, force-feedback
+interaction, sound synthesis, mapping, embedded systems
+CCS Concepts
+•Applied computing → Sound and music comput-
+ing; Performing arts; •Human-centered computing →
+Haptic devices;
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’20, July 21-25, 2020, Royal Birmingham Conservatoire, Birming-
+ham City University , Birmingham, United Kingdom.
+1. INTRODUCTION
+Haptic feedback is considered an important dimension of
+the interaction with musical instruments, as it can facili-
+tate a performer-instrument intimacy and lead to a feeling
+of embodiment [28]. While this is an inherent mechanical
+feature of most acoustic instruments, many researchers have
+explored ways of synthesizing the haptic feedback, for digi-
+tal musical instruments (DMI) where there is no mechanical
+coupling between gesture and sound [14, 17, 19, 12]. In this
+paper, we review related work on rotary and self-contained
+force-feedback (Section 2). We contribute the implementa-
+tion of an open hardware module for rotary haptics with
+embedded eﬀects library and bi-directional mapping inter-
+face (Section 3). We validate our module with 2 integrations
+in DMIs (Section 4) and 3 musical applications (Section 5).
+2. RELA TED WORK
+We review related work on force feedback interaction, with
+a focus on rotary and self-contained haptics.
+2.1 Force feedback
+Haptic feedback is usually divided into two main categories,
+force feedbackand tactile feedback . Force feedback relies
+on the kinesthetic sense (position, movement and force on
+body limbs), whereas tactile feedback is sensed through
+mechanoreceptors in the skin. For acoustic instruments the
+haptic feedback is usually inherited directly from the exci-
+tation mechanism, and this has been imitated with synthe-
+sized force feedback in the design of virtual instrument con-
+trollers such as a force feedback keyboard [14] and a virtual
+bowed string [19]. Tactile feedback has been used in musi-
+cal applications for displaying textures [17], tempo [22] and
+vibrations of virtual resonant bodies [12]. Tactile feedback
+can be implemented with vibration motors small enough to
+ﬁt in a smartphone, but larger and more powerful actuators
+are usually needed for force feedback in order to obtain a
+suﬃcientz-width, i.e. the range of displayable forces [27].
+This increases both mechanical and electrical complexity,
+and is likely one explanation of why tactile feedback has
+gained the most popularity, in addition to the cost of force
+feedback devices remaining high. Examples of research that
+seek to accommodate this issue include Verplank’s force
+feedback device The Plank [26] constructed from an old
+hard drive, Berdahl and Kontogeorgakopoulos’s aﬀordable
+and open-source device, Firefader [2] based on linear ac-
+tuators, and open-source force feedback developments kits
+Hapkit [16] and by Haply [8]. A very common user input
+in electronic music is rotary control, usually in the form of
+knobs [4], but none of these devices are designed speciﬁcally
+for 1-DOF rotary control. Our main goal with TorqueTuner
+is to use aﬀordable components and open-source technolo-
+gies, to provide powerful rotary force feedback.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+273
+Haptic	generator Mechaduino
+Dual	H-
+BridgeArduino	zero
+Angle Magnetic
+encoder
+Stepper	motor
+SCL
+SCD
+Esp32
+3.7V
+12VBoost
+converter
+Figure 2: Block diagram of TorqueTuner hardware platform
+2.2 Rotary force feedback
+Swindells explored the mechanical and emotional aspects of
+interaction with physical rotary controls to inform the de-
+sign of a force feedback knob that simulates detents [21].
+Chu implemented a collection of haptic eﬀects for such a
+device, and explores its application to audio navigation [6].
+Their main ﬁnding is how simulated springs can be used
+to lock a user input into a center position. Oosterhout et
+al. explored the perceptual links between the shape and
+the haptic feedback of a knob [25], and expanded their de-
+sign into a shape changing knob [24]. Beamish et al. used
+rotary force feedback in the design of a DMI, a turntable
+for stable velocity playback and a collection of additional
+haptic eﬀects including haptic beat markers and scratch-
+ing with a spring [1]. Our goal is to use their guidelines in
+our design of rotary haptic eﬀects, and extend it by making
+them available for DMI designers and artist in a low-cost
+and open-source in module.
+2.3 Self contained haptics
+The control of haptic feedback is usually implemented by
+a haptic generator that maps information from sensors and
+sound synthesis to actuators [9]. In many existing applica-
+tions, the haptic generator is a piece of software running on
+a desktop/laptop, that bridges a musical application and a
+haptic device. Berdahl and Smith’s Synth-A-Modeller [3]
+allows artists to design bi-directional (control in, feedback
+out) synthesis applications based on virtual mechanical ob-
+jects, and compile it to Faust DSP code, which can be con-
+trolled with haptic devices. A similar approach is taken
+in Sinclair’s work on Dimple [20], an interactive software
+system for developing virtual haptic environments with an
+interface through the Open Sound Control (OSC) proto-
+col. All though these solutions allow for rendering of com-
+plex haptic environments, we ﬁnd that relying on a desk-
+top/laptop introduces a limitation on longevity and porta-
+bility since compatibility maintenance is required. A main
+goal of the design of TorqueTuner is to embed the haptic
+rendering on a micro controller, in order to implement a
+self contained force feedback module that DMI designers
+can easily integrate into new instruments.
+3. IMPLEMENT A TION
+The implementation of TorqueTuner is threefold: a hard-
+ware platform, a collection of haptic eﬀects, and a wireless
+mapping interface. In this section we describe aspects of the
+implementation important for the goal of a self-contained
+rotary force feedback module, and present 2 exemplar inte-
+grations of TorqueTuner.
+3.1 Hardware design
+The hardware platform consists of a servo implemented with
+theMechaduino [23] platform, a haptic generator embed-
+ded on a ESP32 microcontroller unit (MCU) and a LiPo-
+based power-supply (see Figure 2). The Mechaduino han-
+dles timing sensitive tasks on an interrupt basis, including
+the calculation of velocity, acceleration and the motor con-
+trol loop, while the ESP32 handles haptic calculations and
+WiFi connectivity. We implement a bi-directional full speed
+I2C interface for the internal communication. Additionally,
+we implement a checksum algorithm to enable discarding of
+erroneous data.
+3.1.1 Rotary haptics with Mechaduino servomotor
+Mechaduino is an open-source Arduino compatible platform
+that implements an industrial servo with a low cost step-
+per motor and a hall eﬀect based magnetic encoder. It is
+designed for the standardized National Electrical Manufac-
+turers Association (NEMA) 17 stepper motor frame-size,
+which is commonly used in 3D printers and CNC machines,
+and thus commercially available at a low price. The motor
+we used for TorqueTuner has a holding torque of 45 Ncm
+and a rated current draw of 2A. The Mechaduino platform
+utilizes the stepper motor with known step angle in an open
+loop conﬁguration, to calibrate the magnetic encoder and
+bring the angular resolution down to± 0. 1◦ corresponding
+to 3600 PPR.
+3.1.2 Embedded control with ESP32
+The ESP32 is a system on a chip (SOC) microcontroller
+with WiFi and Bluetooth. The ESP32 integrates a 240 MHz
+dual core microprocessor with a ﬂoating point unit. The
+TinyPico breakout of ESP32 has 4 MB of PSRAM mem-
+ory, which makes it capable of storing all the lookup tables
+containing the haptic eﬀects.
+3.1.3 P ortable power supply
+We use a one cell LiPo battery to power the ESP32 and a
+boost converter to step up the voltage from 3.7 V to 12 V for
+driving the stepper motor. LiPo batteries have become very
+common in portable electronics due to their small size and
+very high discharge rate. Drawbacks include the necessity
+of protecting against over discharging and stabilizing the
+voltage output as it drops during discharge. The TinyPico
+features a LiPo battery charging circuit that implements
+under-voltage protection for the battery and constant volt-
+age output. We have included a block diagram of the ﬁnal
+hardware setup in Figure 2.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+274
+3.2 Embedded haptic effects
+We implement the collection of haptic eﬀects as transfer
+functions that relate angle or velocity to torque, and store
+them as look-up tables on the ESP32. In this way, we can
+generalize the control inputs for every haptic eﬀect asscale
+(output gain), stretch (input gain) and offset (input oﬀ-
+set) of the associated transfer functions. Figure 3 shows the
+transfer functions for 4 of the haptic eﬀects. Additionally
+we introduce the control inputdamping which deﬁne the
+energy dissipation of the system. This can be both neg-
+ative and positive, allowing for designingpassive displays ,
+where reactive forces (the ones displayed) equal the applied
+forces, andactive displays where the displayed forces might
+be larger. Positive values corresponds to a damped system,
+and negative values corresponds to adding energy. This can
+be used to prevent or introduce oscillations respectively. An
+overview of the control inputs is given in Table 1.
+0 90 180 270 360
+-1
+-0.5
+0
+0.5
+1
+0 90 180 270 360
+-1
+-0.5
+0
+0.5
+1
+0 90 180 270 360
+-1
+-0.5
+0
+0.5
+1
+0 90 180 270 360
+-1
+-0.5
+0
+0.5
+1
+Figure 3: Transfer functions for angle dependent haptic ef-
+fects. The sign of the torque represents the direction, such
+that a negative torque is towards a decrease in angle.
+A haptic update procedure running a 1 kHz calculates the
+controller set points, torque and velocity, based on sensor
+data from the servo, control inputs from libmapper and the
+chosen haptic eﬀect. The overall data ﬂow of the haptic
+update procedure is shown in Figure 4, and the implemen-
+tation of haptic eﬀects is explained below.
+3.2.1 W all
+Colgate et al. deﬁned a virtual wall with stiﬀness and damp-
+ing [7] as:
+i f (θ ≥ θw ) {
+Ft = K(θ − θw) − B · ˙θ
+}
+else {
+Ft = 0
+}
+Ft : Torque
+θ : Encoder angle
+˙θ : Angular velocity.
+θw : Angular position of
+the wall
+K : Angle-dependent
+wall stiﬀness.
+B : Damping factor.
+The virtual wall is used as haptic feedback on the range
+of the knob by assigningθwall to the desired minimum
+and maximum angle, the default values are θmin = 0 ◦ and
+θmax = 360 ◦.
+ 
+ ˙
+velocity angle
+Request	data	from	servo
+	(I2C	slave)
+offset stretchscale
+Data	from	libmapper
+lowpass	and
+threshold
+yes
+no wrap	for	this
+mode?
+Data	to	libmapper
+Δ 
+update	virtual
+angle
+calculate	index
+to	LUT
+torque
+Apply
+damping	and
+scaling
+virtual	angle
+clip	with
+min/max
+wrap	with
+min/max
+quant.	angle
+trigger
+quantize
+Data	to	servo
+(I2C	slave)
+velocity,
+angle	change
+Figure 4: Diagram showing the data ﬂow and -processing
+of the main update function of the Haptic Generator
+3.2.2 Magnet
+An exponential increase in torque, as the distance to to a
+virtual magnet linearly decreases. A negativeScale input
+could be applied to change the polarity of the magnet. The
+position of the magnet is by default in the middle, 180◦, as
+seen in Figure 3, but could be changed with offset. The ﬂat
+(zeroed) area around the magnet position, is implemented
+to assure stability.
+3.2.3 Detents
+Exponentially increasing torque opposing the turning direc-
+tion, followed by a transient change in torque direction at
+the position of the detent, eﬀectively resulting in a haptic
+click. 2 examples are shown in Figure 3 (A and B).
+3.2.4 Friction
+A linear relation between torque and angular velocity.
+Ft = ˙θ ∗ µ (1)
+where µ is a friction coeﬃcient. In this mode, the con-
+trol input scale maps to µ. The velocity is calculated from
+position through backwards diﬀerentiation, and low-pass ﬁl-
+tered in order to remove noise.
+3.2.5 Spin
+A PID controller was hand-tuned while carrying the load
+of a custom designed knob, and used to maintain a con-
+stant target velocity. In this mode, theScale input sets the
+controller eﬀort, which corresponds to the maximum torque
+applied to reach target velocity. This is an example of active
+feedback.
+3.2.6 Free
+An unmapped mode in which the Scale parameter con-
+trols the torque directly. This allows for freely deﬁning the
+haptic behavior through mappings in libmapper, either by
+mapping internal parameters (map to itself), to external
+controllers (sensors of other DMI’s), to sound related pa-
+rameters or to any combination of these. This mode could
+also be used for user deﬁned curves.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+275
+3.3 Bi-directional mapping interface
+We generate a set of output control signals based on the an-
+gle estimate obtained from the magnetic encoder. The set
+includes ﬁrst and second order derivatives (velocity and ac-
+celeration), a virtual angle which can be clipped or wrapped
+to a desired range, a quantized angle and a trigger signal.
+The two last mentioned are both synchronized to the posi-
+tion of detents by default.
+Input signal Description
+TargetVelocity Set-point for velocity controller.
+Scale Gain of transfer function output.
+Stretch Gain of transfer function input.
+Offset Oﬀset of transfer function input.
+Mode Selects haptic eﬀect.
+Damping Ratio of energy dissipation.
+Output signal Description
+Angle Set-point for velocity controller.
+QuantAngle Quantization steps = number of
+detents.
+Velocity Gain of transfer function input.
+Acceleration Oﬀset of transfer function input.
+Trigger A short pulse at every quantization
+step.
+Table 1: Table of inputs and outputs exposed in libmapper,
+and used for interaction with music software
+3.3.1 Mapping library for embedded platforms
+libmapper is a library for making connections between data
+signals on a shared network using OSC [11]. The library
+is written in C and is supported on macOS, Windows, and
+Linux. In order to compile libmapper for ESP32, its de-
+pendencies need to be compiled ﬁrst. libmapper has two
+dependencies,liblo and zlib. liblo is a lightweight library for
+OSC communication. zlib is a library for data compression.
+The zlib library has no dependencies, and we could compile
+it with no modiﬁcations. liblo relies on POSIX sockets and
+POSIX threads (pthreads) for creating TCP/UDP sockets
+and servers. The ESP32 platform provides the ESP-IDF
+(Espressif IoT Development Framework), which is an API
+for developing embedded applications. The ESP-IDF in-
+cludes the librarylwip, a lightweight TCP/IP stack. The
+API of lwip is made to replicate the behaviour of POSIX
+sockets, such that the library can serve as a compatibility
+layer for using POSIX sockets on embedded systems. As the
+ESP-IDF is based on the FreeRTOS operating system, the
+ESP-IDF supports multitasking with threads (calledtasks
+in FreeRTOS). Conveniently, ESP-IDF includes a pthread
+library that translates the FreeRTOS API into the POSIX
+threads API, allowing software that uses pthreads to run
+on the ESP32. These abstractions provide most of the im-
+plementations needed for the port of libmapper. We con-
+tributed two minor but required changes to liblo. First,
+in the function which translate incoming data packets into
+OSC messages, we uniﬁed the memory allocation implemen-
+tations between desktop (Windows, macOS, and Linux) and
+embedded (ESP32) platforms that return diﬀerent pointers
+values. Second, libmapper relies on loop-back of multicast
+messages i.e. sending all outgoing messages to itself, for
+assigning a correct device ID. We speciﬁcally enabled the
+socket optionIP_MULTICAST_LOOP for ESP32, which is en-
+abled by default on macOS and Linux.
+To facilitate the use of libmapper for embedded platforms,
+we chose to port libmapper from an ESP-IDF project into
+an Arduino library. Arduino libraries are distributed as
+source and header ﬁles along with a text ﬁle containing
+metadata for the library. This means that the library is
+compiled together with the user’s project, every time the
+user presses the ” Compile” button in the Arduino IDE. As
+there are quite a few compiler variables that need to be set
+up correctly for libmapper to compile, using this approach
+would require a lot of changes to the libmapper source code.
+According to theArduino IDE 1.5: Library speciﬁcation ,
+a library can alternatively be distributed as precompiled.
+This has the beneﬁt that a Makeﬁle can be written to gen-
+erate the Arduino library as a collection of header ﬁles and a
+precompiled archive (.a) ﬁle. Another beneﬁt is that it will
+speed up the compilation time for the user, as the library
+would already be compiled. For these reasons, this was the
+chosen approach for distributing the library. The libmapper
+Arduino library and all TorqueTuner related source code are
+available athttps://github.com/IDMIL/TorqueTuner.
+4. MODULAR INTEGRA TIONS IN DMIS
+We produced two exemplar integrations of our TorqueTuner
+module, (1) a standalone knob and (2) an integration with
+an existing DMI, the T-stick. These are presented in Fig-
+ure 5.
+4.1 Standalone haptic knob
+To create a standalone knob module, we 3d printed a knob
+and a mounting enclosure with a tilted front-panel. We
+used it for the design of the haptic eﬀects, by making in-
+ternal mappings in thefree mode. We propose this as a
+platform for DMI designers to prototype rotary force feed-
+back for new instruments. This is our rotary equivalent
+of the “Hello Wall” starter example of haptics tutorials in
+planar spaces [8]. We believe that our open-source and cost-
+eﬀective integration will allow hapticians to easily replicate
+results from related research works on force-feedback rotary
+haptics [1, 21, 24, 25].
+4.2 Rotary joint between 2 T -Sticks
+The T-Stick is a DMI developed at Input Devices and Mu-
+sic Interaction Laboratory (IDMIL) 10 years ago, that has
+been continuously extended and maintained ever since. It
+is a stick build from PVC tube, and it includes pressure
+sensing, capacitive sensing, 6 axis position and movement
+sensing and triggering with a piezo mic. It uses a ESP32
+internally for sensor acquisition and transmission of sensor
+data over a network, and is thereby libmapper compatible
+[13]. There is some inherent force feedback when playing the
+IMU of the T-stick with impulsive gestures such as shaking
+or swinging, as its mass poses a resistance against acceler-
+ation, but for slow changes in the orientation of the instru-
+ment, the performer relies mainly on visual feedback. As
+an example of portability of TorqueTuner, we designed an
+adapter for adding rotary force feedback, and a new twist-
+ing gesture, to the T-Stick. Figure 5b shows the 3D printed
+T-Stick adapter, and 2 T-sticks. I works like a force feed-
+back joint between 2 T-sticks, one mounted on each end.
+See Figure 1. We ﬁnd theSpring mode particularly useful
+in conveying feedback on the orientation of the instrument,
+speciﬁcally forroll.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+276
+(a) TorqueTuner as a standalone haptic knob
+ (b) TorqueTuner as T-stick adapter
+Figure 5: Two examples of modular integrations of TorqueTuner i n DMIs
+5. MUSICAL APPLICA TIONS
+We present 3 example applications mapping TorqueTuner
+haptics to sound synthesis. We developed an extension
+MapperUGenadding libmapper support to audio program-
+ming environment SuperCollider.
+5.1 T urntable
+We designed a turntable-like application, where playback
+can be stopped by stalling the motor, and scratching can
+be performed by twisting it back and forth. A DC signal is
+mapped to inputTarget Velocity, in Spin mode, such that
+the motor rotates at constant speed. The output Velocity,
+is mapped to the playback speed of drum loop. The closed
+loop velocity controller tries to maintain the target velocity
+at all times, and therefore a torque is displayed when the
+user slows or stalls the motor. In [10] an energy continuum
+is discussed, i.e. the importance of a direct link between
+sound intensity and user energy input. In this mapping, an
+energy continuum is preserved, but the link is reversed, as
+energy is required from the user to silence the sound.
+5.2 Pitch wheel
+We designed an application reminiscent of the pitch wheel
+common in many keyboard synthesizers. When twisting,
+TorqueTuner displays an exponentially increasing force, when
+released it returns to idle. When using TorqueTuner in the
+Spring mode, there is a natural idle state, where the virtual
+spring is in equilibrium (neither compressed or stretched),
+corresponding to 180◦ on Figure 3D. In this mode, a saw
+wave is passed through a resonant low-pass ﬁlter, and the
+cutoﬀ frequency is mapped to the angle. The exponential
+torque/angle relation serves as continuous feedback on the
+parameter state, and allows for accurate tuning of the cut-
+oﬀ frequency. This is reminiscent of the theremin + elastic
+band experiment in[15]. A second controller, acceleration
+data from the T-Stick, is mapped toScale, allowing a shak-
+ing gesture on the T-Stick to be reﬂected as oscillations in
+torque. This causes small changes in the angle, and results
+in accurate control of vibrato-like modulation, which would
+be diﬃcult with the T-Stick alone.
+5.3 String plucker
+We designed the string plucker application where detents
+serve as haptic feedback on virtual string plucking, and
+where twisting in-between detents produce vibrato-like mod-
+ulation. InSharp Detent mode, the Trigger output is
+mapped to the excitation input of a Karplus-Strong based
+plucked string model. TheAngle output is mapped to
+the length of a delay-line, eﬀectively changing the pitch
+of the plucked string. This mapping was explored when
+mounted to the T-stick, and the output of the pressure
+sensor was mapped toStretch, such that detent density
+could be controlled by squeezing the T-Stick. A demon-
+stration video of the 3 applications is available at:https:
+//vimeo.com/404592134
+6. DISCUSSION
+An interview-based analysis on the challenges of haptic de-
+sign is given in [18], and one ﬁnding is that hapticians ﬁnd
+the implementation of demos/prototypes costly and com-
+plex but crucial in haptic experience design (HaXD). We
+believe that TorqueTuner, being self contained and cost ef-
+fective, has potential of accommodating this issue. We also
+believe that having a wireless interface to common music
+software can assist also DMI’s designers and artists in do-
+ing HaXD which is otherwise the work of hapticians, and
+therefore see a great potential in integrating libmapper into
+more music software. The appeal of TorqueTuner as a pro-
+totyping device for artists and non-programmers could be
+further enhanced with the implementation of a GUI for free
+hand curve editing, allowing for designing haptic eﬀects,
+storing them as lookup tables and previewing them in real-
+time. We are currently working on implementing the stan-
+dalone haptic knob, as a rotary force feedback block for
+Probatio, a modular toolkit for rapid prototyping postures
+and sensor combinations for DMI’s. [5] The LiPo battery
+solution contributes to the modular and portable quality
+of TorqueTuner, and enables free endless rotation of both
+the motor-shaft and the body of TorqueTuner, as would
+not be possible with a wired power solution. While this
+eased the integration with the T-stick, and hopefully other
+future DMI’s, it poses great limitations in terms of capac-
+ity and life-time. In power hungry applications such as the
+turntable, a fresh battery was discharged in 15 minutes. We
+suggest that future work focus on 1) optimizing for power
+losses in TorqueTuner and 2) limit the scope of haptic eﬀects
+with power consumption in mind. We suggest a possible so-
+lution to 1) be the introduction a passivity observer, like the
+capacitive touch sensing in [2], that allows for disabling the
+actuator when there is no user interaction.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+277
+7. CONCLUSION
+In this paper we described TorqueTuner, a self contained
+rotary force feedback module with an embedded collection
+of haptic eﬀects. With the motivation of assisting DMI de-
+signers in prototyping force-feedback instruments, we built
+TorqueTuner from aﬀordable components and open-source
+technologies, and designed a generalized and wireless con-
+trol interface exposed via libmapper. We implemented a
+LiPo battery solution to make the module completely wire-
+less, and thereby easy to integrate into existing DMI’s. We
+produced 2 exemplar integrations that demonstrate the porta-
+bility of the module, and made 3 musical applications by
+mapping the TorqueTuner to sound synthesis in SuperCol-
+lider. Wireless power and communication posed issues of
+capacity and life-time that limits the scope of displayable
+haptic eﬀects. Optimizations on power loss should be ex-
+plored in the future.
+8. ACKNOWLEDGEMENTS
+Christian Frisson is the recipient of Elevate grants IT12555
+and IT12556 co-funded by Mitacs and Haply Robotics.
+9. REFERENCES
+[1] T. Beamish, K. MacLean, and S. Fels. Designing the
+haptic turntable for musical control. In Haptic
+Interfaces for Virtual Environment and Teleoperator
+Systems, page 24. IEEE Computer Society, 2003.
+[2] E. Berdahl and A. Kontogeorgakopoulos. The
+ﬁrefader: Simple, open-source, and reconﬁgurable
+haptic force feedback for musicians.Computer Music
+Journal, 37(1):23–34, 2013.
+[3] E. Berdahl and J. O. Smith. An introduction to the
+synth-a-modeller compiler: Modular and open-source
+sound synthesis using physical models. InLinux
+Audio Conference, 2012.
+[4] K. Bjørn, J. Jarre, M. Metlay, and P. Nagel. Push
+Turn Move: Interface Design in Electronic Music .
+2016.
+[5] F. Calegario, M. Wanderley, S. Huot, G. Cabral, and
+G. Ramalho. A method and toolkit for digital musical
+instruments: Generating ideas and prototypes.IEEE
+Multimedia, 24(1):63–71, 2017.
+[6] L. L. Chu. Using haptics for digital audio navigation.
+In International Computer Music Conference
+(ICMC), 2002.
+[7] J. E. Colgate, P. E. Graﬁng, M. C. Stanley, and
+G. Schenkel. Implementation of stiﬀ virtual walls in
+force-reﬂecting interfaces. InVirtual Reality Annual
+International Symposium , page 202–208. IEEE, 1993.
+[8] S. Ding and C. Gallacher. The haply development
+platform: A modular and open-sourced entry level
+haptic toolset. InExtended Abstracts of the 2018 CHI
+Conference on Human Factors in Computing Systems ,
+2018.
+[9] M. Giordano, J. Sullivan, and M. Wanderley. Design
+of Vibrotactile Feedback and Stimulation for Music
+Performance, pages 193–214. Springer, 2018.
+[10] A. Hunt, M. Wanderley, and M. Paradis. The
+importance of parameter mapping in electronic
+instrument design.Journal of New Music Research ,
+32(4):429–440, 2003.
+[11] J. Malloch, S. Sinclair, and M. Wanderley.
+Libmapper: (a library for connecting things). In CHI
+’13 Extended Abstracts on Human Factors in
+Computing Systems, page 3087–3090, 2013.
+[12] M. Marshall and M. Wanderley. Examining the eﬀects
+of embedded vibrotactile feedback on the feel of a
+digital musical instrument. InNew Interfaces for
+Musical Expression (NIME) , 2011.
+[13] A. Nieva, J. Wang, J. Malloch, and M. Wanderley.
+The t-stick: Maintaining a 12 year-old digital musical
+instrument. InNew Interfaces for Musical Expression
+(NIME), pages 198–199, 2018.
+[14] R. Oboe. A multi-instrument, force-feedback
+keyboard. Computer Music Journal , 30:38–52, 2006.
+[15] S. O’Modhrain. Playing by Feel: Incorporating Haptic
+Feedback into Computer-Based musical Instruments .
+PhD thesis, Stanford University, 2000.
+[16] M. Orta Martinez, C. M. Nunez, T. Liao, T. K.
+Morimoto, and A. Okamura. Evolution and analysis of
+hapkit: An open-source haptic device for educational
+applications.IEEE Transactions on Haptics , 2019.
+[17] J. Rovan and V. Hayward. Typology of tactile sounds
+and their synthesis in gesture-driven computer music
+performance, pages 297–320. IRCAM – Centre
+Pompidou, 2000.
+[18] O. S. Schneider, K. E. MacLean, C. Swindells, and
+K. S. Booth. Haptic experience design: What
+hapticians do and where they need help.International
+Journal of Human-Computer Studies , 107, 2017.
+[19] S. Sinclair, G. P. Scavone, and M. M. Wanderley.
+Audio-haptic interaction with the digital waveguide
+bowed string. InInternational Computer Music
+Conference (ICMC) , 2009.
+[20] S. Sinclair and M. Wanderley. A run-time
+programmable simulator to enable multi-modal
+interaction with rigid-body systems.Interacting with
+Computers, 21(1-2):54–63, 2009.
+[21] C. E. Swindells. Incorporating aﬀect into the design of
+1-D Rotary Physical Controls . PhD thesis, University
+of British Columbia, 2007.
+[22] Peterson Tuners. Peterson bodybeat sync. https://
+www.petersontuners.com/products/bodybeatsync/.
+[23] Tropical Labs. Mechaduino.
+https://tropical-labs.com/mechaduino/.
+[24] A. van Oosterhout, E. Hoggan, M. K. Rasmussen, and
+M. Bruns. Dynaknob: Combining haptic force
+feedback and shape change. InProceedings of the
+2019 on Designing Interactive Systems Conference ,
+page 963–974, 2019.
+[25] A. van Oosterhout, M. K. Rasmussen, E. Hoggan, and
+M. Bruns. Knobology 2.0: Giving shape to the haptic
+force feedback of interactive knobs. InThe 31st
+Annual ACM Symposium on User Interface Software
+and Technology Adjunct Proceedings, page 197–199,
+2018.
+[26] B. Verplank, M. Gurevich, and M. Mathews. The
+plank: Designing a simple haptic controller. In New
+Interfaces for Musical Expression (NIME) , 2002.
+[27] D. Weir and J. Colgate. Stability of haptic displays.
+Haptic Rendering: Foundations, Algorithms, and
+Applications, pages 123–156, 2008.
+[28] G. Young, D. Murphy, and J. Weeter. A Functional
+Analysis of Haptic Feedback in Digital Musical
+Instrument Interactions, pages 95–122. Springer, 2018.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+278

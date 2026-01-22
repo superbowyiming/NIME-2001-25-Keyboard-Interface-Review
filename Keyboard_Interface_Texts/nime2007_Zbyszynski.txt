@@ -1,0 +1,591 @@
+Ten Years of Tablet Musical Interfaces at CNMAT
+Michael Zbyszynski  
+CNMAT, UC Berkeley 
+1750 Arch Street 
+Berkeley, CA 94709 USA 
++1.510.643.9990 
+mzed@cnmat.berkeley.edu 
+Matthew Wright 
+CNMAT/UCB and CCRMA/Stanford 
+Stanford University 
+Stanford, CA 94305-8180 
+matt@{cnmat.Berkeley, 
+ccrma.stanford}.edu 
+Ali Momeni, Daniel Cullen 
+CNMAT, UC Berkeley 
+1750 Arch Street 
+Berkeley, CA 94709 USA 
++1.510.643.9990 
+batchku@gmail.com, 
+dcullen@berkeley.edu 
+ 
+ 
+ABSTRACT 
+We summarize a decade of musical projects and research 
+employing Wacom digitizing tablets as musical controllers, 
+discussing general implementation schemes using Max/MSP and 
+OpenSoundControl, and specific implementations in musical 
+improvisation, interactive sound installation, interactive 
+multimedia performance, and as a compositional assistant. We 
+examine two-handed sensing strategies and schemes for gestural 
+mapping.  
+Keywords 
+Wacom tablet, digitizing tablet, expressivity, position sensing, 
+gesture, mapping, algorithmic composition. 
+1. WHY THE WACOM TABLET? 
+The issue of musical control has long been a topic for research 
+and pedagogy at UC Berkeley’s Center for New Music and Audio 
+Technologies (CNMAT). In addition to custom controllers, we 
+advocate creative use of standard gestural controllers: joysticks, 
+gamepads, etc. Use of standard controllers has some advantages, 
+including low cost and availability, and the corresponding 
+potential for redundancy and replaceability. Additionally, we look 
+for high-resolution output data, fine temporal resolution, and 
+multiple axes of control when evaluating the potential usefulness 
+of any type of controller. 
+In 1997, CNMAT researchers  [1] identified the Wacom ArtZ II 
+1212 [2] digitizing tablet as having strong potential as a musical 
+controller. Cost, availability, the degree and fineness of control, 
+and the high number of continuous controllers suggested that 
+these devices would be useful for expressive control in a variety 
+of musical contexts (see table 1). Different types of pointing 
+devices (Grip Pen, Art Pen, Mouse) offer specific sets of control 
+outputs, the Grip Pen differentiates between its tip and eraser 
+ends, and each individual device has a unique ID number. The 
+Wacom tablet offers multiple continuous controllers at a 
+resolution much higher than MIDI. Earlier work with serial tablets 
+showed high temporal resolution and mostly low latency – both 
+desirable aspects in a musical controller. While still quite useable, 
+newer, USB models are not as accurate or fast in the temporal 
+dimension.
+ 
+Table 1. Control Dimensions for a 9x12 Intous3 Wacom 
+Tablet with Couturier’s Wacom object v3.1ß5 for OS X. 
+Dimension Output Precision (accuracy) 
+X-axis 
+Y-axis  
+0 to 32480  
+(± 0.25 mm: pen; ± 0.5 mm: mouse) 
+Pressure 0 to 65535 
+(1024 discrete values) 
+Tilt (X and Y) -60 to 60  
+(± 60 degrees) 
+Rotation 
+(6D Art Pen) 
+0 to 23049 
+(1773 values, 0.2 degree resolution) 
+8 buttons (tablet) Binary 
+2 touch strips (tablet) Up/down1 
+2 buttons (Grip pen) Binary 
+5 buttons (mouse) Binary 
+ 
+Another promising aspect of the tablet, with respect to potential 
+virtuosic performance, is its combination of tactile reference (i.e. 
+the user touches it, and the spatial coordinates are absolute) with a 
+gestural language that leverages human fine motor control, and 
+years of writing experience [3].  Tactile reference is often 
+overlooked in musical controllers, but plays a critical role in the 
+process of learning to play [4]. Also, pen and mouse controllers 
+leave the user’s other hand free to employ a controller with a 
+different set of affordances, such as a bank of faders or the 
+QWERTY keyboard. HCI research comparing performance with 
+one-handed versus two-handed control [5] indicates that there is a 
+significant two-handed advantage, but only when the roles for the 
+two hands are differentiated. 
+Although Wacom tablets are designed and marketed towards 
+graphic artists, they share many characteristics with previous 
+interfaces for music, including Xenakis’s UPIC System [6], 
+Buxton’s SSSP [7] and the Boie/Mathews/Schloss Radio Drum 
+[8]. 
+                                                                    
+1 In conversations with Wacom Engineers, it was discovered that 
+the strips are absolute position sensors with 13 positions.  On 
+Macintosh computers, the Wacom uses Apple’s Generic Tablet 
+description, which does not include additional position sensors. 
+The output of these sensors is passed by the driver as keystrokes 
+for either upwards or downwards motion. 
+Permission to make digital or hard copies of all or part of this work for 
+personal or classroom use is granted without fee provided that copies are 
+not made or distributed for profit or commercial advantage and that 
+copies bear this notice and the full citation on the first page. To copy 
+otherwise, or republish, to post on servers or to redistribute to lists, 
+requires prior specific permission and/or a fee. 
+Nime’07, June 6 – June 10, 2007, New York, NY, USA. 
+Copyright remains with the author(s). 
+ 
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+100
+2. GENERAL IMPLEMENTATION 
+2.1 Wacom object for Max/MSP 
+Except for the earliest works mentioned, the pieces described in 
+this paper use the “wacom” object, a third-party extension to 
+Cycling ‘74’s Max software [9]. It was originally written by 
+Richard Dudas [10, 11] for Classic Macintosh OS, and 
+subsequently ported to Windows XP and OS X by Jean-Michel 
+Couturier [12], who currently maintains it. Treating the tablet as a 
+mouse yields only buttons, X, and Y data, while an external object 
+can read all of the control data coming in from the driver. The 
+current object also offers data scaling features and control over the 
+rate at which data is reported. Ronald J. Kuivila and Shuichi 
+Chino independently made similar extensions at different times. 
+2.2 OSC Wrapper 
+The earliest Wacom performances at CNMAT relied on Open 
+Sound Control [13] by necessity; at that time a Macintosh running 
+Max managed control data (e.g., mapping incoming MIDI data to 
+sound control) and a Silicon Graphics workstation running 
+Softcast [14] performed additive synthesis. The OSC messages 
+therefore represented synthesis control messages such as “set the 
+odd/even harmonic balance of voice 6 to 0.72.” 
+Subsequent experience with OSC taught us that it is a good 
+programming practice to use an OSC namespace to represent both 
+the input and the output of the software processes that translates 
+sensed gestures to musical control. In other words, we represent 
+the output from the Wacom tablet as an OSC namespace, these 
+tablet-specific OSC messages are the input to our gestural 
+mapping software, and the output is a second OSC namespace 
+representing the capabilities of our sound synthesis. Even now 
+that it is possible for a single laptop to do both synthesis and 
+control processing, we use OSC as an abstraction mechanism to 
+provide clean interfaces between modules of the software in our 
+instruments [15]. 
+With a well-designed OSC namespace, the resulting software 
+becomes much more readable, and self-documenting. Also, 
+switching to new control and synthesis technologies, or changing 
+control mappings, becomes fairly simple. CNMAT now has a 
+library of OSC wrappers (soon to be released) for all of the 
+promising controllers in the building, from joysticks to P5 Gloves. 
+We have updated our original Wacom-OSC patch [16] to work 
+with the current generation of Wacom hardware and software. 
+3. SPECIFIC IMPLEMENTATIONS 
+3.1 Matthew Wright’s Instruments 
+Matthew Wright has used a Wacom tablet as the central element 
+of every one of his interactive computer-based instruments for the 
+last 10 years. All of these instruments use rectangular regions of 
+the tablet each with different musical behaviors. The pen activates 
+a region each time it touches the tablet surface, according to the 
+X-Y coordinates of the point where contact is first made. 
+Subsequent motion of the pen then controls continuous parameters 
+of the sonic process associated with that region for as long as the 
+pen contacts the tablet, even if the pen goes outside the bounds of 
+the region.  In other words, the gestural input is chunked into a 
+series of “strokes,” and the effect during each stroke depends 
+modally on the region in which the stroke began.  An advantage 
+of this method is that the tablet surface can be densely packed 
+with many small regions, but the continuous motion of the pen 
+can cover the entire tablet surface instead of being restricted to the 
+area of a small region.  
+A pre-drawn paper “template” fits underneath the tablet’s clear 
+plastic overlay to show the performer the locations and contents of 
+the regions.  One disadvantage of this use of a template is the 
+constant need to look down at the tablet to select a region; the 
+visual aspect of performance is therefore dangerously close to 
+“office work” rather than “musical performance” [15]. This effect 
+is somewhat mitigated by the stroke-based interface described 
+above: after the pen touches the tablet the performer can look 
+away from the tablet.  
+ 
+Figure 1. One of Wright's Templates 
+Another feature that Wright’s Wacom interfaces share is the use 
+of the “scrubbing” metaphor [17, 18]. A vertical array of half-
+inch-tall by 12-inch-wide regions represents a collection of 
+sinusoidal models created by analysis of musically expressive 
+prerecorded phrases. The horizontal position of the pen 
+continuously determines the time index into the corresponding 
+sinusoidal model; the extremely high spatial resolution of the 
+tablet therefore translates into extremely fine temporal control in 
+the selection of musical material from the sinusoidal models. The 
+templates contain notation of the musical material in each of these 
+phrases, as shown in Figure 1. The process of drawing one of 
+these templates is very much like transcription in that it visually 
+depicts important musical aspects of the phrases, and is an 
+essential step in the performer’s exploration of the musical 
+material and learning to be expressive with the instrument. 
+Pressure always maps to loudness in scrub regions and tilt is never 
+used in these regions, because control of tilt interferes with 
+extremely accurate control of position. Faders under the left hand2 
+control additional synthesis parameters such as transposition and 
+inharmonicity.  
+Wright often brings improvising acoustic musicians into the 
+studio to record some expressive phrases on his or her instrument, 
+and then to selects some of these phrases and prepares them for 
+scrubbing as described above. The resulting instruments are then 
+used in performance with that musician, and sometimes re-used in 
+the future in different performance situations. Wright has made 
+instruments from: 
+                                                                    
+2 All of Wright’s interfaces use faders in the left hand because 
+faders have complementary affordances to the Wacom tablet: 
+they maintain state (slider position) when not being 
+manipulated, and it is easy to manipulate multiple parameters at 
+the same time. 
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+101
+• Shafqat Ali Khan: Khyal (Indo-Pakistani classical) singing 
+in various ragas. [18] 
+• Abbie Conant: Trombone phrases as part of the 
+Conant/Wright composition “Garden of Earthly Delights” 
+• Rova Saxophone Quartet samples from the Rovamatic 
+sample CD (see figure 1). 
+• Ornette Coleman samples from the sax solo in his original 
+1959 recording of his piece Tears Inside, which Wright uses 
+when That Situated Trio [19] performs their deconstructive 
+rendition of that piece. This instrument also contains two 
+scrubbable sinusoidal models of John Schott playing the 
+“head” (main melody) of the tune on guitar. 
+• Samples of Roberto Morales playing some of his replicas of 
+pre-Columbian Mexican flutes. 
+What these have in common is that they are drawn from the same 
+musical world (timbre as well as expressive use of pitch, phrasing, 
+and articulation) of the fellow improvisers in a performance. 
+Wacom-based scrubbing of sinusoidal resynthesis allows for 
+much finer control and greater expressivity than simply playing 
+back prerecorded samples of these musicians. 
+3.2 Ali Momeni 
+Ali Momeni has extensively used Wacom tablets as gesture 
+instruments for live electro-acoustic performance. Two particular 
+techniques are noteworthy in his usage of the instrument: first, use 
+of parameter interpolation spaces as the primary mapping model 
+for the tablet and second, mixed sensing of tablets as a way to 
+enrich this controller with audio input.  
+ 
+Figure 2. (A) Two parameter interpolation spaces; each 
+colored region represents a Gaussian function whose height at 
+any point in the space defines the influence that point has over 
+the interpolated mix. (B) The X-Y position of the stylus tip 
+performs interpolations in the first space. (C) The X-Y 
+inclination of the stylus performs interpolations in another 
+parameter space, for a different software synthesis engine. 
+ 
+3.2.1 Parameter Interpolation 
+Wacom tablets’ ability to simultaneously report position and 
+inclination of the pen allows the performer to move in two 
+separate two-dimensional spaces with one hand, making these 
+tablets uniquely strong controllers for use with parameter 
+interpolation spaces [20]. This gesture mapping technique relies 
+on using a two-dimensional space as a map containing multiple 
+points, each of which represents a particular state, or preset, of a 
+multi-parametric software synthesis engine. Moving around in this 
+two-dimensional space performs a weighted interpolation among 
+the different presets; the weight of each preset is determined by 
+the height of a Gaussian function associated with that preset. In 
+the case of the Wacom, the X-Y position of the stylus tip moves 
+within one interpolation space, while the X-Y inclination/tilt 
+moves within another interpolation space (Figure 2). For example, 
+tip position might interpolate parameters for a physical modeling 
+audio engine, while tilt interpolates parameters for a reverb 
+engine. 
+ 
+Figure 3. Mixed sensing of the tablet by way of audio input 
+from a contact microphone placed on the tablet’s body. The 
+performer plays the tablet like a percussion instrument with 
+one hand while he manipulates the pen with the other hand in 
+order to modulate synthesized sounds. 
+3.2.2 Mixed Sensing 
+One deficiency of Wacom tablets is their lack of the high-
+sampling-rate/low-latency control streams that are quite desirable 
+in many applications [21]. By placing a contact microphone on 
+the body of the tablet, it can be used as a percussion instrument 
+whose audio signal can be used in software, either as an excitation 
+audio signal or as control stream by way of audio analysis. This 
+mixed sensing technique was put to use in the performance of the 
+opera Takemitsu: My Way of Life [22]. For example, during the 
+performance of “Munari by Munari,” a software instrument 
+allowed Momeni to make harmonic analysis of sounds made by a 
+solo percussionist, and to generate in real-time resonance models 
+of the these sounds. These models were excited by the audio 
+signal from the contact microphone.  The result was a two-handed 
+manner of playing the tablet, where one hand used the tablet like a 
+drum, while the other manipulated the pen in order to change 
+parameters (Figure 3). This arrangement offered a tactile and very 
+low-latency mode of playing software instruments, while the 
+stylus’s position, tilt, and pressure controlled real-time modulation 
+of the synthesized sound; the stylus’s buttons were used to capture 
+new analyses, and place them in particular spots in the 
+interpolation space. 
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+102
+3.2.3 Frelia 
+Frelia (Figure 4, [23]) is a multi-user kinetic sculpture that 
+translates bodily gestures into computer-generated sound, made 
+by Ali Momeni and Robin Mandel [24]. The instrument works by 
+reducing the movements of a 5-foot long metal pole to parallel 
+movements of the stylus. Two pantograph arms work together to 
+proportionally reduce the movements of the metal bar by a factor 
+of 6 (Figure 5). This translation allows the players to make music 
+with a tablet by making larger gestures than the usual miniscule-
+scale of the tablet and stylus. 
+ 
+Figure 4. Frelia: an interactive kinetic sculpture; up to three 
+users play Frelia by moving a 5-foot metal bar, whose 
+movements are translated mechanically to the movements of a 
+Wacom stylus on a tablet. 
+ 
+Figure 5. Two pantograph arms work in conjunction to one 
+another to mechanically reduce the movements of a metal bar 
+to those of the Wacom stylus. 
+ 
+3.3 News Cycle #2, Michael Zbyszynski  
+In 2006, video artist Anthony Discenza [25] approached Michael 
+Zbyszynski to create a collaborative performance piece in the 
+style of Discenza’s earlier video installations, which involve 
+overlaying, compressing, and distorting huge amounts of footage. 
+(News Cycle #2 (Excerpts from a Long Day) used 36 hours of 
+news footage, 12 hours from MSNBC, Fox News, and CNN from 
+one day.) That installation work used sound from the original 
+footage, distorted as an artifact of the video processes. For this 
+performance piece, it seemed antithetical to write a “score” to this 
+material, which instead offered the bountiful opportunity for very 
+direct interaction.  
+Dealing with a video stream which is already densely macerated, 
+the performer uses the tablet to select specific scan lines from the 
+piece, generating changing buffers that are subsequently 
+convolved with either the audio content of the video, pink noise 
+(in silent sections), or a mixture of the two. Originally this 
+procedure was developed using a mouse as the controller, but this 
+was unsatisfactory due to difficulty of immediately pinpointing an 
+exact spot on the video, and also the limited dynamic range of the 
+sonic output. Because of its absolute position sensing, 
+introduction of the tablet immediately solved the first problem3, 
+while mapping pressure to overall loudness added crucial dynamic 
+sensitivity. Additional axes then became available for further 
+expressive control, as shown in table 2. 
+Table 2. Control Mappings for News Cycle #2 
+Dimension Mapping 
+Y-axis Vertical position of line from video 
+X-axis Luminosity “noise gate” 
+Pressure (either pen) Overall gain 
+Grip pen: Button 1  Turn on/off flange effect 
+Grip pen: tilt Depth of flange effect 
+Grip pen: button 2 Change to color selection mode 
+Grip pen: Eraser end tilt Rotate scan line 
+6D Art Pen: Rotation Rotate scan line 
+Left bank of buttons Trigger recording and playback in 
+red, green, or blue slots 
+Left Touch Strip Control noise/video signal balance 
+Right buttons Movie start/stop 
+It is always important to account for the theatrical dimension of 
+musical performance [26], especially of a multimedia piece that 
+already has a visual dimension. Given the complexity of this 
+video, and resulting sound, the audience needed to have a sense 
+that the sounds were the result of gestures being performed live. 
+The performer is placed on stage, slightly to the side of the 
+projected image and dimly lit, with the tablet on a horizontal 
+music stand at about waist height. Much effort was put into the 
+control mappings and performance to ensure that a broader 
+physicality would be manifested. The gestures required to draw 
+shapes and change pressure on the tablet could translate into clear 
+motions, not only of the hand but through the shoulder and into 
+the body, telegraphing the musical content of the piece. Pen 
+                                                                    
+3 We also considered using a combination display and tablet, such 
+as Wacom’s Cintiq, because it would allow the performer to place 
+the pen directly on the moving image. This was not done because 
+these tablets have fewer control dimensions, are more expensive, 
+and would have directed the performer’s focus downwards, 
+towards the desk. We found it better to direct audience attention 
+forwards by looking at the projected image. Furthermore, 
+coordinating hand placement on the tablet with coordinates on the 
+image turned out to be an easily acquired skill. 
+ 
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+103
+changes also became a dramatic gesture. Unlike watching a 
+performer behind a laptop, the viewers see the larger motion of 
+the performer, and empathize with the fact that they are “making 
+music.” 
+ 
+Figure 6. Still from News Cycle #2 
+Although this instrument was developed in the context of one 
+specific performance, it was designed to interact with many 
+different kinds of video. It is notable that the sonic result from 
+pulling scan lines from more traditional cinematography, or 
+animation, are quite different that the sound world of News Cycle 
+#2. Also, we are exploring the possibility of feedback into the 
+video dimension, cases where the sounds that result from the 
+video influence the future of the video in a linked chain of trans-
+media interactivity. 
+3.4 Daniel Cullen: harp composition space 
+Daniel Cullen uses the Wacom tablet as tool to explore 
+compositional ideas, designing a space in which to improvise and 
+develop material for use in written composition. In the interest of 
+exploring a specific harmonic space, Cullen’s harp patch models 
+the desired compositional content by laying out materials in a way 
+that can be explored with the tablet. 
+The patch processes tablet data through musical and gestural 
+mappings and passes the result via MIDI to Vsamp [27], a VST 
+sampler, with a bank of harp samples. All aspects of musical 
+content are in the mapping section, where the space is designed to 
+access specific notes according to the pen's gestures. Mapping the 
+harp (in this case a lever harp) to the tablet is fairly direct: 
+drawing across the space corresponds to strumming across the 
+strings. What makes this control space different from a MIDI 
+keyboard is the ability to draw crude "brushstrokes" which are 
+refined by the constraints defined in the patch. 
+The surface design of the tablet (figure 7) maps out the harp 
+strings in various modal subsets. This diagram is physically 
+attached to the surface of the tablet during use. Placement of the 
+pen tip determines harmonic content and subsets while gestures 
+using the pen's tilt and buttons play chords or execute various 
+figurations of interest to the composition. Additionally, the 
+sampler includes harmonics and other timbres available on the 
+harp, accessed by the tablet's buttons. 
+With the harp patch, the tablet becomes an instrument that 
+abstractly resembles both the harmonic material of the 
+composition and the instrument itself. We intend to explore the 
+potential for other uses of the pen interface as a compositional aid. 
+While algorithmic compositional methods are appealing, 
+navigating their complexity can be arduous and uninspiring. By 
+combining carefully designed musical spaces with viscerally 
+effective gestural interfaces, we hope to achieve the deliberate 
+quality of algorithmic composition combined with the spontaneity 
+of improvisation. 
+ 
+Figure 7. Pitch Mapping for Daniel Cullen's Harp Patch 
+4. FUTURE RESEARCH 
+All of the users in this paper have taken advantage of their non-
+writing hand to manipulate controllers with a different set of 
+affordances: bank of faders (Wright), contact microphone 
+(Momeni), and buttons and touch strips on the tablet (Cullen and 
+Zbyszynski). Formal study of two-handed, “mixed sensing” 
+setups would be of great interest, both in understanding the way 
+we learn to play new musical instruments, and in identifying 
+optimal combinations of controllers for specific expressive 
+situations. 
+While it is very important that the tablet allows for a very precise, 
+low-level interaction with music sound, it would also be possible 
+to simultaneously employ gesture recognition strategies to extract 
+higher-level control data from tablet performances. Matt Wright is 
+already working in this mode, with his use of “strokes” (see 
+above). Exploration into extracting gestures, ranging from 
+plucking or beating to Graffiti-like handwriting analysis, would be 
+another fruitful area of tablet research. [28] 
+It has also been suggested that acquisition of performance skill 
+could be improved by adding haptic feedback [4] in addition to 
+the existing tactile reference. This might be accomplished by 
+attaching an audio or vibration transducer to the tablet. 
+5. CONCLUSIONS 
+Ten years of musical work with Wacom tablets has confirmed our 
+initial intuitions. They have proven to be expressive and robust 
+controllers, adaptable to disparate situations including musical 
+improvisation, interactive sound installation, interactive 
+multimedia performance, and as a compositional assistant. 
+Furthermore they have been used by many different musicans 
+inside and outside of CNMAT [29] and in a diverse spectrum of 
+musical styles and cultures. 
+In addition to the Wacom’s quantitative merits as a controller, the 
+tablet offers a gestural language whose affective characteristics 
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+104
+are deeply ingrained, both for the performer and the viewer. We 
+can all imagine pen-based gestures such as an angry scribble or 
+delicate tracing. In an electronic world, where any sound can be 
+triggered by any action, it is of great value to be able, if the 
+aesthetic demands, to perform in a physical language that 
+communicates meaning to the audience. Additionally, we have 
+used pen gestures to imitate gestures common to acoustic 
+instruments, such as plucking or strumming, adding another layer 
+of semantic reference. In the case of interactive installations, it is 
+desirable (and often difficult) for participants to understand the 
+type of interaction the installation invites. The familiarity of the 
+pen (even if it is five feet tall) solves this problem by immediately 
+communicating the kinds of actions that are likely to lead to an 
+expressive result. Participants do not need to “read the manual.” 
+6. ACKNOWLEDGMENTS 
+We acknowledge support from David Wessel, Adrian Freed, 
+Richard Andrews, Wacom, Inc., and the France Berkeley Fund. 
+Michael Zbyszynski acknowledges the Getty Foundation and the 
+Montalvo Arts Center, and Anthony Discenza. 
+7. REFERENCES 
+[1] Wright, M, D. Wessel, and A. Freed “New Musical 
+Control Structures from Standard Gestural Controllers” In 
+Proc. of the International Computer Music Conference 
+(Thessaloniki, Greece: ICMA, 1997) pp. 387-390. 
+[2] http://www.wacom.com/ and http://www.wacomeng.com/ 
+[3] Cook, P. “Principals for Designing Computer Music 
+Controllers” In Proc. of the International Conference on 
+New Interfaces for Musical Expression (Seattle, 
+Washington, 2001). 
+[4] Gillespie, B. “Haptics” and “Haptics in Manipulation” In 
+P. Cook, ed. Music, Cognition, and Computerized Sound: 
+An Introduction to Psychoacoustics (The MIT Press: 
+Cambridge, MA, 1999), pp. 229-260. 
+[5] Kabbash, P, W. Buxton, and A. Sellen “Two-handed input 
+in a Compound Task” In Proc. of the SIGCHI conference 
+(Boston, Massachusetts, 1995), pp. 417-423. 
+[6] Marino, G, M. Serra, and J. Raczinski “The UPIC System: 
+Origins and Innovations” In Perspectives of New Music 
+(Seattle, WA, Volume 31.1 1993), pp. 258-269. 
+[7] Buxton, W, R. Sniderman, W. Reeves, S. Patel and R. 
+Baecker “The Evolution of the SSSP Score Editing Tools” 
+In Computer Music Journal (The MIT Press: Cambridge, 
+MA, Volume 3.4, Winter 1979), pp. 14-25.  
+[8] Boie, B, M. Mathews, and A. Schloss “The Radio Drum as 
+a Synthesizer Controller,” In Proc. of the International 
+Computer Music Conference (Colombus, Ohio: ICMA, 
+1989), pp. 42-45. 
+[9] http://www.cycling74.com 
+[10] Serafin, S. and R. Dudas “An Alternative Controller for a 
+Virtual Bowed String Instrument” In M. M. Wanderly and 
+M. Battier, eds. Trends in Gestural Control of Music 
+(Paris, France: IRCAM – Centre Pompidou, 2000). 
+[11] http://www.cycling74.com/twiki/bin/view/Share/RichardD
+udas 
+[12] http://www.jmcouturier.com/download.html 
+[13] Wright, M, and A. Freed “Open Sound Control: A New 
+Protocol for Communication with Sound Synthesizers” In 
+Proc. of the International Computer Music Conference 
+(Thessaloniki, Greece: ICMA, 1997). 
+[14] Freed, A. “Bring Your Own Control Additive 
+Synthesis” In Proc. of the International Computer Music 
+Conference (Banff, Canada: ICMA, 1995), pp. 303-306. 
+[15] Wright, M, A. Freed, A. Lee, T. Madden, and A. Momeni. 
+“Managing Complexity with Explicit Mapping of Gestures 
+to Sound Control with OSC.” In Proc. of the International 
+Computer Music Conference (Habana, Cuba: ICMA, 
+2001), pp. 314-317. 
+[16] Zicarelli, D. “Music for Mind and Body” In Electronic 
+Musician (February, 1991), p. 154. 
+[17] Wessel, D, M. Wright, and J. Schott “Intimate Musical 
+Control of Computers with a Variety of Controllers and 
+Gesture Mapping Metaphors” In Proc. of the International 
+Conference on New Interfaces for Musical Expression 
+(Dublin, Ireland, 2001). 
+[18] Wessel, D, M. Wright, and S. A. Khan “Preparation for 
+Improvised Performance in Collaboration with a Khyal 
+Singer” In Proc. of the International Computer Music 
+Conference (Ann Arbor, Michigan: ICMA, 1998), pp. 
+497-503. 
+[19] Wessel, D, M. Wright, and J. Schott “Situated Trio: An 
+Interactive Live Performance for a Hexaphonic Guitarist 
+and Two Computer Musicians with Expressive 
+Controllers” In Proc. of the International Conference on 
+New Interfaces for Musical Expression (Dublin, Ireland, 
+2002). 
+[20] Momeni, A. and D. Wessel “Characterizing and 
+Controlling Musical Material Intuitively with Geometric 
+Models” In Proc. of the Conference on New Interfaces for 
+Musical Expression 2003 (McGill University, Montreal, 
+Canada, 2003). 
+[21] Wessel, D. and M. Wright “Problems and Prospects for 
+Intimate Musical Control of Computers” In Computer 
+Music Journal (The MIT Press: Cambridge, MA, Volume 
+26.3, Fall 2002), pp. 11-22. 
+[22] Momeni, A. "Composing instruments: Inventing and 
+performing with generative computer-based instruments” 
+PhD Dissertation, UC Berkeley, 2005, p. 51. 
+[23] http://www.alimomeni.net/projects/frelia/frelia.html 
+[24] http://www.robinmandel.net 
+[25] http://www.anthonydiscenza.com/ 
+[26] Schloss, W. A. “Using Contemporary Technology in Live 
+Performance: The Dilemma of the Performer” In Journal 
+of New Music Research (Routledge: London, Volume 
+32.3, September 2003), pp. 239-242. 
+[27] http://www.vsamp.com/ 
+[28] Keeler, J, D. Rumelhart, and W. Loew “Integrated 
+Segmentation and Recognition of Hand-Printed Numerals” 
+In R. Lippman, J. Moody, and D. Touretzky, eds. Neural 
+Information Processing Systems Volume 3 (San Mateo, 
+California: Morgan Kaufmann, 1991). 
+[29] For example: http://shawngreenlee.com/
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+105

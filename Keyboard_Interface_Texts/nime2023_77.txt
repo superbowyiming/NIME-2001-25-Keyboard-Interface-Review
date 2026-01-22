@@ -1,0 +1,478 @@
+The Hapstrument: A Bimanual Haptic Interface for Musical
+Expression
+Jonathan Lane-Smith
+McGill University
+Montreal, QC, Canada
+jonathan.lane-
+smith@mail.mcgill.ca
+Derrek Chow
+University of Waterloo
+Waterloo, ON, Canada
+derrek.chow@uwaterloo.ca
+Sahand Ajami
+University of Waterloo
+Waterloo, ON, Canada
+sahand.ajami@uwaterloo.ca
+Jeremy R. Cooperstock
+McGill University
+Montreal, QC, Canada
+jer@cim.mcgill.ca
+ABSTRACT
+In this paper, we present the Hapstrument: 1 a bimanual
+haptic interface for musical expression. This DMI uses two
+low-cost 2-DoF haptic force-feedback devices, one for each
+hand. The left device controls pitch selection, while the
+right device controls excitation by simulating the feeling
+of bowing or plucking a string. A user study was run to
+evaluate the effectiveness of the Hapstrument. This eval-
+uation received a wide range of reviews, from excellent to
+poor. Ultimately, the musical backgrounds of the partic-
+ipants greatly impacted their experiences with the Hap-
+strument. For participants whose expectations aligned with
+what the instrument could provide, it was an effective DMI
+that uses force feedback to enhance musical expression.
+Author Keywords
+haptics, haptic feedback, digital musical instrument, musi-
+cal expression
+CCS Concepts
+•Human-centered computing → Haptic devices; •Applied
+computing → Sound and music computing; Performing arts;
+1. INTRODUCTION
+Digital musical instruments (DMIs) have given musicians
+many alternative methods for musical expression. However,
+the majority of them are expensive and inaccessible to the
+general public. In accordance with the theme of NIME 2023,
+“Frugal Music Innovation”, we see an opportunity to use the
+Haply 2diy [12], an inexpensive DIY pantograph-inspired
+1A short video showcasing a sample performance with the
+Hapstrument can be found at https://www.youtube.com/
+watch?v=WpKuaUBec8M.
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’23, 31 May–2 June, 2023, Mexico City, Mexico.
+device, to create a new DMI capable of musical expression.
+The Haply 2diy contains easily-replaceable 3D-printed me-
+chanical parts and uses open-sourced firmware, making it
+an ideal tool to create a simple, low-cost, and lightweight
+DMI.
+We are interested specifically in implementing haptic feed-
+back for our novel DMI. Haptic feedback is an important
+aspect of musical instruments and can greatly improve the
+affective and expressive experiences of a musician [13]. In
+the past, the haptic feedback of instruments was closely tied
+to the physical structure needed to produce a specific sound.
+However, modern DMIs often lack force feedback because
+the acoustic properties of the instrument are replaced with
+digital alternatives. The Haply 2diy is capable of providing
+haptic force feedback which we can leverage to enhance the
+musical expression that a musician can produce during a
+performance.
+The contribution of this paper is the exploration of whether
+low-cost 2-DoF force-feedback devices may be used to model
+bowing and plucking with a continuous transition between
+the two. This technique was developed within the context
+of a DMI that supports other requisite functionality such
+as pitch selection. We also explored to what degree this
+interaction paradigm can contribute to musical expression.
+To address these questions, we conducted a user study with
+musicians, working with the novel bimanual haptic interface
+we developed for this purpose.
+2. RELATED WORK
+The relevant literature to this project is mainly from the
+NIME community and consists of force feedback in DMIs.
+A force-feedback musical system used a brake-augmented
+ball pen stylus on a sticky touch-sensitive surface [8]; an
+enhanced handle for a Phantom Omni combined vibrotactile
+feedback with force feedback to simulate bowing [5]; and a
+1-DoF force-feedback device used various haptic illusions,
+such as a slope or clutch illusion, to simulate various terrains
+and map them to audio parameters [11].
+Sheffield et al. used two rotational force-feedback knobs
+to convey physical models for various musical applications
+[9]. One of the inspiring applications provided in this paper
+was the use of knobs to simulate plucking harp strings.
+Howard et al. created a music synthesis system that al-
+lows virtual instruments to be controlled by a force-feedback
+joystick and force-feedback mouse [7]. Inspiring our own
+design, the authors used force feedback to simulate various
+excitation methods, such as plucking and bowing a string.
+Steiner created a DMI by using a haptic joystick and hap-
+tic mouse [10]. The joystick was used to select the timbre
+and the mouse was used to select the pitch and amplitude.
+Haptic feedback assisted with note and timbre selection.
+Berdahl and Kontogeorgakopoulos created the FireFader [3],
+a 1-DoF force feedback device that has been used in several
+projects in the NIME community [2, 4, 1].
+3. DESIGN
+Inspired by the aforementioned literature, we decided to
+set one Haply 2diy to control the pitch of the instrument,
+and the other 2diy to control volume and timbre through
+physical models that use force feedback to simulate plucking
+and bowing.
+We chose pitch to be controlled by the left-hand 2diy and
+excitation to be controlled by the right-hand 2diy because
+this division of tasks is the standard configuration for most
+stringed instruments, such as violin and guitar.
+As illustrated in Figure 1, the end effector positions of
+the two Haply 2diy devices are passed from the Haply hAPI
+library to Processing through serial communication, and
+force feedback is calculated and delivered. Processing gen-
+erates visuals for both devices, which are presented through
+a graphical user interface (GUI). Sound control commands
+from Processing are passed to Pure Data as Open Sound
+Control (OSC) messages, and external speakers play the
+synthesized output.
+Figure 1: Block diagram of the prototype.
+3.1 Pitch Selection Interface
+The purpose of the pitch selection interface is to provide
+musicians with an easy way of selecting a pitch/frequency
+for the synthesized sound. Through an iterative design pro-
+cess, a number of pitch selection interfaces were created and
+tested.
+The first design employed a piano layout, as illustrated in
+Figure 2. Unlike the quantization of a conventional piano to
+discrete notes, pitch could also be modified continuously by
+moving the end effector horizontally below the representa-
+tion of the keyboard. This was inspired by the Haken Con-
+tinuum [6], which supports continuous pitch selection using
+a keyboard-like interface. While moving the end effector
+above the piano, pitch remained constant, thus permitting
+the musician to transition between non-adjacent notes. The
+ability to have both discrete and continuous notes provided
+the musician with multiple ways of expressing themselves.
+Finally, with this design, the Haply 2diy generated a hap-
+tic “bump” when moving over a line, giving musicians force
+feedback to help them move from note to note.
+We tested this design and discovered some significant lim-
+itations. Most notably, it was very difficult to quickly move
+Figure 2: Piano-like interface for pitch selection.
+from a note to any note not directly beside it. A piano inter-
+face ultimately has its design because, from an ergonomic
+perspective, it fits the affordances of human hands very well.
+For a single end effector, a keyboard representation is not
+the ideal interface. As a result, we replaced the piano inter-
+face with a 2-octave circular layout, as shown in Figure 3.
+Figure 3: Two-octave circular layout used for pitch selection.
+This layout made it much easier to move between different
+notes, with the pitch remaining constant inside the circle,
+and continuous pitch selection occurring outside the circle.
+Furthermore, a feature was implemented which allowed a
+specific key and scale to be selected so that only the rele-
+vant notes would be available to play. Similar to the piano
+design, all of the lines in this interface provided force feed-
+back as “bumps”, so that users could tell when they moved
+from one note to another.
+This layout was refined and a few more features were
+introduced, resulting in our most recent design, shown in
+Figure 4. Three columns were added to the interface. Mov-
+ing the end effector over column 1 selects the desired key,
+while doing so over column 2 selects the scale.
+Column 3 shows the saved key-scale combinations. A
+user can move the end effector over one of these segments
+to select it, and then any change to the key or scale will
+be saved there. This allows a user to easily switch between
+three key-scale combinations, without needing to manually
+select the key and scale each time.
+The ability to implement vibrato was added to the pitch
+selection interface. When the end effector is inside one of
+the discrete ring segments, the user can shake it back and
+forth, and the amplitude and frequency of the movement
+will map to the properties of the vibrato.
+Figure 4: Refined circular layout, with red annotations added
+to each of the columns.
+3.2 Excitation Interface
+While the left Haply 2diy focuses on pitch selection, the
+right 2diy focuses on note excitation. For this purpose, two
+approaches were selected: the simulation of a pluck, such
+as when playing a guitar, and the sensation of moving a
+bow across a string instrument such as a violin or cello.
+For the plucking simulation, a vertical line was drawn to
+represent a string, and the haptic response was modelled
+as extending a spring. However, past a threshold distance
+away from the center of the string, the force will be removed
+suddenly, and the user can feel the plucking effect. This
+was made more realistic by adding a subtle vibration at the
+moment after the pluck, to simulate the resonance of an
+acoustic instrument. In the GUI of the plucking model, a
+representation of the string bends and vibrates to imitate
+the characteristics of a real acoustic string as it is plucked.
+For the bowing approach, we note that users playing a
+real violin or cello experience a resistive force, dependent
+on how hard the bow is being pressed against the string.
+Unfortunately, the Haply 2diy does not have a sensor to de-
+tect how hard the handle is being pressed against its surface.
+However, among stringed instruments, there is often a cor-
+relation between the speed of the bow and its force against
+the string. Therefore, we chose to calculate the resistive
+force as proportional to the speed of the end effector.
+To produce the rough haptic sensations that are ordinar-
+ily associated with bowing, we introduced small, random
+variations in the force feedback to the Haply 2diy. Finally,
+to prevent the force from changing too quickly and being
+too volatile, we set the force to be a weighted sum of the
+current and previous values. By adjusting the weights, we
+found a mix that produces a believable and enjoyable bow-
+ing model.
+Based on encouraging initial feedback from the members
+of the research team, we incorporated both models into the
+Hapstrument, with the top half of the Haply 2diy workspace
+being used for plucking and the bottom half for bowing.
+As the end effector moves between the zones, there is a
+smooth interpolation between these models for haptic feed-
+back, GUI display, and sound output.
+At first, a linear interpolation was used; however, it was
+difficult to only pluck or bow because unless the end effector
+was at the very top or bottom, it would be a combination
+of the two. To address this issue, a sigmoid interpolation
+was chosen, which yielded better results.
+The volume of the synthesized sound in Pure Data was
+set to be proportional to the velocity of the end effector
+while bowing or at the moment of plucking, similar to the
+resistive force mentioned earlier. We set the default timbre
+of the instrument to be a synthesized sine wave. If the vol-
+ume reaches above a certain threshold, a sawtooth wave is
+gradually introduced to add spectral content at higher fre-
+quencies. This provides more opportunities for expressivity
+while still focusing on the haptic interface.
+4. EV ALUATION
+To determine how successful the Hapstrument is among mu-
+sicians, we chose to evaluate it through a user study.
+4.1 Procedure and Recruitment
+We conducted our user study among members of the Centre
+for Interdisciplinary Research in Music, Media and Technol-
+ogy (CIRMMT) community at McGill University. Eleven
+people were recruited for evaluating the Hapstrument (5F,
+6M, ages 22 to 36, average 28.4). These participants had a
+range of musical backgrounds. Some had no formal train-
+ing, some grew up playing regularly, and some had a degree
+in music.
+Before the test, participants were given an introductory
+survey, asking them about their musical skill, their exposure
+to DMIs, and their experience with haptic force-feedback
+devices.
+During the test, participants were introduced to the Hap-
+strument and given a brief explanation of its functionality.
+They were then given time to explore the instrument and try
+it out. Following this, they were asked to complete several
+tasks, such as playing a scale, plucking, bowing, and tran-
+sitioning between the two. Next, participants were given
+15–20 minutes to play with the Hapstrument and prepare a
+performance for the end of the session, in which they would
+play a composition with musical expression. This was de-
+fined to them as the ability to invoke an emotional response
+or bring the music to life.
+Participants played their composition and completed a
+post-test questionnaire, consisting of questions about what
+they liked and disliked, as well as eight Likert scale questions
+regarding the following aspects of their experience:
+• Pitch selection interface
+• Feeling of plucking
+• Feeling of bowing
+• Plucking/bowing interface
+• Overall experience with the Hapstrument
+• Ability to express yourself
+• Impact of haptic feedback on expressing yourself
+• Impact of mixing plucking and bowing on expressing
+yourself
+4.2 Results and Discussion
+The pitch selection interface received mediocre reviews over-
+all, having an average value of 3.3 when rated from 1 to 5.
+The idea of using a scale/key system to select distinct tones
+was described by a participant as “Eurocentric”. Some par-
+ticipants liked this system and said that it made it easy to
+play a piece in the chosen key. However, other participants
+described it as very limiting for them.
+When a scale is selected, some of the segments may be
+larger than others due to the distances between notes in
+a scale, as seen in Figure 4. Some participants liked this,
+saying that it is good for visualizing music scales. However,
+the smaller segments were often harder to select, and many
+participants had difficulty with this.
+The haptic feedback of this interface, which consisted of
+“bumps” when moving over lines, had generally good re-
+views. Most participants liked it, saying that it improved
+spatial awareness. However, other participants reported
+that the additional force required made navigating the in-
+terface more cumbersome. Other positive aspects of the
+pitch selection interface included the ability to add vibrato
+and the presence of the continuous zone outside of the ring.
+The excitation interface had slighter higher reviews, re-
+ceiving an average value of 3.7. People generally enjoyed
+plucking but had a range of preferences for the strength of
+the haptic resistance, which some described as unrealistic.
+Some participants enjoyed the vibrational force delivered af-
+ter plucking but others found it distracting and “mushy”. A
+few participants suggested that it would be nice to be able
+to “lift up” the Haply 2diy handle so that you could move it
+across the string without plucking, although the 2diy lacks
+that ability.
+Participants generally enjoyed bowing more than pluck-
+ing. The haptic resistance made it feel lifelike, which helped
+users to musically express themselves. However, some of
+them disliked the roughness of the bowing and preferred for
+the force to simply be resistive.
+The ability to switch between plucking and bowing was
+one of the novelties of the Hapstrument, and 8 of the 11
+participants enjoyed this feature. However, one user disliked
+it because “it can’t be done on a real instrument”, while
+others found it too difficult to use while focusing on the
+pitch selection interface.
+The Haply 2diy itself had a number of issues throughout
+the evaluation process. The magnetic handle would some-
+times fall off, and some participants disliked its ergonomics
+and said that their wrists felt sore. Furthermore, the 2diy
+itself generated a minor rattling sound when the end effector
+moved across the surface, which some participants found to
+be distracting and irritating. Fortunately, the newest ver-
+sion of the 2diy eliminates the rattling issue.
+Overall, the results of the post-test questionnaires exhib-
+ited significant variation across participants, with average
+ratings almost uniformly spread between 2 and 5 out of
+a maximum of 5, as shown in Figure 5. Some gave the
+Hapstrument high ratings across the board, indicative of
+promise for future development, while others consistently
+rated it poorly, suggesting that from their perspective, the
+instrument suffered insurmountable issues.
+1 2 3 4 50
+1
+2
+3
+4
+Average rating
+Number of participants
+Figure 5: Distribution of ratings among participants.
+Although we did not observe a correlation between the
+musical education of our participants and their post-test
+questionnaire results, the type of music they played was
+largely predictive of their enjoyment of the Hapstrument:
+those who focused on atonal composition and experimental
+music disliked the Hapstrument and gave an average rating
+of 2.5, while those who played classical music appreciated
+its pitch selection interface, which matched their musical
+expectations, and they gave an average rating of 3.8.
+Similarly, participants with prior exposure to haptic de-
+vices favourably viewed the haptic sensations from bowing
+and plucking, whereas those who had never used such de-
+vices often found the force feedback distracting.
+The main limitation of this user study was the small par-
+ticipant population. Future studies with larger groups may
+reveal additional insights into the effectiveness of the Hap-
+strument.
+5. CONCLUSION
+Returning to the theme of NIME 2023, frugal music inno-
+vation requires resources that are affordable and available.
+The Haply 2diy is an effective tool for this theme, due to its
+easily replaceable 3D-printed mechanical parts and its low
+cost ( ∼USD 500) in comparison with other commercially
+available force-feedback devices, which usually cost many
+thousands of dollars. Basic motors can be cheaper than the
+2diy and can also add haptic effects to DMIs. However,
+they lack some of the main features of the 2diy, such as
+its pantograph-inspired structure, convenient API, and its
+ability to produce force feedback in any 2D direction.
+Our main research goal in this study was to explore whether
+low-cost 2-DoF force-feedback devices can model bowing
+and plucking with a continuous transition between the two,
+and if so, to what degree this can contribute to musical
+expression. We were able to create the desired interaction
+paradigm and based on the evaluation we conducted, some
+people found it effective and realistic, although others had
+different preferences. Regarding musical expression, for sev-
+eral participants, the Haply 2diy was certainly capable of
+enabling them to express themselves effectively. However,
+the negative reviews from different participants would indi-
+cate otherwise.
+Ultimately, the evaluation of the Hapstrument demon-
+strates that the preferences people have towards new digi-
+tal musical instruments will heavily depend on their back-
+grounds and the expectations that they bring into their ex-
+periences with the instrument. For the participants whose
+expectations matched what the Hapstrument could offer,
+it was an expressive and effective low-cost DMI. One par-
+ticipant even described it as the “most successful software
+instrument I’ve seen coming out of CIRMMT for the last
+4 years”. However, for the participants who had different
+expectations, this DMI was not the right choice for them.
+Future improvements to the Hapstrument, as recommended
+by our study participants, may include adding a button to
+the device’s handle as an additional input, implementing
+more timbre parameters, and introducing new visual fea-
+tures to the GUI.
+6. ACKNOWLEDGMENTS
+The authors acknowledge the teaching team for CanHap
+501, particularly Oliver Schneider, who gave valuable input
+to the development of the Hapstrument. Bradley Rey and
+Juliette Regimbal also provided helpful advice during the
+design process.
+7. ETHICAL STANDARDS
+The user study in this project received ethics approval from
+the Research Ethics Board at McGill University, under file
+#22-07-077. Participants gave informed consent and were
+paid once the experiment finished. This study was funded
+by NSERC’s Discovery Grants Program.
+8. REFERENCES
+[1] E. Berdahl and Z. Berkowitz. Portable modeling of
+virtual physics for audio and haptic interaction design.
+In 2017 IEEE International Conference on Acoustics,
+Speech and Signal Processing (ICASSP), pages
+6568–6569, New Orleans, Louisiana, USA, Mar. 2017.
+[2] E. Berdahl and D. Huber. The Haptic Hand. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 303–306,
+Baton Rouge, Louisiana, USA, May 2015.
+[3] E. Berdahl and A. Kontogeorgakopoulos. The
+FireFader: Simple, Open-Source, and Reconfigurable
+Haptic Force Feedback for Musicians. Computer
+Music Journal, 37(1):23–34, Mar. 2013.
+[4] E. Berdahl, P. Vasil, and A. Pfalz. Automatic
+Visualization and Graphical Editing of Virtual
+Modeling Networks for the Open-Source
+Synth-A-Modeler Compiler. In Haptics: Perception,
+Devices, Control, and Applications, pages 490–500,
+London, UK, July 2016.
+[5] M. Giordano, S. Sinclair, and M. M. Wanderley.
+Bowing a vibration-enhanced force feedback device. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, Ann Arbor,
+Michigan, USA, May 2012.
+[6] L. Haken and E. Eagan. Playing the continuum
+fingerboard: New performance techniques for a
+continuous instrument. The Journal of the Acoustical
+Society of America, 128(4):2345–2345, 2010.
+[7] D. M. Howard, S. Rimell, and A. D. Hunt. Force
+Feedback Gesture Controlled Physical Modelling
+Synthesis. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 95–98, Montreal, Canada, May 2003.
+[8] A. M ¨uller, F. Hemmert, G. Wintergerst, and
+R. Jagodzinski. Reflective Haptics: Resistive Force
+Feedback for Musical Performances with
+Stylus-Controlled Instruments. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 477–478, Sydney,
+Australia, June 2010.
+[9] E. Sheffield, E. Berdahl, and A. Pfalz. The Haptic
+Capstans: Rotational Force Feedback for Music using
+a FireFader Derivative Device. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 1–2, Brisbane, Australia,
+July 2016.
+[10] H.-C. Steiner. Stickmusic: Using haptic feedback with
+a phase vocoder. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 203–204, Hamamatsu, Japan, June 2004.
+[11] B. Verplank, M. Gurevich, and M. Mathews. THE
+PLANK: Designing a Simple Haptic Controller. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 177–180,
+Dublin, Ireland, May 2002.
+[12] A. Weill-Duflos, N. Ong, F. Desourdy, B. Delbos,
+S. Ding, and C. Gallacher. Haply 2diy: An Accessible
+Haptic Platform Suitable for Remote Learning. In
+Proceedings of the 2021 International Conference on
+Multimodal Interaction, pages 839–840, Montreal,
+Canada, Oct. 2021.
+[13] G. W. Young and K. Crowley. The Design of Tangible
+Digital Musical Instruments. In Proceedings of
+MusTWork16, Dublin, Ireland, June 2016.

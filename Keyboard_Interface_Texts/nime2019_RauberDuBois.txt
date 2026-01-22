@@ -1,0 +1,503 @@
+HMusic: A domain speciﬁc language for music
+programming and live coding
+André Rauber Du Bois
+Programa de Pós-Graduação em Computação
+Universidade Federal de Pelotas
+Pelotas - RS - Brazil
+dubois@inf.ufpel.edu.br
+Rodrigo Geraldo Ribeiro
+Programa de Pós-Graduação em Ciência da
+Computação
+Universidade Federal de Ouro Preto
+Ouro Preto - MG - Brazil
+rodrigo@decsi.ufop.br
+ABSTRACT
+This paper presents HMusic, a domain speciﬁc language
+based on music patterns that can be used to write music
+and live coding. The main abstractions provided by the
+language are patterns and tracks. Code written in HMu-
+sic looks like patterns and multi-tracks available in music
+sequencers, drum machines and DAWs. HMusic provides
+primitives to design and compose patterns generating new
+patterns. The basic abstractions provided by the language
+have an inductive deﬁnition and HMusic is embedded in
+the Haskell functional programming language, hence pro-
+grammers can design functions to manipulate music on the
+ﬂy. The current implementation of the language is compiled
+into Sonic Pi [10] and can be downloaded from [9].
+Author Keywords
+Live coding, Functional Programming, Haskell
+CCS Concepts
+•Applied computing →Sound and music comput-
+ing; Performing arts;•Software and its engineering→
+Functional languages;
+1. INTRODUCTION
+Computers are generic abstract machines that can be pro-
+grammed with diﬀerent goals in a variety of domains, in-
+cluding arts in general, and music. Computer music is usu-
+ally associated with the use of software applications to cre-
+ate music, but on the other hand, there is a growing interest
+in programming languages that let artists write software as
+an expression of art. There are a number of programming
+languages that allow artists to write music, e.g., CSound
+[2], Max [13, 28], Pure Data [23], Supercollider [19], Chuck
+[27], FAUST [22], to name a few. Besides writing songs, all
+these languages also allow the live coding of music. Live
+coding is the idea of writing programs that represent music
+while these programs are still running, and changes in the
+program aﬀect the music being played without breaks in the
+output [21].
+This paper presents HMusic, a Domain Speciﬁc language
+for music programming and live coding. HMusic is based on
+the abstraction of patterns and tracks where the code looks
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+very similar to the grids available in sequencers, drum ma-
+chines and DAWs. The diﬀerence is that these abstractions
+have an inductive deﬁnition, hence programmers can write
+functions that manipulate these tracks in real time. As the
+DSL is embedded in Haskell, it is possible to use all the
+power of functional programming in our beneﬁt to deﬁne
+new abstractions over patterns of songs. To understand the
+paper the reader needs no previous knowledge of Haskell,
+although some knowledge of functional programming and
+recursive deﬁnitions would help. We try to introduce the
+concepts and syntax of Haskell needed to understand the
+paper as we go along.
+The contributions of this paper are as follows:
+•We describe the design and implementation of HMu-
+sic, a DSL for music programming that provides the
+abstractions of patterns and tracks, together with a set
+of functions to manipulate and combine these abstrac-
+tions. The interesting aspect of the language is that
+basic programs look like the grids available in drum
+machines and sequencers, which is a concept familiar
+to music composers.
+•We describe a simple interface for live coding based
+on looping tracks and function application to modify
+tracks in real time.
+In the current implementation of HMusic, tracks can load
+pre-recorded samples. As it is currently compiled into Sonic
+Pi [10], any sample accessible by the Sonic Pi environment
+can be loaded and manipulated in tracks. The current im-
+plementation of the HMusic language can be downloaded
+from [9].
+The paper is organized as follows. First we describe the
+main constructors for pattern (Section 2.1) and track (Sec-
+tion 2.2) design and their basic operations. Next, we ex-
+amine the important abstraction of track composition, i.e.,
+combining diﬀerent multi-tracks to form a new track (Sec-
+tion 2.3). The abstraction provided by HMusic for live cod-
+ing is presented in Section 3. The compilation of HMusic
+into Sonic Pi is explained in Section 4. Finally, related work,
+conclusions and future work are discussed.
+2. HMUSIC
+2.1 HMusic Patterns
+HMusic is an algebra (i.e., a set and the respective functions
+on this set) for designing music patterns. The set of all
+music patterns can be described inductively as an algebraic
+data type in Haskell:
+data MPattern = X | O | MPattern :| MPattern
+The word data creates a new data type, in this case,
+MPattern. This deﬁnition says that a pattern can be either a
+381
+playing a sample (X), a rest (O), or a sequential composition
+of patterns using the operator (:|), that takes as arguments
+two music patterns and returns a new pattern.
+As an example, we can deﬁne two 4/4 drum patterns, one
+with a hit in the 1st beat called kick and another that hits
+in the 3rd called snare.
+kick :: MPattern
+kick = X :| O :| O :| O
+snare :: MPattern
+snare = O :| O :| X :| O
+The symbol ( ::) is used for type deﬁnition in Haskell,
+and can be read as has type, e.g. kick has type MPattern.
+As MPattern is a recursive data type, it is possible to
+write recursive Haskell functions that operate on patterns.
+For example, usually a certain pattern is repeated many
+times in a song, and a repeat operator (.*) for patterns can
+be deﬁned as follows:
+(.*) :: Int -> MPattern
+-> MPattern
+1 .* p = p
+n .* p = p :| (n-1) .* p
+The repeat operator takes as arguments an integer n and
+a pattern p, and returns a pattern that is a composition
+of n times the pattern p. As can be seen in the previous
+example, the composition operator ( :|) can combine drum
+patterns of any size and shape, e.g.:
+hihatVerse :: MPattern
+hihatVerse = 8 .* (X :| O :| X :| O)
+hihatChorus :: MPattern
+hihatChorus = 4 .* (X :| X :| X :| X)
+hihatSong :: MPattern
+hihatSong = hihatVerse :|
+hihatChorus :|
+hihatVerse :|
+hihatChorus
+or simply:
+hihatSong :: MPattern
+hihatSong = 2 .* (hihatVerse :|
+hihatChorus)
+In order to make any sound, a pattern must be associated
+to an instrument hence generating a Track, as explained in
+the next Section.
+2.2 HMusic Tracks
+A track is the HMusic abstraction that associates an instru-
+ment to a pattern. The Track data type is also deﬁned as
+an algebraic type in Haskell:
+data Track =
+MakeTrack Instrument MPattern
+| Track :|| Track
+type Instrument = String
+A simple track can be created with the MakeTrack con-
+structor, which associates an Instrument to a MPattern. A
+Track can also be the parallel composition of two tracks,
+which can be obtained with the :|| operator. Instrument
+is a type synonym for Strings. An instrument can be any
+audio ﬁle accessible by the Sonic Pi environment (see Sec-
+tion 4).
+Now, we can use the previously deﬁned patternskick and
+snare to create tracks:
+kickTrack :: Track
+kickTrack = MakeTrack "BassDrum" kick
+snareTrack :: Track
+snareTrack =
+MakeTrack "AcousticSnare" snare
+and also multi-tracks:
+rockMTrack :: Track
+rockMTrack =
+kickTrack :||
+snareTrack :||
+MakeTrack "ClosedHiHat" (X:|X:|X:|X) :||
+MakeTrack "GuitarSample" X
+2.3 Composing Tracks
+The :|| operator allows the parallel composition of Tracks,
+i.e., adding an extra track to a multi-track song. But what
+if we want to compose tracks in sequence, e.g., we have
+diﬀerent multi-tracks for the introduction, verse and chorus,
+and want to combine them in sequence to form a complete
+song?
+One problem that we need to deal with are the diﬀerent
+sizes of patterns in a multi-track. The size of a multi-track,
+is the size of its largest pattern. It is important to no-
+tice that when composing tracks, we assume that smaller
+patterns have rest beats at their end, hence all patterns
+are assumed to have the size of the largest pattern in a
+multi-track. We can deﬁne this concepts formally with the
+following recursive functions:
+lengthMP :: MPattern -> Int
+lengthMP O = 1
+lengthMP X = 1
+lengthMP (x:|y) = lengthMP x +
+lengthMP y
+lengthTrack :: Track -> Int
+lengthTrack (MakeTrack _ dp) =
+lengthMP dp
+lengthTrack (t1 :|| t2) =
+max (lengthTrack t1) (lengthTrack t2)
+Where lengthMP recursively calculates the size of a pattern,
+and lenghtTrack ﬁnds out the size of the largest pattern in
+a track, i.e., the size of the track.
+HMusic provides two constructs for composing tracks in
+sequence, a repetition operator |* and a sequencing opera-
+tor |+. The repetition operator is similar to .* but operates
+on all patterns of a muti-track:
+|* :: Int -> Track -> Track
+It that takes an integern and a multi-track t and repeats all
+patterns in all tracks n times adding the needed rest beats
+at the end of smaller tracks.
+The semantics of composing two multi-tracks t1 and t2,
+i.e., t1 |+ t2 is as follows:
+•First we add rest beats to the end of each track in t1
+that has matching instruments with tracks in t2, so
+that all those tracks have the same size as the largest
+pattern in t1
+382
+track1 = MakeTrack "BassDrum" X
+:|| MakeTrack "AcousticSnare" (O :| O :| X)
+:|| MakeTrack "ClosedHiHat" (X :| X :| X :| X)
+track2 = MakeTrack "BassDrum" (X :| O :| O :| O)
+:|| MakeTrack "AcousticSnare" (O :| O :| X :| O)
+:|| MakeTrack "ClosedHiHat" (X :| O :| X )
+:|| MakeTrack "GuitarSample" X
+track1track2 = MakeTrack "BassDrum" (X :| O :| O :| O :| X :| O :| O :| O)
+:|| MakeTrack "AcousticSnare" (O :| O :| X :| O :| O :| O :| X :| O)
+:|| MakeTrack "ClosedHiHat" (X :| X :| X :| X :| X :| O :| X )
+:|| MakeTrack "GuitarSample" (O :| O :| O :| O :| X )
+track2track1 = MakeTrack "BassDrum" (X :| O :| O :| O :| X)
+:|| MakeTrack "AcousticSnare" (O :| O :| X :| O :| O :| O :| X :| O)
+:|| MakeTrack "ClosedHiHat" (X :| O :| X :| O :| X :| X :| X :| X)
+:|| MakeTrack "GuitarSample" X
+track1twice = MakeTrack "BassDrum" (X :| O :| O :| O :| X)
+:|| MakeTrack "AcousticSnare" (O :| O :| X :| O :| O :| O :| X )
+:|| MakeTrack "ClosedHiHat" (X :| X :| X :| X :| X :| X :| X :| X)
+track2twice = MakeTrack "BassDrum" (X :| O :| O :| O :| X :| O :| O :| O)
+:|| MakeTrack "AcousticSnare" (O :| O :| X :| O :| O :| O :| X :| O)
+:|| MakeTrack "ClosedHiHat" (X :| O :| X :| O :| X :| O :| X)
+:|| MakeTrack "GuitarSample" (X :| O :| O :| O :| X)
+Figure 1: Composing tracks
+•Then, for all patterns p1 in t1 and p2 in t2 that have
+the same instrument i, we generate a new track Make-
+Track i (p1:|p2)
+•Finally, we add a pattern of rests the size of t1, to the
+beginning of all tracks in t2 that were not composed
+with tracks in t1 in the previous step
+Hence the size of the composition of two tracks t1 and
+t2 is sum of the size of the largest pattern in t1 with the
+largest pattern in t2.
+In Figure 1 it is possible to see two tracks with diﬀerent
+sizes of patterns inside (track1 and track2) and their com-
+positions, track1track2 is equivalent to track1 |+ track2
+and track2track1 is equivalent to track2 |+ track1. The
+track1twice track is equivalent to2 |* track1 and track2-
+twice is equivalent to 2 |* track2.
+play :: Float -> Track -> IO ()
+loop :: Float -> Track -> IO ()
+applyToMusic :: (Track -> Track) -> IO ()
+Figure 2: HMusic primitives for live coding
+3. LIVE CODING WITH HMUSIC
+HMusic provides a set of primitives for playing tracks and
+live coding. These primitives allow programmers to play
+songs written in HMusic, loop tracks, and to modify tracks
+on the ﬂy, i.e., while they are being played. These primitives
+can be seen in Figure 2.
+The ﬁrst primitive, play, takes two arguments: a Float,
+which is the BPM (Beats per Minute) of the song and a
+track, and simply plays this track in the BPM provided.
+The loop function also takes the same arguments but will
+loop the track in the BPM provided. If a loop is already
+being played, it will be substituted by the new one. The
+applyToMusic function can be used to modify the current
+pattern being played. It takes as argument a function from
+Track to Track and applies it to the pattern being looped.
+These functions can be called in the Haskell interpreter
+(GHCi [3]) to live code music. Here is a simple example of a
+live code session. We start by looping a simple multi-track
+that contains only snare and kick:
+*HMusic> loop 120 (kickTrack :|| snareTrack)
+This call will start looping at 120 BPM a parallel compo-
+sition of the kickTrack and snareTrack deﬁned priviously
+in Section 2.2. Next, we can add to the loop being played
+another track with a hi-hat:
+*HMusic> applyToMusic (:|| MakeTrack "ClosedHiHat" (X:|
+X:|X:|X))
+In this example, we are using partial application to trans-
+form the parallel composition operator (that has typeTrack
+-> Track -> Track) into a function that takes only one ar-
+gument, i.e., Track -> Track.
+Next, we can add a guitar sample in the beginning of the
+loop:
+*HMusic> applyToMusic (:|| MakeTrack "guitarSample" X)
+Instead of adding new tracks, we can also substitute tracks.
+For example, we can write a Haskell function that substi-
+tute an instrument that is being played in one track by a
+diﬀerent instrument:
+subsInstrument :: Instrument -> Instrument ->
+Track -> Track
+subsInstrument i1 i2 (MakeTrack i p)
+| i == i1 = MakeTrack i2 p
+383
+in a global IORef [17], which is basically a pointer to the
+track being played. The loop function substitutes the track
+being played, and applyToMusic will modify it, compile it
+again, and send it to the Sonic Pi server through the Sonic
+Pi tool.
+5. RELATED WORKS
+There has been a lot of work on designing programming
+languages for computer music and live coding. Most of these
+languages, e.g., CSound [2], Max [13, 28], Pure Data [23],
+Supercollider [19], Chuck [27], FAUST [22] etc, are based on
+the idea of dataﬂow programming, where signal generators
+and processors can be connected either visually or through
+code, providing the abstraction of streams of data/sound
+that can be combined and processed. Some languages for
+music programming e.g., Gibber [24] and IXI Lang [18],
+and music notation languages e.g., LilyPond [4] and abc
+notation [1], also provide ways of describing patterns and/or
+tracks, but do not focus on their composition/combination.
+There are many DSLs for computer music based on func-
+tional languages, e.g. [20, 16, 25, 15, 14]. These languages
+usually provide means for playing notes and composing the
+sounds generated in sequence and in parallel. In these lan-
+guages the programmer can write a sequence of notes and
+rests, and these sequences can also be combined in paral-
+lel. In HMusic, instead of having diﬀerent sounds in the
+same track, each track indicates when a single sound is
+played, i.e., It is the repetition pattern of a single sound,
+similar to what happens in grids of a drum machine and
+sequencers. Although the symbols used in HMusic have se-
+mantic meaning, visually programs look like an ASCII ver-
+sion of the grids for writing drum beats available in modern
+sequencers. We believe that this approach makes it eas-
+ier for someone that is used with sequencer tools to write
+simple tracks in HMusic with little knowledge of functional
+programming. Furthermore, as patterns are not associated
+with sounds, patterns can be reused with diﬀerent instru-
+ments when needed.
+Some of the abstractions provided here are based on pre-
+vious work by the authors [12]. The language presented in
+the previous work allows only drum beat programming, and
+was compiled into midi ﬁles. No loading of samples or live
+coding was supported.
+The formal semantics of a language with support for live
+coding is the subject of Aaron et. al. work [11]. The au-
+thors discuss some problems with the semantics of Sonic-Pi
+sleep function and propose a formalization to ﬁx the prob-
+lem while being compatible with Sonic-Pi previous versions.
+The work introduces the notion of time-safety and shows
+that Sonic-Pi’s new semantics is time-safe. Time safety is
+an important notion when programs consists of multiple
+threads that need to cooperate to produce a music. Since
+HMusic semantics is compiled to Sonic Pi, it enjoys the time
+safety property. We let the formalization of HMusic com-
+pilation process and its extension to support multi-thread
+programs, like Sonic-Pi, to future work.
+6. CONCLUSIONS
+This paper described HMusic, a Domain Speciﬁc Language
+for music programming and live coding, that is embedded
+in the Haskell functional programming language. The main
+abstractions of the language are patterns and tracks, that
+look similar to the grids available in sequencers and DAWs.
+The language also supports primitives for composing and
+manipulating patterns and tracks, e.g., concatenation, rep-
+etition, and parallel composition. Besides, these abstrac-
+tions have an inductive deﬁnition, hence programmers can
+write Haskell functions to manipulate these tracks generat-
+ing new abstractions for the language. HMusic also sup-
+ports live coding through a very simple interface based on
+the idea of looping and function application. Programmers
+can manipulate and modify music in real time using the ba-
+sic abstractions of the language or create new functions for
+this purpose.
+The language is still in its early stages of development.
+We believe that there are a number of lines for future work.
+Development of music and live coding in HMusic would be
+much easier with a special editor that could, either visually
+or with options in a menu, generate automatically empty
+tracks of a desired size, with the programmer being respon-
+sible for ﬁlling the hits. One simple way of obtaining such a
+feature is using Emacs macros [8]. The system implemented
+to support HMusic could be easily extended for collabora-
+tive live coding, where diﬀerent programmers interact with
+the music at the same time. HMusic tracks can be con-
+verted into strings of text using Haskell’s Read and Show
+type classes [26], hence a simple interface for collaborative
+live coding can be obtained with a socket server that re-
+ceives code, which is processed locally in the clients, and
+sends to be run on a central Sonic PI server. Elm [7], is
+a functional programming language with syntax and many
+features similar to Haskell. It is compiled into JavaScript,
+and used to create web browser-based graphical user inter-
+faces. We believe that HMusic could easily be ported to
+Elm which would allow web-based music performances. We
+are currently extending the language to support a new type
+of track in which eﬀects can be added:
+MakeTrackE Instrument [Effect] MPattern
+Besides Instruments these tracks can take as argument a
+list of eﬀects that are applied in order. Eﬀects available in
+Sonic Pi will be able to be loaded in tracks, like changing the
+rate of samples, reverb, amp, etc. For the semantics of track
+composition, only tracks that have the same instruments
+and eﬀects in the same order are considered the same. The
+reviewers of this paper mentioned the necessity of operators
+for track composition that do not add rest beats to the end
+of tracks. Such operators are easier to implement than the
+ones described here, and will be available in the next version
+of the language.
+HMusic is a new language, and It is diﬃcult to know if
+the abstractions proposed here would be of any help for real
+live coders. We plan in the future to spread the word about
+the language, initially in the Computer Science Department
+and Music Departments of our University, through local
+talks and performances, in order to get feedback with the
+objective of improving the language.
+7. ACKNOWLEDGMENTS
+This work was supported by CAPES/Brasil (Programa Na-
+cional de Coopera¸ c˜ ao Acadˆ emica da Coordena¸ c˜ ao de Aper-
+fei¸ coamento de Pessoal de N´ ıvel Superior).
+8. REFERENCES
+[1] ABC Notation. http://abcnotation.com/, January
+2019.
+[2] CSound. http://csound.com, January 2019.
+[3] Glasgow Haskell Compiler.
+https://www.haskell.org/ghc/, January 2019.
+[4] LilyPond. http://lilypond.org/, January 2019.
+[5] Sonic Pi Tool. https://github.com/lpil/sonic-pi-tool,
+January 2019.
+385
+[6] System.Cmd.
+http://hackage.haskell.org/package/process-
+1.6.5.0/docs/System-Cmd.html, January
+2019.
+[7] The Elm Programming Language.
+https://elm-lang.org/, January 2019.
+[8] The Emacs editor.
+https://www.gnu.org/software/emacs/, January 2019.
+[9] The HMusic DSL.
+https://github.com/hmusiclanguage/hmusic, January
+2019.
+[10] S. Aaron, A. F. Blackwell, and P. Burnard. The
+development of sonic pi and its use in educational
+partnerships: Co-creating pedagogies for learning
+computer programming. Journal of Music, Technology
+and Education, 9:75–94, 05 2016.
+[11] S. Aaron, D. Orchard, and A. F. Blackwell. Temporal
+semantics for a live coding language. In Proceedings of
+the 2Nd ACM SIGPLAN International Workshop on
+Functional Art, Music, Modeling &#38; Design,
+FARM ’14, pages 37–47, New York, NY, USA, 2014.
+ACM.
+[12] A. R. D. Bois and R. G. Ribeiro. A domain speciﬁc
+language for drum beat programming. In Proceedings
+of the Brazilian Symposium on Computer Music, 2017.
+[13] E. Favreau, M. Fingerhut, O. Koechlin, P. Potacsek,
+M. Puckette, and R. Rowe. Software developments for
+the 4x real-time system. In International Computer
+Music Conference, 1986.
+[14] P. Hudak. An algebraic theory of polymorphic
+temporal media. In PADL, 2004.
+[15] P. Hudak and D. Janin. Tiled polymorphic temporal
+media. In FARM 2014. ACM, 2014.
+[16] P. Hudak, T. Makucevich, S. Gadde, and B. Whong.
+Haskore music notation: An algebra of music. J. of
+Functional Programming, 6(3), May 1996.
+[17] S. P. Jones. Tackling the awkward squad: monadic
+input/output, concurrency, exceptions, and
+foreign-language calls in haskell. In Engineering
+theories of software construction, pages 47–96. Press,
+2002.
+[18] T. Magnusson. The ixi lang: A supercollider parasite
+for live coding. In International Computer Music
+Conference, 2011.
+[19] J. McCartney. Supercollider, a new real time
+synthesis language. In International Computer Music
+Conference, 1996.
+[20] A. McLean. Making programming languages to dance
+to: Live coding with tidal. In FARM 2014. ACM,
+2014.
+[21] C. A. McLean. Artist-Programmers and Programing
+Languages for the Arts. PhD thesis, University of
+London, 2011.
+[22] Y. Orlarey, D. Fober, and S. Letz. Faust : an eﬃcient
+functional approach to dsp programming. In New
+Computational Paradigms for Computer Music, 2009.
+[23] M. Puckette. Pure data: another integrated computer
+music environment. In in Proceedings, International
+Computer Music Conference, pages 37–41, 1996.
+[24] C. Roberts, M. K. Wright, and J. Kuchera-Morin.
+Music programming in gibber. In ICMC, 2015.
+[25] H. Thielemann. Audio Processing Using Haskell. In
+DAFx04, 2004.
+[26] S. Thompson. The Craft of Functional Programming.
+Addison-Wesley, 2011.
+[27] G. Wang and P. Cook. Chuck: A programming
+language for on-the-ﬂy, real-time audio synthesis and
+multimedia. pages 812–815, 01 2004.
+[28] D. Zicarelli. How i learned to love a program that does
+nothing. Computer Music Journal, 26(4):44–51, 2002.
+386

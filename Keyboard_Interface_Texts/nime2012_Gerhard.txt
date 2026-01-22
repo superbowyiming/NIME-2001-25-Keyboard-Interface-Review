@@ -1,0 +1,449 @@
+Instant Instrument Anywhere: A Self-Contained Capacitive
+Synthesizer
+David B. Gerhard
+University of Regina
+3737 Wascana Parkway
+Regina, Saskatchewan, Canada
+gerhard@cs.uregina.ca
+Brett Park
+University of Regina
+3737 Wascana Parkway
+Regina, Saskatchewan, Canada
+park111b@uregina.ca
+ABSTRACT
+The Instant Instrument Anywhere (IIA) is a small device
+which can be attached to any metal object to create an
+electronic instrument. The device uses capacitive sensing
+to detect proximity of the player’s body to the metal ob-
+ject, and sound is generated through a surface transducer
+which can be attached to any ﬂat surface. Because the ca-
+pacitive sensor can be any shape or size, absolute capacitive
+thresholding is not possible since the baseline capacitance
+will change. Instead, we use a diﬀerential-based moving
+sum threshold which can rapidly adjust to changes in the
+environment or be re-calibrated to a new metal object. We
+show that this dynamic threshold is eﬀective in rejecting
+environmental noise and rapidly adapting to new objects.
+We also present details for constructing Instant Instruments
+Anywhere, including using smartphone as the synthesis en-
+gine and power supply.
+Keywords
+Capacitive Sensing, Arduino
+1. INTRODUCTION
+Instant Instrument Anywhere (IIA) is a small electronic
+device which can be connected to almost any metal ob-
+ject and attached to any surface, turning that object into
+an electronic musical instrument with the surface as the
+speaker. IIA is inspired by the “LED throwie” [3], a small,
+low-cost, battery-powered magnetic LED used for graﬃti
+and street art. The idea of being able to augment any sur-
+face with coloured light is taken one step further with the
+IIA, which can augment any surface it is attached to in or-
+der to create music. IIA is also inspired by the youtube
+video entitled “Homemade Synthesizer - KITCHEN MU-
+SIC1”, (Fig. 1a) where a composer seems to construct a syn-
+thesizer out of standard household objects and repurposed
+electronics. The video author admitted that the video was
+fake, but many of the objects he uses are plausible. Based
+on his video, we ﬁrst constructed a simple capacitive-sensing
+paper-cup instrument 2 (Fig. 1b) and after experimenting
+with diﬀerent materials and diﬀerent ways of processing the
+signals and turning them into music, we settled on a small
+1http://www.youtube.com/watch?v=tCeYMpu3oXg
+2http://www.youtube.com/watch?v=dLHrn5v772E
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’12,May 21 – 23, 2012, University of Michigan, Ann Arbor.
+Copyright remains with the author(s).
+Arduino-based system using a surface transducer, with al-
+ligator clips to attach capacitive sensing probes to nearby
+metal objects.
+Figure 1: (a) Kitchen music; and (b) our ﬁrst IIA
+The result is a musical instrument which is attached to
+a ﬂat surface (which becomes the resonator for the trans-
+ducer), with probes from the instrument attached to a nearby
+metal object (which becomes the capacitive sensor). Fig-
+ure 2 shows the exterior of the prototype IIA device.
+(a)
+(b)
+(c)
+(d) (e)
+Figure 2: Prototype IIA device. (a) random metal
+object; (b) Additional unused probes; (c) Surface
+transducer; (d) power supply jack; (e) USB port
+for programming.
+2. BACKGROUND
+The Arduino has become a staple of the hacker/maker com-
+munity, enabling the integration of embedded processing
+into many standalone music projects over the last ﬁve years.
+Many opportunities exist for locally manipulating MIDI [1]
+and OSC data, and building new interfaces. Recently, the
+Arduino platform has started using an ATmega8u2 (16u2
+in the Uno R3 version) as the USB interface. This advance-
+ment has opened up many new opportunities for MIDI con-
+nectivity (see Section 4).
+2.1 Capacitive Sensing
+Electrical ﬁeld sensing has been a popular topic of investiga-
+tion in the music interface ﬁeld for decades [8]. Capacitive
+sensing works by measuring the inﬂuence of the human body
+on a capacitive plate. A conductive surface or object can
+be given an electrical charge which can be aﬀected by the
+air and nonconductive surfaces around it. When a person
+brings their hand close to the charged object, the storage
+characteristics of the object change and that change can be
+measured by an electrical circuit. Most capacitive sensing
+systems use an additional nonconductive surface surround-
+ing the charged object (like glass on smartphones) that al-
+lows the user to touch the surface without discharging the
+object. For this reason, there is a common misconception
+that capacitive sensing requires contact, where in fact only
+proximity is required.
+Capacitive touch systems have been used in music syn-
+thesis systems in a number of diﬀerent instances beginning
+with the Theremin. The Snyderphonics Manta [10] was
+presented at NIME last year. It uses a touch-based iso-
+morphic hexagonal keyboard [6] similar to the MUSIX iOS
+software3. Traditional instruments, such as a guitar [4] and
+a piano [7], have been augmented using capacitive sensors
+to provide additional information such as touch location.
+New instruments like the T-Stick [5] use capacitive touch
+sensors as one type of sensor among many to create original
+experiences and sounds.
+2.2 Circuitbending
+A signiﬁcant community has recently emerged around the
+concept of circuit bending [2]. Circuit bending is the re-
+purposing of electronic toys, instruments, and other devices
+with the goal of creating new and interesting sounds. In a
+similar manner, the IIA uses found metallic objects in order
+to create new and interesting instruments.
+3. PROTOTYPE CONSTRUCTION
+VS1053
+Metal 
+Object 1 Arduino or 
+ATmega 32u4
+CapSense 
+Library
+Surface
+Transducer
+Surface
+dC/dt and
+threshold
+make notesynth
+Ampliﬁer
+(LM358)
+C
+👋
+MOk
+out
+in1
+ink
+Figure 3: System bock diagram
+Figure 3 shows the block diagram of the prototype sys-
+tem as constructed. The core of the system is a micropro-
+cessor which is set up to detect changes in capacitance and
+translate them into note messages. Our prototype uses an
+Arduino Uno with an ATmega328 microprocessor, but we
+3http://www.shiverware.ca/musix.html
+have also successfully deployed the codebase on a standalone
+ATmega32u4-based breakout board, which is less expensive
+and has a smaller footprint than the Arduino Uno.
+3.1 Sensor Construction
+Because the goal of the IIA is to turn any metal object into
+a capacitive sensor, a small circuit must be constructed to
+allow the capacitance to be measured by the CapSense li-
+brary4. A set of alligator clips are attached to I/O pins on
+the microprocessor through a very large resistor ( ≈ 1MΩ).
+The large resistor means that the RC time constant of the
+circuit is large, and can be measured in software using pulses
+expressed through the “output” pin. The “input” pin mea-
+sures the voltage on the metal object, which is the same
+as the voltage across the capacitor. The time lag between
+the voltage changes can be used to measure the RC time
+constant, and thus the capacitance of the metal object that
+the circuit is attached to.
+3.2 Capacitive Sensing with CapSense
+The main use-case for the Instant Instrument Anywhere
+was to have a person approach a surface, attach the trans-
+ducer to the surface, clip probes on to a nearby piece of
+metal, and start to make sounds with no reconﬁguration
+required. Traditional capacitive sensing requires the free-
+space capacitance of the sensor to be know beforehand and
+to use a threshold above that free-space capacitance to in-
+dicate a trigger event. Because we cannot know what metal
+the IIA will be attached to, we cannot know the free-space
+capacitance and are not able to use an absolute threshold to
+calculate triggers. Instead, we used a relative capacitance
+measure to detect how fast the capacitance was changing.
+Figure 4 shows an example trace of the data coming from
+the CapSense library on the ATmega328 microprocessor.
+Note that C is not the measured capacitance of the system,
+but a time-based value related to RC.
+The value of C relates to the time it takes to charge and
+discharge the system. Each probe connected to a metal ob-
+ject is in series with a large resistor (1MΩ) which brings the
+RC time constant into a measurable range. The output pin
+provides +5v to the system, which charges the RC circuit.
+When the input pin associated with the probe crosses the
+hysteresis input threshold of the ATmega328 (+3v rising,
++2v dropping), the CapSense library measures the time for
+a complete 4-stage charge-discharge cycle to be performed:
+1: The circuit is charged past +3v on the input pin; 2:
+the input pin is set high, pinning the capacitor to +5v; 3:
+the input pin is disconnected from +5v and the capacitor
+begins to discharge through the resistor; and 4: the input
+pin is set low, fully discharging the capacitor to 0v. This
+complete cycle happens n times (in our case, n = 30) and
+a single measured C value is related to time to complete n
+charge-discharge cycles. The charge/discharge time is actu-
+ally measured in number of CPU clock cycles multiplied by
+a looping factor which is determined empirically.
+Referring again to Fig. 4, points a, c, d, and f are inter-
+preted as note-on events, while b and d are note-oﬀ events.
+Note that at point c, the environmental capacitance has
+changed and a new baseline is present. A standard thresh-
+old would fail at this point, but our dynamic threshold con-
+tinues to accurately detect events and reject the background
+noise. Additionally, after point g, we can see a signiﬁcant
+variation in the background capacitance which is not caused
+by the player moving in the vicinity of the sensor. This vari-
+ation is too slow to cause an event, but a strict threshold
+would likely trigger on these values. The background capac-
+4http://arduino.cc/playground/Main/CapSense
+C
+dC
+dt
+dC
+dt∑
+Sample Number
+a fd
+4
+b c ge
+50
+100
+150
+200
+250
+-100
+-50
+0
+50
+100
+150
+-100
+-50
+0
+50
+100
+150
+0 20 40 60 80 100 120 140 160
+Figure 4: Processing of measured data. C = Mea-
+sured values from CapSense; dC/dt = diﬀerential;
+and ∑
+4(dC/dt) = moving four-tap sum of the diﬀer-
+ential, thresholded at ±50.
+itance can change due to any number of factors including
+static discharge, humidity, and people in the room.
+In a second interaction mode (termed “hold”), a player
+can start a note by quickly moving their hand toward the
+metal object, then slowly move their hand away preventing
+a release. If the player moves their hand slowly enough, the
+change in capacitance will not surpass the change threshold
+and the note will be sustained until triggered again.
+3.3 Sound Synthesis
+The sound synthesis module is the VS1053 5 sound decoder
+chip. This device, from VLSI solutions, contains decoders
+for MP3, Ogg, AAC, and WMA as well as a bank of General
+MIDI instruments for real-time synthesis. Our prototype
+only makes use of the General MIDI synthesis engine. We
+decided not to use an analog synthesis engine in order to
+keep the size and power constrains down. The synthesizer
+output is routed to a HIAX25C10 8Ω frog transducer.
+3.4 Constructed prototype
+Figure 5 shows a photograph of the internal construction
+of the prototype. SparkFun industries makes an Arduino
+“shield” that breaks out the VS1053 synthesizer chip and
+contains some prototyping space, so we used that to build
+the ampliﬁer circuit and attached a resistor for each of four
+connection probes.
+3.4.1 Null Plate
+Allowing four connection probes meant that the prototype
+device could be connected to up to four metal objects. We
+discovered, however, that when the probes were not con-
+nected to a metal object, they continued to function as sen-
+5http://www.vlsi.fi/en/products/vs1053.html
+(c)
+(e)
+(d)(b)(a)
+Figure 5: IIA prototype internals. (a) Connection
+probes; (b) null plate; (c) VS1053 protoboard; (d)
+Resistors on the receive pins; (e) LM358-based am-
+pliﬁer (wired to transducer) and headphone jack.
+sors, causing unwanted touch events. In order to mitigate
+this issue we added a copper plate to the outside of the de-
+vice, soldered to the output of the circuit pin. When not in
+use, probes are connected to this “null” plate causing them
+to instantly charge and discharge, which indicates to the
+software that they should be ignored without slowing down
+the sensing algorithm.
+3.4.2 Probe Shielding
+A second consideration in creating the prototype itself is
+that the wires used to attach to the metal objects do them-
+selves have capacitance, which can inﬂuence the result of the
+measurement. This was discovered when playing multiple
+objects which were near to each other: in some instances, if
+the wires connected to the objects were touching or tangled,
+multiple instruments would sound at the same time due to
+crosstalk, or worse, false positives would appear.
+out
+in Cs Co
+(a) (b)
+Figure 6: Shielded probe. (a) shielded cable has an
+inherent capacitance between the core wire and the
+outer wrapping. (b) Grounding the outer wrapping
+causes the capacitance of the shield CS to be in par-
+allel with the capacitance CO of the metal object.
+By switching to shielded wires (see Fig. 6), the probe
+wires are no longer reactive to environmental capacitance
+and will not interact with each other or the player. This
+was proven by measuring the reaction of the circuit with and
+without the shielding connected to ground while repeatedly
+touching the outside of the wire once every two seconds for
+12 seconds.
+We can see from this ﬁgure that without shielding, the
+wire acts as a sensor and will transmit noise into the system
+if the user touches the wire. With the shielding, this noise
+is excluded from the system. The overall capacitance of the
+system is increased to CS + CO with CS being constant,
+which increases RC and thus the time it takes to charge or
+discharge the circuit. Our measurements indicated that it
+takes about twice as long ( ≈ 18 ms vs ≈ 9 ms) to charge
+the system with the shielded cables attached to a metal ob-
+ject. The size and dimensions of the metal object will of
+course aﬀect the overall capacitance of the system, increas-
+ing or decreasing the time required to charge the system
+and receive a measurement.
+150
+170
+190
+210
+230
+250
+150
+170
+190
+210
+230
+250
+0 3000 6000 9000 12000
+time (ms)
+C (open shield)C (grounded shield)
+(a)
+(b)
+Figure 7: (a) Shield is not grounded and wire capac-
+itance can be aﬀected; (b) shield is grounded and
+probe is protected from environmental capacitance.
+4. SMARTPHONE-BASED IIA
+Although the goal of the Instant Instrument Anywhere is
+to make a standalone device, there is a signiﬁcant advan-
+tage of pairing the capacitive touch sensing module with
+a smartphone. Modern smartphones are able to run more
+advanced software synthesizers; they contain a headphone
+jack to output audio and small speakers which can be aug-
+mented acoustically with devices such as the iPhoneAmpli-
+ﬁer6. Additionally, the phone battery could power all the
+components for all-day operation. Figure 8 shows an exam-
+ple of a smartphone IIA.
+Metal 
+Object
+ATmega 32u4
+Capsense
+👋
+Smartphone
+Conﬁgure 
+and Calibrate
+Synthesis 
+and Control
+USB
+Speaker
+phones
+Figure 8: Smartphone-based Instant Instrument
+Anywhere, with the smartphone fulﬁlling the role of
+conﬁguration, synthesis, power source and speaker.
+An further advantage of using a smartphone for the IIA is
+that a custom app can be created to provide access to con-
+ﬁguration settings relating to the digital capacitive sensing.
+For example, the app could allow the user to modify the
+dC/dt threshold, or route diﬀerent probe values to diﬀerent
+control parameters (aftertouch, bend etc.) or choose dif-
+ferent notes or eﬀects for each sensor being played. This
+increases the utility and reconﬁgurability of the system.
+A smartphone version of the IIA was constructed as a
+6http://www.iphoneamplifier.net/
+proof of concept. An Arudino Uno was loaded with the
+CapSense library as well as a USB driver that made the
+8u2 chip appear as a General MIDI device. The device was
+then connected, via USB and the apple camera connection
+kit, to an iPhone running synthesis software. The result was
+a peripheral device connected to the iPhone which provides
+capacitive touch sensing. This is the device shown in our
+video response to the Kitchen Synthesizer.
+5. FUTURE WORK
+Building on the portability and DIY construction of these
+instruments, we plan to create a single-PCB device that con-
+tains all of the circuitry necessary for the IIA. This single
+board device would contain an ATmega32u4, a sound syn-
+thesizer, and an ampliﬁer circuit. It will have connection
+terminals for a power source, a speaker, probes, and USB
+for programming and MIDI out. This could be the heart
+of any new instrument that uses capacitive sensing as the
+fundamental interface characteristic. It will also serve as a
+platform for a true acoustic throwie (with a small battery,
+speaker, and a magnetic probe).
+6. REFERENCES
+[1] D. Diakopoulos and A. Kapur. HIDUINO: A ﬁrmware
+for building driverless USB-MIDI devices using the
+Arduino microcontroller. In A. R. Jensenius, A. Tveit,
+R. I. Godøy, and D. Overholt, editors, Proceedings of
+the 11th international conference on New interfaces
+for musical expression (NIME 2011), pages 405–408,
+Oslo, Norway, 2011.
+[2] R. Ghazala. Circuit-Bending: Build your own alien
+instruments. Wiley, 2005.
+[3] Graﬃti Lab. LED Throwies. Online, last checked:
+Febuary 1, 2011, [http://www.graffitiresearchlab.
+com/blog/projects/led-throwies/].
+[4] E. Guaus, T. Ozaslan, E. Palacios, and J. Arcos. A
+left hand gesture caption system for guitar based on
+capacitive sensors. Proceedings of the 10th
+international conference on New interfaces for musical
+expression (NIME 2010), pages 238–243, 2010.
+[5] J. Malloch and M. M. Wanderley. The T-Stick: from
+musical interface to musical instrument. In
+Proceedings of the 7th international conference on
+New interfaces for musical expression (NIME 2007),
+pages 66–70, New York, NY, USA, 2007. ACM.
+[6] S. Maupin, D. Gerhard, and B. Park. Isomorphic
+Tesselations for Musical Keyboards. In Proceedings of
+the 8th Sound and Music Computing Conference
+(SMC 2011), 2011.
+[7] A. McPherson and Y. Kim. Design and Applications
+of a Multi-Touch Musical Keyboard. Proceedings of
+the 8th Sound and Music Computing Conference
+(SMC 2011), 2011.
+[8] J. Paradiso and N. Gershenfeld. Musical applications
+of electric ﬁeld sensing. Computer Music Journal,
+21(2):69–89, 1997.
+[9] G. Roma and A. Xamb´ o. A tabletop waveform editor
+for live performance. Proceedings of the 8th
+international conference on New interfaces for
+musical expression (NIME 2008), 2008.
+[10] J. Snyder. The Snyderphonics Manta and a Novel
+USB Touch Controller. In A. R. Jensenius, A. Tveit,
+R. I. Godøy, and D. Overholt, editors, Proceedings of
+the 11th international conference on New interfaces
+for musical expression (NIME 2011), pages 413–416,
+Oslo, Norway, 2011.

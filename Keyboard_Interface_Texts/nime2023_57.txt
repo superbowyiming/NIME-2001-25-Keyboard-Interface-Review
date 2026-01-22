@@ -1,0 +1,688 @@
+The Electrosteel: An Electronic Instrument Inspired by the
+Pedal Steel Guitar
+Jeff Snyder
+Princeton University
+310 Woolworth Center
+Princeton, New Jersey 08558
+josnyder@princeton.edu
+Davis Polito
+Princeton University
+310 Woolworth Center
+Princeton, New Jersey 08558
+dp9443@princeton.edu
+Matt Wang
+Princeton University
+310 Woolworth Center
+Princeton, New Jersey 08558
+mjw7@alumni.princeton.edu
+ABSTRACT
+The Electrosteel is a new electronic instrument inspired by
+the user interface of the pedal steel guitar (PSG). The Elec-
+trosteel uses the interface concepts of the PSG (a bar in the
+left hand, plucked strings for the right hand, foot pedals,
+knee levers, etc) as a control paradigm for digital synthesis.
+The instrument allows performers with skill on the PSG to
+expand their sonic range, and creates a powerful new multi-
+dimensional way to control synthesis. This paper describes
+the development of the instrument and its custom embed-
+ded synthesis engine, with a focus on the design challenges
+posed by mapping an existing performer interface to a new
+instrument.
+Author Keywords
+pedal steel guitar, slide guitar, synthesis, interface
+CCS Concepts
+•Applied computing → Sound and music computing; Per-
+forming arts; •Information systems→ Music retrieval;
+1. INTRODUCTION
+The initial sonic idea of the Electrosteel (Figure 1) was to
+enable the coupling of the musical gestures that the PSG’s
+distinct interface makes possible with electronic sounds that
+are timbrally different, for instance 8-bit chiptunes synthe-
+sis. Unlike systems like the IVL Steelrider 1, which used
+pitch-tracking on a PSG and converted pitch information
+to MIDI, the Electrosteel employs a PSG-like physical in-
+terface to control synthesis directly, enabling the pedals and
+levers to do bends and timbral shifts that are physically im-
+possible on a PSG.
+2. THE PEDAL STEEL GUITAR
+Invented in the mid-1950s, the modern PSG is a slide guitar
+with foot pedals and knee levers that alter the pitch of the
+1https://www.muzines.co.uk/articles/ivl-steelrider/807
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’23, 31 May–2 June, 2023, Mexico City, Mexico.
+Figure 1: The Electrosteel
+open strings to shift which chords and intervals are avail-
+able to the player. Ultimately a descendent of the Hawaiian
+lap steel guitar, its design was directly informed by pedal-
+activated instruments developed in the 1930s and 1940s such
+as the Gibson Electro-Harp and the Multi-Kord. For a de-
+tailed overview of its history, see Miller[16]. Today, it is
+most often associated with American country music, where
+it provides the expressive“crying”sound[3], marked by com-
+plex pedal glissandos, that is a strong signifier of the genre.
+Notable country players include Buddy Emmons (who is
+credited with many of the initial technical innovations that
+standardized the modern version of the PSG[6]), and Lloyd
+Green. It is also the central instrument in the “sacred
+steel” gospel tradition[23], with players like Robert Ran-
+dolph pushing the instrument in a different stylistic direc-
+tion, employing rapid-fire single-note voice emulation that
+could be compared to a bluesy shout. Unfortunately, out-
+side of these genres, the instrument is very rarely heard.
+Notable exceptions include Susan Alcorn, who performs ex-
+perimental music on the PSG, and Greg Leisz and BJ Cole
+who play pedal steel on jazz, pop, and rock recordings.
+The PSG’s unusual interface provides a remarkable level
+of control and subtlety. The bar – a sliding metal piece
+guided by the player’s left hand – gives continuous control
+of pitch and vibrato. Pedals and knee levers allow players
+to bend the intervals between strings. Unlike the pedals
+on a concert harp, the PSG’s pedals and levers create a
+continuous change. This allows the player to slide pitch in-
+dependently of the bar, enabling chords whose notes move
+with independent speed and direction. Some electronic con-
+tinuous MIDI Polyphonic Expression (MPE) interfaces like
+the Haken Continuum[8], the TouchKeys[15], or the Roli
+Seaboard2, can achieve a similar effect through hand con-
+trols. However, the PSG’s distribution of control among the
+hands, knees and feet preserves the independence of voices
+in a unique way. It also allows for vibrato to be easily syn-
+chronized between the voices, as the vibrato is created by
+the bar and applies to all strings. The Electrosteel seeks to
+offer the musician a similar mode of expression.
+3. THE GOALS OF THE ELECTROSTEEL
+The Electrosteel is an electronic instrument that mimics
+the performance interface of the PSG, while offering the ex-
+panded timbral world of a modern synthesis engine. The
+goal is to leverage existing sensorimotor skills of PSG play-
+ers on the new instrument, enabling more rapid embodiment
+of the instrument for the player, and therefore increasing ac-
+cess to musical expressivity[7]. Unlike PSG MIDI pickups,
+for instance, the Electrosteel is not intended to, for instance,
+let a PSG player sound like a saxophone, but rather to put
+electronic synthesis under the finely expressive musical con-
+trol that an experienced PSG player can produce. While
+the Electrosteel is not intended as a replacement for a PSG,
+there are some practical advantages when compared to a
+PSG. The instrument is much lighter and more portable
+than the PSG, which is notoriously heavy and cumbersome.
+Also, the Electrosteel’s single neck is able to operate in
+several selectable tunings, while PSGs are often built with
+multiple necks to support different tunings. While there
+have been several electronic musical instrument that bor-
+row inspiration from the slide guitar[9][19], and one that
+is inspired by the PSG[10], the authors are not aware of
+another instrument that approaches this concept with the
+depth of the Electrosteel.
+4. IDENTIFYING THE IMPORTANT PSG
+INTERFACE FEATURES
+The first task in the development of the Electrosteel was to
+determine which interface elements of the PSG were impor-
+tant to preserve, and which could be simplified or removed.
+By learning basic PSG techniques and some repertoire, the
+first author was able identify the essential elements that
+give the PSG its expressive potential. The following com-
+ponents were considered essential: The left-hand bar, right-
+hand plucking and muting, right-foot volume pedal, left-
+foot pedals, knee levers, and additional right-hand controls.
+The development of each of these elements of the Electros-
+teel is described below.
+5. THE ELECTROSTEEL INTERFACE EL-
+EMENTS
+5.1 Left Hand Bar
+On the PSG, the bar is held in the left hand and rests on the
+strings, which are strung about 7mm above the neck. On
+the neck there is a printed “fretboard” pattern to provide a
+visual reference for pitch location. While some players, such
+as Buddy Emmons, have trained themselves to be able to
+play without the fretboard reference[6], it is extremely un-
+usual to do so. The feel of the bar in the hand is a major
+element of the performer’s sense of the instrument - and the
+weight and shape of the bar contribute to the left-hand ges-
+tures used by players. This suggests that an interface that
+2https://roli.com/products/seaboard/rise2
+seeks to capture this expression should include an actual
+physical bar, and a sensor to read its position on a neck
+that features visual fret markers. The naive solution to the
+bar position problem would be a voltage-divider approach,
+with the linear strip connected to power and ground at each
+side and the bar forming the wiper. Unfortunately, this is
+not usable since the left hand rests on the strings behind
+the bar, confounding the readings, so another approach is
+needed. The first attempt at an emulation of the bar inter-
+face was the employment of a single commercially available
+“soft pot” linear position sensor. Unfortunately, actuation
+force was too high to provide comfortable slide gestures, as
+it required the player to press down harder on the sensor
+than standard PSG technique calls for. The next iteration
+involved a custom sensor inspired by the soft pot technol-
+ogy and ribbon controllers: a resistive strip was printed on
+a custom PCB using carbon ink, and a guitar string was
+strung above it, with only a 1mm gap between them. In
+performance, the bar presses the string to the resistive strip,
+closing the circuit. The side of the resistive strip closest to
+the bridge is driven with a constant-current DAC at a low
+current (50uA) through a fixed resistor, and the string is
+grounded. With this technique, the ratio between the volt-
+age across the variable resistance and the voltage across the
+fixed resistance is reasonably linear (Figure 2).
+Sensor	reading	=(SensorB	-	String)/	(SensorA	-	SensorB)using	2	differential	ADC	channelsBar	Position	Sensor
+one	end	of	the	resistive	strip	is	connected	to	sensor	B
+R1R2SENSOR_BSENSOR_ASTRINGIDAC50uA
+Figure 2: Circuit to sense the linear bar position
+This was found to be effective, although the actuation
+force is still slightly higher than a player would expect. Also,
+higher bar positions require more actuation force, since the
+string must be raised more at the bridge position to make
+sure the string rises from the sensor PCB at a clean angle
+from the bar.
+Once the instrument was playable, it was determined that
+a single sensor for the bar is not enough for some modes
+of playing. To allow for “bar slants” and subtle variations
+of the bar angle across the strings, a second sensor was
+added to the neck, and the position between the two sen-
+sors interpolated to find the position of the bar over each
+virtual “string”. Higher numbers of linear position sensors
+were tried but any number of sensors beyond two increases
+the likelihood that a sensor won’t be pressed enough if the
+strings aren’t completely level on the neck, and the added
+sensor noise was determined to be not worth the additional
+data.
+From the player’s perspective, two simplifications on the
+left-hand bar interface of the Electrosteel are particularly
+noticeable and require some player adjustment from their
+PSG technique. One is that a PSG player actually moves
+the bar toward and away from their body as they play, only
+pressing the bar against the highest string they are actually
+sounding. On the PSG, this serves two purposes: it pro-
+duces the cleanest tone from the bar and it allows the fin-
+gers of the left hand that fall behind the bar to mute higher
+strings as the bar is moved closer to the player. This mo-
+tion is unnecessary on the Electrosteel, and actually would
+cause the player to move the bar off of the strings. The fact
+that “left-hand muting” with the fingers is not possible on
+Electrosteel can be a serious issue if the player relies on that
+technique. There are several schools of thought on muting
+in PSG practice, and some players avoid this muting style,
+so this simplification will affect some more than others. The
+other important simplification is that on a PSG, the player
+can put the bar over some strings and leave other strings
+open. This is not possible with the two-sensor system that
+is currently on the Electrosteel, but it is also a relatively
+uncommon technique on the PSG.
+5.2 Right Hand Plucking System
+On the PSG, the right hand technique is one of the most
+difficult parts of the instrument to master. The sustain of
+the strings is very long, so to play single-note lines cleanly,
+one must constantly be muting the sounding strings at the
+exact moment that a new string is plucked. For the Elec-
+trosteel, a decoupling of decay time and sustain level from
+the physical realities of a vibrating string was desired to in-
+crease the flexibility of the sound synthesis. Therefore, the
+goal of the right-hand plucking system was to detect pluck
+events (with amplitude) and mute events, but nothing fur-
+ther.
+PSGs usually have either 10 or 12 strings. Any reduction
+in the number of strings for the right hand would make nor-
+mal PSG playing technique impossible, so it was decided to
+design a 12-string system (10-string players can remove the
+bottom 2 strings). While there are many possible technolo-
+gies that could be used, such as a set of piezo film flaps or
+buttons to represent the strings, the feel of the strings under
+the fingers is an important touch cue for playing the PSG,
+so the decision was made to preserve that as much as possi-
+ble. A short set of 12 strings was strung over a bridge and
+nut (Figure 3) under the right hand position, damped with
+felt on both ends. To reduce crosstalk, optical IR reflectance
+sensors were used to detect string motion (QRD1113), since
+the IR light could be blocked between strings more easily
+than electromagnetic fields. However, this only works well if
+the strings are relatively thick and very close to the sensors,
+meaning that the strings cannot be the standard gauges
+PSG players are used to. Tests with PSG players found
+that this was confusing as they often use the transition
+from wound to unwound strings as a visual place marker
+to keep their orientation on the many strings. Also, the IR
+sensors are particularly sensitive to positioning (which the
+felt damping makes less reliable) so it is likely that a future
+version will switch to single-string electromagnetic pickups
+and work to reduce crosstalk in other ways. Another poten-
+tially interesting solution would be piezo strings [5], if the
+technology evolves to allow for normal string tension.
+Plucks are detected using a relatively simple envelope de-
+tection algorithm, running on an STM32H750 microcon-
+troller. The 12 strings are sensed by the built-in ADC,
+and when a pluck is sensed, an SPI message is sent to a
+PSOC5LP serving as the “brain” MCU.
+Muting was achieved by having the strings themselves
+serve as capacitive touch sensors. A PSOC5LP microcon-
+troller performs both the string-muting sensing and the bar-
+position sensing, and sends these signals to the“brain”MCU
+via SPI.
+Figure 3: Design drawing of the bridge cover, bridge, and
+nut for the right-hand strings
+5.3 Right-Foot Volume Pedal
+While for standard guitar a volume pedal would be an op-
+tional accessory, on the PSG it is an integral part. The vol-
+ume pedal has been a necessary feature of the instrument
+since the 1950s, and there is a particular technique for in-
+creasing the perception of sustain by easing up the volume
+after striking the strings, a kind of “manual compression”.
+On the Electrosteel, an expression pedal was substituted for
+this so that it could affect parameters beyond volume. Ac-
+cordingly, a miniature expression pedal is connected to the
+left-foot pedal board by a TRS cable, where it is sensed by
+an ADC.
+5.4 Left-Foot Pedals
+The left-foot on a PSG activates a set of between three
+(3) and eight (8) pedals that connect via metal rods to the
+underside of the instrument. These rods, through a series
+of mechanical linkages, pull on a set of individual per-string
+bridges, called the changers, which rotate on a fulcrum to
+adjust the tension on the string. Since there is no need
+in the Electrosteel for actual mechanical changing of string
+length, simplification of this mechanism, while preserving
+the feel and functionality for the player, was desirable. The
+pedal and changer simplification accounts for much of the
+weight difference between Electrosteel and the PSG. Over
+the course of the Electrosteel project, the left-foot pedal
+system proved to be the most difficult design challenge on
+the instrument.
+Figure 4: Design drawing of the left-foot pedal system, un-
+covered
+The first and simplest iteration for the proof-of-concept
+version was simply a plywood board with the pedal mecha-
+nisms from three Yamaha FC3A continuous sustain pedals
+attached to it. These foot pedals are designed to be used
+with an electronic keyboard that senses half-pedaling, so
+they are actually a continuous potentiometer-based pedal,
+rather than a switch. They were somewhat larger than the
+pedals on a PSG, so the spacing between them was not
+ideal, but they worked well enough for initial tests. The
+next iteration, and first custom solution, used 3D-printed
+plastic parts for the pedals and the mounting hub, with po-
+tentiometers for sensing the pedal angle and small extension
+springs to return the pedal to its initial position. Later it-
+erations abandoned the direct potentiometer approach, to
+avoid reliance on the shaft connection of the potentiometer
+as a mechanical support, and due to concerns about rapidly
+wearing out the resistive material in the potentiometers, as
+the pedals are moved constantly in normal playing. The po-
+tentiometers were replaced with angular hall sensors paired
+with magnets glued to the end of the shafts. The shafts
+were supported on sets of ball bearings, and the pedals were
+affixed to the shafts with set screws.
+Figure 5: Photograph of the left-foot pedal system, with en-
+closure cover in place
+Many of the iterations of the foot pedal system were mo-
+tivated by the need to replace plastic parts with metal for
+increased rigidity, as the pedals take significant forces in
+many different directions (the player may roll their foot
+onto a pedal from either side, or come down from the top,
+for instance). The shape of the pedals themselves also un-
+derwent much iteration, as the original square edges were
+found to catch on shoe soles, and needed to be rounded
+off. The small extension springs were replaced with larger
+compression springs underneath the pedals, a design fea-
+ture borrowed from the Yamaha FC3A, and one that made
+switching out the springs to adjust spring strength easier
+for the player. The final system used custom CNC-milled
+aluminum parts for the pedals and off-the-shelf aluminum
+parts for the bearings, shaft, and mounting block (Figure 4).
+The mounting block that holds the shaft is fitted with a
+custom part that allows for set screws to adjust the stop
+points for the resting and pressed positions of the pedals,
+which must be adjustable by the player and therefore needed
+to be exposed on the design. This is because PSG perform-
+ers tend to set the pedals to different heights relative to
+each other by their own preference (for instance: first pedal
+slightly higher resting state than second pedal). Since the
+start and stop data are relative and can be changed by the
+user, the brain MCU of the instrument has a calibration
+mode that can record the range of the pedal data and store
+it in EEPROM.
+The earlier revisions were housed in a custom cut 5mm
+thick aluminum enclosure, but the final revision replaced
+this with a custom bent steel enclosure design to reduce
+thickness and part count. The enclosure features a TRS
+jack to connect the external right-foot volume pedal, and
+an RJ-45 jack to connect the pedal system to the brain of
+the instrument through a standard ethernet cable (though
+the actual signal protocol reporting the hall sensor and ex-
+pression pedal ADC data is I2C).
+Since the number of foot pedals on a PSG is not stan-
+dardized, it was difficult to decide on how many pedals the
+Electrosteel should have. Three pedals is enough for many
+things, but more pedals allow for more flexibility. The Elec-
+trosteel prototype began with three pedals, grew to 7 pedals
+at one point, and then settled at 5 pedals in its last iteration
+as a compromise between flexibility, cost, and weight.
+5.5 Knee Levers
+In the early 1960s, knee levers became common on the PSG.
+Like the left-foot pedals, these levers are used to change the
+pitch of the open strings. Most PSGs have at minimum two
+knee levers, although some have up to 8. 5 is a common
+complement of knee levers, as it can include levers in the
+left and right directions for both knees, as well as a single
+vertical lever for the left knee. Beyond this, PSGs some-
+times include “inner” and “outer” levers for the same direc-
+tion on one knee, meaning separate levers that are closer or
+further from the player, although these are generally harder
+to activate independently. A vertical lever on the right knee
+is harder to use because the position of the foot on the vol-
+ume pedal allows for less knee flexibility. A complement of
+5 levers was decided upon as a reasonable amount for the
+Electrosteel, providing the most flexibility before the added
+complexity begins to be hard to justify.
+Figure 6: Drawing of the Electrosteel, underside view
+As the knee levers add significant cost and mechanical
+complexity to the instrument, one early idea for the Elec-
+trosteel was to manage the functionality with a greatly sim-
+plified system, such as IR position sensors for the knees,
+or something else that eliminates moving parts. Unfortu-
+nately, this is not realistic if the goal of harnessing existing
+embodiment from PSG technique is taken seriously, as the
+physical feedback of the knee lever moving and its resis-
+tance to movement is an important part of controlling the
+instrument[21]. Even more important is the existence of me-
+Figure 7: Photograph of the Electrosteel, underside view
+chanical stops to end the lever travel so that exact pitches
+can be arrived at following a glissando. Therefore, it was
+clearly necessary to build a mechanical knee lever system to
+provide the proper feedback to the player, even if this me-
+chanical system was only resolving into a relatively simple
+sensor reading.
+Figure 8: An Electrosteel knee lever mechanism
+With this in mind, one early design goal was to have as
+much reuse as possible between the left-foot pedal system
+and the knee levers, as they are almost the same thing, just
+rotated 90 degrees. The foot pedals protrude parallel to
+the ground toward the player, and the knee levers emerge
+from the bottom of the instrument and hang downward, but
+their range of travel is similar. This goal was achieved to
+some degree, as the hall sensor, mounting block and shaft
+design could be reused easily, although changes were needed
+for the levers themselves. While the foot pedals could be
+constructed as a single part mounted to the rotating shaft
+by a set screw, the knee levers needed to fold up under the
+instrument for transport, necessitating another point of ro-
+tation. The knee levers were therefore fabricated as two
+parts: a hub and a lever (Figure 8). The lever is connected
+to the hub with a shoulder screw that allows it to pivot
+in one direction. The hub is then connected to the rotat-
+ing shaft with a set screw. For the knee levers, the small
+extension spring version of the return system was needed,
+since there is no readily available surface against which to
+place a compression spring. On a PSG, there are points for
+adjustment on the knee levers available to the player via
+set screws to allow the instrument to accommodate play-
+ers of different body sizes. This design was copied on the
+Electrosteel, with each knee lever hub featuring a set screw
+that angles the lever toward the player. This allows the
+mounting blocks to be relatively far from the center of the
+player’s leg, and therefore able to be adjusted for leg size
+and position.
+5.6 Additional Right-Hand Controls
+It was determined that additional controls not present on a
+PSG would be useful on the Electrosteel. While the pedals
+and knee levers could provide a powerful collection of tim-
+bre controls for synthesis, if a player is instead using them
+to manipulate pitch as on a traditional PSG, then a set of
+knobs would be helpful to adjust other synthesis parame-
+ters. While this is motivated primarily by the fact that the
+sound palette of the Electrosteel can be far wider than the
+PSG, it is also especially needed because the Electrosteel
+interface loses some of the most important timbral controls
+of the PSG instrument, such as sensitivity to plucking po-
+sition on the string. For this purpose, near the right hand,
+the Electrosteel features a panel with two knobs, labeled A
+and B, and a small 2D joystick. Other functions were added
+as needed, such as octave buttons and an OLED screen for
+synthesis preset loading.
+Figure 9: Drawing of the Electrosteel, top view
+Figure 10: A closer photograph of the circuitry inside the
+Electrosteel body
+6. AUDIO SYNTHESIS ENGINE
+Since the goal of the Electrosteel was to allow electronic
+synthesis to be controlled with the expressivity of the PSG
+interface, it made sense to create a digital synthesis engine
+that was designed to take advantage of the control the Elec-
+trosteel offered. Early prototyping treated the Electrosteel
+as an MPE USB-MIDI controller and interpreted the in-
+coming data with Max-MSP patches and various commer-
+cial software synthesizers that could respond to MPE data
+(necessary due to the independent per-string pitch bend ca-
+pability). This was useful when testing the sensor data and
+mechanics of the instrument, but the ultimate intention
+was always to have a custom synthesis engine embedded
+in the instrument. Later revisions achieved this goal, with
+onboard synthesis algorithms producing digital sound and
+sending the audio signal to a 1/4” TS output jack on the
+Electrosteel front panel.
+Embedded synthesis was implemented using the first au-
+thor’s Genera Audio Board, a development board that in-
+cludes an STM32H743, an audio codec, SDRAM, and a
+microSD card slot. The requirement for 12-note polyphony,
+which was crucial for enabling traditional PSG playing on
+the Electrosteel, was a significant challenge. A custom PCB
+was designed which housed three Genera Audio Boards, so
+that each would only need to serve 4 notes out of the 12.
+Three methods of embedded synthesis were initially tested
+on the prototype: subtractive wavetable synthesis, additive
+synthesis, and physical modeling. All three methods were
+implemented using the first author’s LEAF C audio library
+(Lightweight Embedded Audio Framework), and found to
+be promising. For additive synthesis, a PSG’s plucked strings
+were recorded at several positions on the neck on each string.
+The decay times of the harmonics for each pluck were ana-
+lyzed in SPEAR[13], and a table of these decay times was
+used to extrapolate envelopes for a set of sine waves. This
+produced a relatively realistic PSG tone, even reproduc-
+ing the darkening of the tone color as the bar is moved
+up the neck, since the bar position was maintained as a
+separate variable from pitch. Missing from the simulation
+were more subtle effects like pick noise, inharmonicity, and
+phantom harmonics. Lastly, a physical modeling approach
+was attempted and found to be very effective. The string
+model used was based on the living string model by Dahlst-
+edt[4], with several modifications based on research from
+Smith[22], Lasko [14], Valimaki [24], and Karjalainen [12].
+After developing these three synthesis methods, it became
+Figure 11: The Electrosteel synthesis plugin
+clear that more flexibility in the synthesis design for the end
+user was needed. We began to develop an audio plugin that
+would enable the user to configure a specific synthesis pre-
+set on a computer, load it to the Electrosteel, and call it up
+later in performance(Figure 11). This became the Electros-
+teel plugin, created in C++ using the JUCE library 3, and
+primarily developed by the second and third authors Matt
+Wang and Davis Polito at the Princeton New Instrument
+Research Lab (NIRL). So far only the subtractive synthesis
+method has been built into the plugin. The plugin fea-
+tures three hard-syncable oscillators with selectable wave-
+shape[2], a filtered noise section, two filters with selectable
+algorithms[25], a set of 4 mappable LFOs and 4 envelopes,
+a final VCA, and an FX section with a variety of processing
+options (compression, bitcrushing, etc). Most parameters
+can be mapped by the user to be controlled by one of the
+possible modulation sources, which range from the oscil-
+lator outputs (enabling FM effects) to the joystick on the
+panel. When a synthesis preset has been designed using
+the Electrosteel plugin, it can be loaded onto the embedded
+hardware over USB-MIDI sysex and stored as one of the
+user synthesis presets on the instrument’s internal microSD
+card. While this synthesis method was powerful, it was too
+computationally intensive for 4-voice polyphony per audio
+board. It was deemed worth adding more parallel process-
+ing to make it possible, so the number of audio boards was
+increased to 6, letting each board handle only two voices.
+7. COPEDENT DESIGN
+On a PSG, the configuration of which pedal or knee lever
+does what change is referred to as a copedent (for ChOrd-
+PEDal-ArrangemENT). One of the most exciting capabili-
+ties of the Electrosteel when compared with a PSG is the
+ability to change the copedent on the fly. On a PSG, chang-
+ing the copedent often must be done by a technician, and
+will usually take at least a day. There are also physical lim-
+its to what a pedal or lever can do, as the number of strings
+changed increases the stiffness of the pedal action, and most
+strings can only be altered up or down by at most a minor
+third. These limitations are nonexistent in the Electros-
+teel, but an interface was still needed to allow the player
+to configure new copedents as easily as possible. This was
+built into the Electrosteel plugin with a copedent editor tab
+(Figure 12) that lets the user enter the pitches of the open
+strings and all the changes that each pedal or lever causes.
+Figure 12: The Electrosteel plugin copedent settings window
+In the interface, pitches can be entered as note names
+with cents deviations (such as C4 + 4), MIDI notes (such
+3https://juce.com/
+as 60.04), or pitch ratios (such as 5/4). Internally, all val-
+ues are converted to fractional MIDI notes (such as 60.25).
+Copedents are sent over USB-MIDI sysex messages to the
+Electrosteel for storage on the brain MCU EEPROM.
+8. RESULTS
+The Electrosteel had been played constantly during its multi-
+year development, but its first public performance occurred
+on January 3rd, 2023 at the Red Room in Baltimore. It was
+played by the first author in an improvisational duo with
+another electronic musician, and proved to live up to the
+authors’ hopes for the instrument. However, now that the
+instrument is in a mature state, more user data is needed
+to determine the success and usefulness of the instrument.
+During the development phase, one professional PSG player
+tried it out and gave valuable feedback, and more feedback
+of this type is needed.
+The PSG is both a rare and a famously difficult instru-
+ment, and that combination means that there are few skilled
+players in the world. Since the Electrosteel is designed to
+take advantage of PSG skill, the most useful data in the
+future will be from professional performers who test out the
+Electrosteel in their own practice. This is the next goal of
+the project.
+9. CONCLUSION AND FUTURE WORK
+There are several aspects of the instrument that need im-
+provement. The left-foot pedal box currently slides on some
+surfaces, so the addition of a “pedal-bar” to hold it in place
+is likely necessary. The left-hand bar sensing system could
+use improvement, as it requires slightly more effort from the
+player than a traditional PSG. Perhaps a bar that is sensed
+directly rather than indirectly through strings pressed against
+a circuit board would give a better feel, so magnetic posi-
+tion sensing through hall sensors or other location sensing
+could be used.
+The next step on the plugin is to integrate the physical
+modeling synthesis and additive synthesis into the plugin
+interface, so that they can be configured as easily as the
+subtractive synthesis.
+Another plan is to develop the physical modeling synthe-
+sis further to take into account other effects such as bar fric-
+tion noise[18], phantom partials[1], inharmonicity[20], and
+electromagnetic pickup modeling[11][17] . The most impor-
+tant next step is to get the instrument in the hands of more
+players and receive feedback on where it excels and where it
+fails. We have the parts made for a set of 10 Electrosteels,
+and a list of players who are interested in borrowing one to
+test for their own musical uses. It is anticipated that this
+will reveal shortcomings and opportunities that the design-
+ers have not yet noticed.
+Now that the Electrosteel is fully playable, the most press-
+ing future work is to create music for it, both composed and
+improvised, and in multiple genre contexts, to see where it
+shines and where its unique features are most useful.
+10. ACKNOWLEDGMENTS
+The authors would like to thank the Princeton Global Net-
+work Grant and the Princeton Council for Science and Tech-
+nology. Thanks also to the many PSG players who gave
+valuable feedback on design choices during the project, es-
+pecially Dave van Allen, Susan Alcorn, and Bob Hoffnar.
+11. ETHICS STATEMENT
+This project was undertaken within the standards of the
+NIME ethical code of conduct. A formal user study was
+not conducted as part of this research, so no ethical issues
+relating to study subjects were encountered. The authors
+acknowledge that this work does, however, make use of in-
+dustrial fabrication processes (custom PCB fabrication and
+assembly, anodizing aluminum, etc) which contribute to en-
+vironmental damage.
+12. REFERENCES
+[1] J. Bensa. Efficient modeling of” phantom” partials in
+piano tones. Proc. ISMA 2004, Nara, Japan, 2004.
+[2] E. Brandt. Hard sync without aliasing. power (dB),
+60:40, 2001.
+[3] C. Burns. ” together again,” but we keep on crying:
+Buck owens, tom brumley, and the pedal steel guitar,
+1964. Music Theory Online, 25(2), 2019.
+[4] P. Dahlstedt. Mapping strategies and sound engine
+design for an augmented hybrid piano. NIME, pages
+271–276, May 2015.
+[5] M. Ehrhardt, M. Neupert, and C. Wegener.
+Piezoelectric strings as a musical interface. In
+R. Michon and F. Schroeder, editors, Proceedings of
+the International Conference on New Interfaces for
+Musical Expression, pages 35–36, Birmingham, UK,
+July 2020. Birmingham City University.
+[6] S. Fishell. Buddy Emmons: Steel Guitar Icon.
+University of Illinois Press, 2022.
+[7] A. Guidi and A. McPherson. Quantitative evaluation
+of aspects of embodiment in new digital musical
+instruments. In NIME 2022, jun 16 2022.
+https://nime.pubpub.org/pub/aa39yd37.
+[8] L. Haken and E. Eagan. Playing the continuum
+fingerboard: New performance techniques for a
+continuous instrument. The Journal of the Acoustical
+Society of America, 128(4):2345–2345, 2010.
+[9] J. Harriman. Feedback lapsteel: exploring tactile
+transducers as string actuators. In NIME, pages
+178–179. Boulder, CO, 2015.
+[10] J. Harriman, L. Casey, and L. Melvin. Quadrofeelia-a
+new instrument for sliding into notes. In NIME, pages
+529–530, 2011.
+[11] N. G. Horton and T. R. Moore. Modeling the
+magnetic pickup of an electric guitar. American
+journal of physics, 77(2):144–150, 2009.
+[12] M. Karjalainen, V. V ¨alim¨aki, and T. Tolonen.
+Plucked-string models: From the karplus-strong
+algorithm to digital waveguides and beyond.
+Computer Music Journal, 22(3):17–32, 1998.
+[13] M. Klingbeil. Software for spectral analysis, editing,
+and synthesis. ICMC, September 2005.
+[14] T. I. Laakso. Splitting the unit delay. IEEE signal
+processing magazine, 13(1):30–60, 1996.
+[15] A. P. McPherson. Touchkeys: Capacitive multi-touch
+sensing on a physical keyboard. In NIME, 2012.
+[16] T. D. Miller. Instruments as Technology and Culture:
+Co-Constructing the Pedal Steel Guitar. PhD thesis,
+University of North Carolina at Chapel Hill, 2013.
+[17] R. C. Paiva, J. Pakarinen, and V. V ¨alim¨aki. Acoustics
+and modeling of pickups. Journal of the Audio
+Engineering Society, 60(10):768–782, 2012.
+[18] J. Pakarinen, H. Penttinen, and B. Bank. Analysis of
+handling noises on wound strings. The Journal of the
+Acoustical Society of America, 122(6):EL197–EL202,
+2007.
+[19] J. Pakarinen, T. Puputti, and V. V ¨alim¨aki. Virtual
+slide guitar. Computer Music Journal, 32(3):42–54,
+2008.
+[20] H. Penttinen, J. Pakarinen, V. V ¨alim¨aki, M. Laurson,
+H. Li, and M. Leman. Model-based sound synthesis of
+the guqin. The Journal of the Acoustical Society of
+America, 120(6):4052–4063, 2006.
+[21] J. Ryan. Effort and expression. In Proceedings of the
+International Computer Music Conference, pages
+414–414. International Computer Music Association,
+1992.
+[22] J. O. Smith. Virtual electric guitars and effects using
+faust and octave. In Proceedings of the Linux Audio
+Conference (LAC 2008). Citeseer, 2008.
+[23] R. Stone. Sacred steel: inside an African American
+steel guitar tradition. University of Illinois Press, 2010.
+[24] V. V ¨alim¨aki, J. Huopaniemi, M. Karjalainen, and
+Z. J´ anosy. Physical modeling of plucked string
+instruments with application to real-time sound
+synthesis. In Audio Engineering Society Convention
+98. Audio Engineering Society, 1995.
+[25] V. Zavalishin. The art of va filter design. Native
+Instruments, Berlin, Germany, 2012.

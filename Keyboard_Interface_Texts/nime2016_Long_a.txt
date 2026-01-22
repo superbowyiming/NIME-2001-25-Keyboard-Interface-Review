@@ -1,0 +1,630 @@
+The Closed-Loop Robotic Glockenspiel: Improving
+Musical Robots Using Embedded Musical Information
+Retrieval
+Jason Long
+New Zealand School of Music
+Victoria University of
+Wellington
+New Zealand
+jason.long@ecs.victoria.ac.nz
+Ajay Kapur
+New Zealand School of Music
+Victoria University of
+Wellington
+New Zealand
+ajay@karmetik.com
+Dale A. Carnegie
+School of Engineering and
+Computer Science
+Victoria University of
+Wellington
+New Zealand
+dale.carnegie@vuw.ac.nz
+ABSTRACT
+Musical robots provide artists and musicians with the abil-
+ity to realise complex new musical ideas in real acoustic
+space. However, most musical robots are created with open-
+loop control systems, many of which require time consum-
+ing calibration and do not reach the level of reliability of
+other electronic musical instruments such as synthesizers.
+This paper outlines the construction of a new robotic musi-
+cal instrument, the Closed-Loop Robotic Glockenspiel, and
+discusses the improved robustness, usability and expressive
+capabilities that closed-loop control systems and embedded
+musical information retrieval processes can aﬀord robotic
+musical instruments. The hardware design of the instru-
+ment is described along with the ﬁrmware of the embedded
+MIR system. The result is a new desktop robotic musi-
+cal instrument that is capable of continuous unaided re-
+calibration and latency compensation, is as simple to use
+as more traditional hardware electronic sound-sources and
+provides musicians with new expressive capabilities.
+Author Keywords
+Musical Robotics, Musical Information Retrieval, Control
+System, Closed Loop, MIDI, Glockenspiel, NIME, MIR,
+Onset Detection, Latency Compensation
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing, I.2.9 [Artiﬁcial Intelligence] Robotics—
+Sensors.
+1. INTRODUCTION
+Musical robotics is a ﬁeld within music technology that is
+concerned with actuating real-world acoustic sound-objects
+with computer control. These systems are capable of facili-
+tating the creation of expressive musical works that combine
+the beneﬁts of precise control and electronic synchroniza-
+tion with those of real acoustic instruments and spaces. At
+the present time, there are very few commercial oﬀerings
+of robotic musical instruments, and most are constructed
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’16,July 11-15, 2016, Grifﬁth University, Brisbane, Australia.
+.
+by composer-creators in academic or artistic environments.
+While these one-oﬀ instruments generally achieve their pur-
+pose of creating new and interesting music, they often re-
+quire extensive manual calibration, frequent maintenance
+and lack the reliability and repeatability of commercially
+produced musical instruments or industrial robots. The
+following quote from an interview with musical roboticist
+Meiwa Denki exempliﬁes this issue:
+“The instruments sometimes break, which be-
+comes part of the show. It’s kind of like F1 rac-
+ing. We try hard to keep them from breaking,
+but with more than 30 instruments, some kind
+of trouble always arises” [5]
+One of the key elements that makes industrial robots re-
+liable is the use of sensors that provide control systems with
+continuously polled closed-loop feedback on their position,
+pressure, temperature or other parameters. In the case of
+musical robots, though these types of sensing can be useful,
+the most important outputs are the audible vibrations com-
+ing from the sound objects themselves. Therefor in order to
+eﬀectively close the loop in such systems, audio sensing ap-
+paratuses must be used. However, since a straight reading
+of a sound-pressure wave won’t provide suﬃcient musical
+details with which to inform the control system, musical
+information retrieval (MIR) techniques such as onset detec-
+tion, loudness analysis and spectral analysis can be used to
+make sense of the data. With this data feeding back into
+the control system of a robotic musical instrument, the in-
+strument can continuously reﬁne its performance to match
+the intended musical intentions of the operator.
+2. BACKGROUND
+People have created musical automata for millenia. Devel-
+opment has progressed from early water and wind powered
+sound makers, through programmable organs and carillons
+to sophisticated reproducing pianos which can expressively
+reproduce a famous piano performance on command. In the
+early to mid 20th century some composers such as Conlon
+Nancarrow and George Antheil utilised the extra-human ca-
+pabilities of musical automata to realise new, complex com-
+positions that otherwise would have been impossible [15].
+In the 1970s, artists such as Trimpin and Godfried Willem
+Raes began developing a new variety of musical automata,
+this time under computer control, pioneering the ﬁeld of
+musical robotics [6]. In recent decades, as the barrier to
+entry for artists to create electro-mechanical works has low-
+ered, musical robotic development has accelerated and reg-
+ular shows are being conducted with large groups of mu-
+2
+sical robots such as the Karmetik Machine Orchestra, Pat
+Metheny’s Orchestrion and the Logos Robot Orchestra [11].
+2.1 Robotic Polyphonic Pitched Percussion
+Pitched percussion is an instrument class that is popular
+with musical roboticists. Unlike the playing of a cello,
+which requires several diﬀerent mechanisms operating in
+conjunction in order to produce a single note, a single-
+actuator strike on a percussion instrument is able to produce
+a satisfying output. Examples of robotic pitched percussion
+include instruments in the Karmetik Machine Orchestra,
+Eric Singer’s SingerBots, Raes’ Robot Orchestra [11], Ken
+Caulkins’ works [2] and Trimpin’s Conloninpurple, Circum-
+ference and Magnitude in C# installations [4], not to men-
+tion the variety of computer controlled pianos in existence.
+Some of these instruments use mallets to strike keys
+from above, while others strike directly from below, allow-
+ing human performers to play the instrument simultane-
+ously. However, almost all designs utilise microcontrollers
+to trigger an array of linear solenoids, which do not exhibit
+particularly linear characteristics with regards to velocity
+control [7], and also create varying degrees of latency [9].
+2.2 Calibration of Musical Robots
+Various methods have been used to attempt to calibrate mu-
+sical robots in order to make improvements on these short-
+comings and deliver more accurate performances of musical
+works. In order to correctly map the 127 Note-on values
+available for use in standard MIDI systems to pulse-lengths
+that drive the solenoids, the value 1 should be mapped to
+the shortest pulse which reliably strikes the key, the value
+127 should be mapped to the longest pulse which stops be-
+ing applied before the striker makes contact with the key,
+and the values between these two extremes should ideally
+adhere to a curve that results in 126 steps of equally in-
+creasing loudness as perceived by a human.
+Murphy proposes pre-performance automatic calibration
+systems that seek to improve the accuracy of open-loop
+solenoid based percussion systems [13]. Similar techniques
+were also proposed for use with robotic string picking instru-
+ments [14]. While these types of pre-performance calibra-
+tion systems do notably improve the performance of these
+robotic systems, they add to the complexity of use and time
+required in their setup by requiring a personal computer to
+carry out the calibration.
+These issues have been addressed by Shawn Trail with
+his STARI robot, which utilises a single-board BeagleBone
+computer to embed his PureData based tuning routine in-
+side the robot [20]. Other similar solutions include Trimpin
+modifying commercial guitar tuners to tune his If VI Were
+IX robotic guitar installation and the automatic tuning
+pegs of the Gibson Robotic Guitar. However, all of these
+pre-performance calibration systems leave the instruments
+vulnerable to any changes in the environment during a per-
+formance that may aﬀect the instrument’s response.
+2.3 MIR and Musical Robots
+Koji Shibuya has published several papers that emphasize
+the necessity of ‘kansei’ in musical performance. Translated
+as ‘perception’ or ‘sensibility’, kansei is the ability for a
+performer to continuously listen to their own musical output
+and use that information to adjust their actions in real-time
+in order to bring that output closer to an ideal goal [17]. In
+order to achieve such functionality with a musical robot, it
+is necessary to receive an audio feed from the instrument
+and utilize musical information retrieval (MIR) techniques
+in order to extract useful information from the signal that
+can inform the robot’s future actions.
+In the last few years some research has been conducted
+which uses MIR techniques on robotically actuated audio
+streams. Ness et al. label this area ‘Music Information
+Robotics’ in their study which utilised a single external
+microphone to aid in pre-performance calibration and use
+audio based drum classiﬁcation to match an array of roboti-
+cally actuated percussion instruments with their correspond-
+ing control channels [16]. Solis et al. performed experiments
+which used pitch analysis to provide feedback on the per-
+formance of their anthropomorphic ﬂute playing robot [18],
+and Batula et al. used audio and haptic signals to classify
+their humanoid robots’ strikes as ‘good’ or ‘bad’.
+3. THE ROBOTIC GLOCKENSPIEL
+The ﬁrst iteration of the robotic glockenspiel design utilised
+a simple open loop conﬁguration and is pictured on the
+top left of Figure 1. The control box pictured on the top
+right of Figure 1 received MIDI commands via either a panel
+mounted 5-pin DIN connector or via USB. It then produced
+higher voltage pulses which were sent to the instrument via
+a standard DB25 cable in order to control the solenoids
+mounted under the glockenspiel keys.
+The instrument was designed with contemporary mu-
+sic and installation performance in mind and operates with
+very low levels of extraneous acoustic noise and compar-
+atively low levels of latency, between 10 ms and 25 ms,
+making it suitable for real-time interactive applications [8].
+Figure 1: Top Left: The Robotic Glockenspiel. Top
+Right: The control box necessary for operating it.
+Bottom: An exploded rendering showing the inside
+of the instrument.
+However, in performance is was noticed that a straight
+mapping of MIDI velocities to pulse-widths that was identi-
+cal for each key resulted in inconsistencies among the keys’
+volumes. Though manually editing the ﬁrmware of the con-
+trol box with customized pulse-width ranges for each key
+provided improvements in that area, it was observed that
+over time and especially when the instrument is transported
+between venues, the manually edited values would no longer
+provide optimum performance.
+As a result, the software interface shown in Figure 2 was
+created in the Reaktor visual programming environment.
+The plugin allows the user to specify minimum and max-
+3
+imum velocities for each note of the robotic glockenspiel,
+and when inserted into the MIDI stream between the orig-
+inal signal and the instrument, maps the inputted signals
+between these limits.
+Figure 2: The external software interface used to
+manually calibrate the Robotic Glockenspiel.
+This method added convenience when calibrating the
+instrument, but the manual calibration method was still
+time consuming, mapping the MIDI velocities to a small
+range decreased the resolution of the control signal, and
+since even slight changes occurring during a performance
+with the instrument can have a signiﬁcant eﬀect on the
+velocity response, pre-performance calibration was deemed
+insuﬃcient. This lack of reliability meant that in order to
+prevent the missing of notes during very quiet passages due
+to slightly short pulse-widths being sent, conservative mini-
+mum values had to be set, which had a negative eﬀect on the
+dynamic expressiveness of the instrument’s performance. In
+order to solve these problems it was necessary to implement
+an embedded closed-loop control system that was capable of
+continuously monitoring the performance of the instrument
+and autonomously making adjustments as necessary.
+4. THE CLOSED-LOOP UPGRADES
+Figure 3: The Closed-Loop Robotic Glockenspiel.
+The Closed Loop Robotic Glockenspiel is a complete
+revamp of the original instrument, designed to deliver im-
+provements in reliability, repeatability, usability and musi-
+cal expressiveness. To achieve these goals, it was decided
+remove the control box altogether and integrate all of the
+electronic hardware inside the instrument itself. One of the
+key objectives of the instrument’s design was to ensure that
+it was no more complex to operate than a commercial desk-
+top synthesizer. In keeping with this philosophy, the back
+panel as shown in Figure 3 contains just power, MIDI, USB,
+an audio out connector and a volume knob.
+4.1 The Mechanics
+Each individual key of the glockenspiel is paired with a
+tubular linear push-type solenoid. Striking the key with
+the solenoid’s bare metal rod produces a fatiguing sound in
+which the higher harmonics dominate the output. Several
+diﬀerent striking materials were trialed, and it was decided
+that wooden balls provided the most agreeable timbre.
+Several conﬁgurations were tested in order to pick up
+the sound from the keys. One popular method as used on
+the DSRmarimba is attaching piezoelectric discs directly to
+the keys [19]. Unfortunately with the small, lightweight
+glockenspiel keys, this method had the eﬀect of dampening
+their movement and noticeably detuning them. To avoid
+these pitfalls, a method using magnets and inductors similar
+to that of the EMvibe was chosen [1].
+1 mm thick, 4 mm in diameter neodymium magnets
+were attached to the keys near their central extremes us-
+ing Araldite Super Strength glue. Beneath each of these
+magnets, an electromagnetic coil is positioned close enough
+to pick up the vibrations of the magnet, but not so close as
+to inhibit the key’s free movement. Since there is no wiring
+attached to the keys directly, they are able to move freely,
+and the neodymium magnets have a low enough mass that
+any potential detuning of the keys is imperceptible. The
+whole conﬁguration is shown in Figure 4.
+Figure 4: The action of a single key.
+4.2 The Electronics
+The electronics of the instrument comprise of three main
+sections, the power supply, the digital circuitry including
+microcontrollers, and the analogue audio circuits. For this
+prototype instrument the circuit boards were created via
+CNC mill, in a through-hole conﬁguration. The three sec-
+tions are discussed in turn below.
+4.2.1 Power
+The instrument is powered using a standard IEC cable and
+toggling the illuminating power switch turns it on. The
+mains power is routed through an internal fuse and is passed
+on to the primary winding of a power transformer inside the
+unit. A toroidal transformer was chosen rather than a typi-
+cal EI model due to their high power eﬃciency, low proﬁle,
+the required low levels of ﬂux-leakage noise due to being
+mounted in close proximity to analogue audio circuits [12],
+and low acoustic noise [21]. The mains voltage section of
+the unit is physically separated from the rest of the internals
+with a 3D printed barrier for safety.
+The toroidal transformer provides dual secondary volt-
+4
+Figure 5: The Power Supply (left), Solenoid Control (middle) and Audio Processing (right) circuit boards.
+ages of 60 vac for the solenoid supply voltage and 9 vac for
+the analogue audio and digital circuitry. The power supply
+circuit board shown on the left of Figure 5 was created which
+rectiﬁes the solenoid supply voltage to an unregulated 80 v,
+provides regulated +9 v and -9 v DC for the audio circuits,
+and +5 v to power the logic circuits.
+4.2.2 Digital Control
+Both the control logic and DSP algorithms of the prototype
+are implemented on a pair of Arduino Due microcontroller
+boards. These boards were chosen due to their convenience
+for rapid prototyping, array of on-board 12 bit analogue to
+digital converters and ability to process several channels of
+audio at a 44.1khz sample rate.
+The unit can receive commands from both the standard
+MIDI input via the 5-pin DIN connector and via USB. The
+USB-B socket is mounted to a small PCB running an altered
+Hiduino ﬁrmware on a Atmega16u2 chip [3]. This ﬁrmware
+implements bidirectional MIDI communication between the
+on-board Due boards and a connected device.
+Control signals comprised of short pulses to activate the
+solenoids are transmitted from the microcontroller boards
+to the solenoid control board pictured in the middle of Fig-
+ure 5. This simple board implements the same MOSFET
+based solenoid control circuit outlined in [10] for each of the
+21 keys of the instrument.
+4.2.3 Audio Circuitry
+The analogue audio processing circuitry is housed on the
+circuit board shown on the right of Figure 5. The board
+receives signals from each of the 21 pickup coils positioned
+under the keys of the instrument and processes their out-
+put with op-amp circuits implemented in active ﬁlter and
+variable gain ampliﬁer conﬁgurations.
+These circuits ﬁrst low-pass the audio signal with a cut-
+oﬀ frequency of approximately 20khz in order to remove
+extraneous noise. PCB-mounted potentiometers are then
+included in the op-amp feedback path in order to adjust
+the gain applied to each channel and optimize their signal-
+to-noise ratio. After ampliﬁcation, the signal is then high-
+passed with a cut-oﬀ of approximately 10 hz in order to
+remove DC oﬀset. Finally, the signal is biased to a virtual
+ground at 1.65 v prior to being sent to the microcontroller
+boards for analogue to digital conversion.
+The output pins of each of the ampliﬁer circuits are also
+connected to a separate summing ampliﬁer circuit before the
+biasing stage. The summing ampliﬁer is equipped with an
+internal trim-pot to set the maximum output voltage of the
+mix-down, the signal is routed through the panel-mounted
+volume potentiometer, and is buﬀered by a ﬁnal op-amp cir-
+cuit in a voltage follower conﬁguration before being output
+to the 1/4” panel-mounted TS socket.
+Figure 6: An exploded render showing the internals
+of the instrument.
+4.3 The Firmware
+A single ﬁrmware is written to both of the microcontrollers,
+with a ﬂag which assigns each of the two boards to one of the
+two groups of solenoids and coils. The ﬁrmware serves mul-
+tiple purposes. Firstly, it manages communications with the
+outside world via MIDI in and out signals, secondly, it pro-
+duces the precise pulses used to control the solenoids which
+strike the keys of the instrument, and thirdly, it implements
+the onset and amplitude detection algorithms on the au-
+dio received from the coils in order to continuously adjust
+the instrument’s performance. The ﬁrst two functions have
+been documented thoroughly with regards to other musical
+robotics systems and will not be discussed here. However
+the embedded MIR methods will be discussed below.
+4.3.1 Onset Detection
+Onset detection is a technique utilised in order to determine
+the point in time when the start of a musical event occurs.
+Many diﬀerent algorithms are used and their eﬀectiveness
+varies greatly depending on the source material.
+The process of onset detection in musical robotics is sig-
+niﬁcantly simpliﬁed in comparison to general purpose ap-
+plications due to the fact that several pieces of information
+that are generally unknown in a human performance are
+pre-determined in a robotic one. Firstly, the approximate
+5
+point in time that an onset is expected to occur is estab-
+lished. This enables the algorithm to ignore any incidental
+onsets that could be detected outside of a small window of
+time. Secondly, since the glockenspiel is a percussion instru-
+ment, the envelope of each strike consists of a short, sharp
+attack, and a slow and predictable release. This means that
+the algorithm need not account for sounds with slow attack
+times or unpredictable envelopes.
+Since the sound pickup method is based around mag-
+netism rather than sound pressure waves, it is not necessary
+to account for the possibility of unintended acoustic sounds
+within the proximity of the instrument interfering with the
+audio feed. Also, because of the fact that a coil is assigned
+individually to each key of the instrument, the fundamental
+frequency and therefor period of each of the expected notes
+is also a known constant.
+Figure 7: Onset and amplitude detection.
+With these assumptions made and referring to Figure 7,
+the onset detection works as follows. After a MIDI Note-On
+message is received in order to trigger a note, the microcon-
+troller reads the velocity value, and uses it to reference a
+look-up table of pulse lengths. It then sends a pulse of that
+length to the MOSFET controlling the referenced solenoid.
+During the period of time that voltage is being applied to
+the solenoid coil, a short impulse of interference is present
+in the audio signal of nearby coils, as shown on the left of
+Figure 7 and noted in [10]. In order to prevent this im-
+pulse from interfering with the onset detection, the algo-
+rithm does not begin listening for onsets for an amount of
+time equal to the pulse applied, plus a 1.5 ms buﬀer.
+When listening for the onset begins, a circular buﬀer
+maintains an averaged signal from which to make ampli-
+tude comparisons. With reference to this average, the algo-
+rithm then marks negative-going zero crossings in the audio
+stream. When three subsequent zero crossings have been
+observed that are each separated by the expected period of
+the played note, an onset is recorded as having taken place
+two periods earlier. The latency of the strike of that partic-
+ular key, and at that particular velocity is then recorded as
+the time from the note being triggered to this onset time. If
+an onset has not been detected within 50 ms of the note be-
+ing triggered, a time-out occurs and it is established that the
+solenoid did not make contact with the key. This approach
+to robotic percussion onset detection provides robust results
+from very soft to loud strikes and has low CPU overhead,
+making it suitable for low-power embedded systems.
+4.3.2 Amplitude Detection
+Each time the onset detector marks the ﬁrst in a poten-
+tial series of negative zero-crossings, the amplitude detector
+begins recording the audio input into a dedicated buﬀer.
+When three correctly spaced zero-crossings have occurred
+and the onset has been successfully detected, the amplitude
+detector scans its buﬀer and records the minimum and max-
+imum amplitudes of the buﬀer in relation to the averaged
+signal. The diﬀerence between these two points is recorded
+as the signal’s amplitude.
+4.3.3 Continuous Calibration
+After a key is triggered and the MIR algorithms have recorded
+latency and amplitude values for a key at a certain pulse
+width, the continuous calibration routine is run. This rou-
+tine plots the values among the other recorded values for
+the speciﬁc key, and conducts an interpolation between the
+new value and other nearest recorded values. This brings
+the current array of amplitudes more in line with the de-
+sired response graph which represents 126 equal steps in
+perceived loudness. It also creates a comprehensive record
+of the latency of each key, at each velocity. In the case that
+a time-out has occurred and the no-contact ﬂag has been
+set, the algorithm simply adds 0.5 ms to the smallest pulse
+width at velocity value 1 and interpolates from that point.
+Many modern digital sequencers provide a latency com-
+pensation feature to improve the timing of sequenced ma-
+terial. When latency compensation mode is enabled with
+a Program Change 70 message, the highest latency value
+of the instrument is returned via a MIDI CC massage. If
+the sequencer’s latency compensation is then set to this
+value, the instrument will use the information it has gath-
+ered about the latency of each velocity of each note to pro-
+vide a uniform level of latency to every sequenced strike.
+It achieves this by playing softer hits with higher latency
+earlier and harder hits with lower latency later. As a result,
+the tightness of the timing of sequences is greatly improved,
+even in compositions with great dynamic variety.
+This continuous calibration enables users to conduct per-
+formances with the instrument without lengthy manual cali-
+bration and without worrying that changing conditions dur-
+ing play will have a negative eﬀect on the instrument’s per-
+formance. If the instrument has just been installed in a new
+environment, a play-through of the intended composition
+during the sound-check will in most cases provide adequate
+opportunity for the instrument to automatically calibrate
+itself, but a thorough calibrate routine has also been in-
+cluded in the ﬁrmware and can be triggered by sending a
+MIDI program change message with a value of 60. This
+routine quickly triggers a sequence of notes that is designed
+to provide the instrument with maximum dynamic range,
+while making sure that interference between solenoids, coils
+and adjacent notes is avoided.
+5. OTHER FEATURES
+As a result of the closed-loop upgrades to the robotic glock-
+enspiel, in addition to the improvements to the reliability,
+ease of use and dynamic range, several extra features are
+made possible by the additional hardware. The audio out-
+put from the instrument allows it to be ampliﬁed in per-
+formance contexts without the extra equipment, setup time
+and acoustic bleed and feedback problems inherent in us-
+ing microphones. This also means that the audio feed can
+be routed through standard audio eﬀects, or to a PC for
+creative digital signal processing. The extra performance
+information available to musical robots means that with
+creative programming, parameters of audio eﬀects applied
+to the output signal can be perfectly synchronized with the
+sequence that is triggering the actuation of the keys. This
+new level of synchronization can provide many new creative
+possibilities and avenues for musical expression.
+Another feature that this system adds to the instrument
+is the capability for the instrument itself to be used as a
+MIDI controller. By detecting onsets that were not caused
+6
+by the solenoids, the instrument can extract hit and velocity
+information and output MIDI Note commands. By process-
+ing the output MIDI signals externally it is possible to apply
+MIDI eﬀects and processing and send them back to the in-
+strument. This creates an interactive robotic instrument
+with use cases such as setting the instrument to physically
+perform echoes of a players strikes, or to arpeggiate chords
+that are struck by a player in real-time.
+6. CONCLUSIONS AND FUTURE WORK
+This paper has presented the Closed-Loop Robotic Glock-
+enspiel, a new robotic pitched-percussion instrument that
+brings musical robots a step closer towards the achieving the
+repeatability, reliability and usability of commercial elec-
+tronic musical instruments. The embedded MIR system
+oﬀers continuous calibration of the instrument that is invis-
+ible to the end user, and playing it is no more complicated
+than plugging in power and MIDI. The closed-loop system
+also adds new features to the instrument such as audio out-
+put via a standard 1/4” jack, and MIDI out functionality
+for interactive and computer synchronized performances.
+Since this iteration of the Robotic Glockenspiel is still
+a proof of concept which uses prototyping microcontroller
+boards and changeable thru-hole circuit boards, implement-
+ing the ﬁnal design on more compact and robust custom
+surface-mount circuitry with higher speciﬁcations will make
+the unit more serviceable and provide slightly higher perfor-
+mance. An in-depth analysis which precisely quantiﬁes the
+improvements that this closed-loop conﬁguration makes in
+a variety of areas is also planned. The next step will be to
+create a generalizable hardware and software framework to
+enable the addition of closed-loop embedded MIR to other
+existing musical robots, as well as streamlining the process
+of creating new robots with these features. In the future,
+these techniques can be applied to other categories of in-
+strument such as string, wind, and unpitched percussion
+to provide continuous calibration of the tuning of pitches,
+timbres and other characteristics of performance whilst pro-
+viding a number of new capabilities.
+7. REFERENCES
+[1] N. C. Britt, J. Snyder, and A. McPherson. The
+emvibe: an electromagnetically actuated vibraphone.
+In Proceedings of the International Conference on
+New Interfaces for Musical Expression , 2014.
+[2] K. Caulkins. Ragtime automated music.
+http://www.ragtimewest.com/, accessed January
+22nd 2015.
+[3] D. Diakopoulos and A. Kapur. Hiduino: A ﬁrmware
+for building driverless usb-midi devices using the
+arduino microcontroller. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, 2011.
+[4] A. Focke, editor. Trimpin: Contraptions for Art and
+Sound. Marquand Books, Seattle, Washington, 2011.
+[5] D. Grunebaum. Maywa denki: Nobumichi tosa’s
+whimsical creations sound the battle squeak against
+digital music. Metropolis Magazine, 870, 2010.
+[6] A. Kapur. A history of robotic musical instruments.
+In Proceedings of the International Computer Music
+Conference. ICMC, September 2005.
+[7] A. Kapur, Trimpin, E. Singer, A. Suleman, and
+G. Tzanetakis. A comparison of solenoid-based
+strategies for robotic drumming. In Proceedings of the
+International Computer Music Conference . ICMC,
+2007.
+[8] J. Long. Augmenting virtual worlds with musical
+robotics. In Proceedings of the International
+Symposium of Electronic Art. ISEA, August 2015.
+[9] J. Long, J. W. Murphy, A. Kapur, and D. Carnegie.
+A comparative evaluation of percussion mechanisms
+for musical robotics applications. In Proceedings of the
+International Conference on Automation, Robotics
+and Applications. ICARA, February 2015.
+[10] J. Long, J. W. Murphy, A. Kapur, and D. Carnegie.
+A methodology for evaluating robotic striking
+mechanisms for musical contexts. In Proceedings of
+the International Conference on New Musical
+Interfaces for Musical Expression . NIME, June 2015.
+[11] L. Maes, G.-W. Raes, and T. Rogers. The man and
+machine robot orchestra at logos. Computer Music
+Journal, 35(4):28–48, 2011.
+[12] P. Millett. Power transformers for audio equipment.
+In audioXpress, 2001.
+[13] J. Murphy, A. Kapur, and D. Carnegie. Interacting
+with solenoid drummers: A quantitative approach to
+composing and performing with open-loop
+solenoid-based robotic percussion systems.
+Proceedings of the Australasian Computer Music
+Conference, 2012.
+[14] J. Murphy, P. Mathews, A. Kapur, and D. A.
+Carnegie. Robot, tune yourself: Automatic tuning in
+musical robotics. Proceedings of the International
+Conference on New Interfaces for Musical Expression ,
+pages 565–568, 2014.
+[15] J. W. Murphy, D. A. Carnegie, and A. Kapur.
+Musical robotics in a loudspeaker world:
+Developments in alternative approaches to
+localization and spatialization. Leonardo Music
+Journal, 22:41–48, December 2012.
+[16] S. R. Ness, S. Trail, P. F. Driessen, W. A. Schloss,
+and G. Tzanetakis. Music information robotics:
+Coping strategies for musically challenged robots. In
+Proceedings of the International Society for Music
+Information Retrieval Conference, pages 567–572.
+ISMIR, 2011.
+[17] K. Shibuya, S. Matsuda, and A. Takahara. Toward
+developing a violin playing robot - bowing by
+anthropomorphic robot arm and sound analysis. In
+Robot and Human interactive Communication, 2007.
+RO-MAN 2007. The 16th IEEE International
+Symposium on, pages 763–768, Aug 2007.
+[18] J. Solis, K. Taniguchi, T. Ninomiya, K. Petersen,
+T. Yamamoto, and A. Takanishi. Implementation of
+an auditory feedback control system on an
+anthropomorphic ﬂutist robot inspired on the
+performance of a professional ﬂutist. Advanced
+Robotics, 23(14):1849–1871, 2009.
+[19] S. Trail, L. Jenkins, and P. Driessen. Dsrmarimba:
+low-cost, open source actuated acoustic marimba
+framework. In Proceedings of the International
+Conference on New Interfaces for Musical Expression ,
+2014.
+[20] S. Trail, L. Jenkins, D. MacConnell, G. Tzanetakis,
+M. Cheng, and P. Driessen. Stari: A self tuning
+auto-monochord robotic instrument. In
+Communications, Computers and Signal Processing
+(PACRIM), 2013 IEEE Paciﬁc Rim Conference on ,
+pages 405–409, August 2013.
+[21] M. van der Veen, F. de Leon, B. Gladstone, and
+V. Tatu. Measuring acoustic noise emitted by power
+transformers. In Proceedings of the Audio Engineering
+Society Convention 109 , 2000.
+7

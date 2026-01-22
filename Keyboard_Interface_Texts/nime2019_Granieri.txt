@@ -1,0 +1,215 @@
+Reach, a keyboard-based gesture recognition system for
+live piano sound modulation
+Niccolò Granieri
+Integra Lab, Royal Birmingham Conservatoire
+Birmingham City University
+Birmingham, United Kingdom
+Niccolo.Granieri@bcu.ac.uk
+James Dooley
+Integra Lab, Royal Birmingham Conservatoire
+Birmingham City University
+Birmingham, United Kingdom
+James.Dooley@bcu.ac.uk
+ABSTRACT
+This paper presents Reach, a keyboard-based gesture recog-
+nition system for live piano sound modulation. Reach is a
+system built using the Leap Motion Orion SDK, Pure Data
+and a custom C++ OSC mapper1. It provides control over
+the sound modulation of an acoustic piano using the pi-
+anist’s ancillary gestures.
+The system was developed using an iterative design pro-
+cess, incorporating research ﬁndings from two user studies
+and several case studies. The results that emerged show the
+potential of recognising and utilising the pianist’s existing
+technique when designing keyboard-based DMIs, reducing
+the requirement to learn additional techniques.
+Author Keywords
+Gesture recognition, augmented piano, sound modulation,
+computer vision, Leap Motion, Pure Data
+CCS Concepts
+•Human-centered computing → Gestural input; Ac-
+tivity centered design; •Applied computing → Sound
+and music computing;
+1. INTRODUCTION
+Pianists spend years crafting and reﬁning their instrumental
+technique. When placed in front of keyboard-based DMIs
+they are often required to adapt or learn new gestural tech-
+niques to operate them. For pianists, as discussed by Nicolls
+[4], this turns out to be the most disruptive element of
+keyboard-based DMIs: learning a new gestural language
+while retaining pianistic control or freedom. Reach is a
+keyboard-based DMI with a low degree of invasiveness that
+utilises pre-existing technique, aiming to foster creativity
+and reduce the learning curve required for formally trained
+pianists at a ﬁrst encounter.
+2. BACKGROUND
+The ability of performers to communicate through their in-
+strument depends on the ﬂuency the performer has with the
+instrument itself [7] . Fluency, in this case, is seen as a com-
+bination of technical proﬁciency and expressive charisma,
+1https://github.com/NiccoloGranieri/Reach
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+which in turn depend on the time spent practicing an in-
+strument and ways of incorporating ancillary movements
+that are known to convey expressiveness in musical perfor-
+mance [6].
+In recent years, a number of innovative keyboard inter-
+faces have been developed that range from augmented key-
+board interfaces to redesigns of the traditional keyboard
+interface. The ROLI Seaboard [3] redesigns the keyboard
+interface entirely by turning discrete sound activators into a
+continuous controller with a touch responsive silicone slate.
+The TouchKeys [5] augments an existing keyboard’s inter-
+face by covering the keys with capacitive sensors.
+Alongside these two commercial devices a number of pro-
+totype devices exist. One such device is the system devel-
+oped by Yang & Essl [9], providing the pianist with multi-
+axial gesture controls over audio processing of the keyboard
+sound using a combination camera based hand detection
+and visual projections. Another device is the PiaF [10] that
+combines machine learning with camera based technology
+to recognise body gestures providing control over audio pro-
+cessing parameters, noting how a pianist’s interpretation is
+communicated through both the sound produced as well as
+body gestures. The ancillary gestures used in this research
+show potential for the intuitive control of audio processing
+with movements not directly related to sound production.
+Reach develops this concept further focusing entirely on an-
+cillary hand gestures, as a means of manipulating sound
+processing.
+3. THE SYSTEM
+Figure 1: Flow chart describing the Reach System
+The Reach system uses a custom-made homonymous ap-
+plication, written in C++ using the JUCE framework and
+Leap Motion’s VR oriented Orion SDK [2], to capture hand
+tracking data from the Leap Motion. The Leap Motion
+is placed approximately 30cm above the piano keyboard,
+where positional data is tracked by Reach, encoded and
+transmitted as OSC messages. The OSC transfer protocol
+has been chosen over MIDI because of its ability to trans-
+mit data with a higher resolution, thus maintaining a higher
+level of precision when mapping gestural data to sound mod-
+375
+ulation parameters. This tracking data, coming from the
+joints of the ﬁngers, palms and wrists, is then received by a
+Pure Data patch, where it is mapped to sound modulation
+parameters.
+Figure 2: Lateral and eagle eye view of Reach with
+colour coded detection areas.
+The Orion SDK’s high level of precision negates the need
+to de-noise the incoming data. Peak detection audio anal-
+ysis was performed on the incoming piano signal in Pure
+Data. When a note was struck, the positional data received
+from the Leap Motion was ‘re-centred’, meaning that no
+audio modulation would occur unless the hand moved away
+from the current position after striking a note. If the hand
+moved and a key was struck, the process repeated. This
+prevented constant and erratic behaviour in the audio pro-
+cessing. The Reach system has a ﬁxed set of gesture-sound
+eﬀect couplings which are described in the following section.
+4. GESTURES & MAPPINGS
+The Reach system recognised three gestures, each mapped
+to a diﬀerent audio processing parameter. These gestures
+were: the lateral swaying of the hand after a key had been
+pressed; the vertical movement of the hand after a key had
+been pressed; and the distance of the hands from the key-
+board surface.
+The lateral swaying of the hand after a note had been
+played was mapped to a pitch-shifting algorithm ranging
++/- 75 cents of a tone. The centre of the back of the hand
+was tracked by the Leap Motion where movements to the
+right raised the pitch and movements to the left lowered the
+pitch.
+The vertical movement of the hands when a key was de-
+pressed was mapped to the ampliﬁcation of the unprocessed
+piano signal. As the height of the back of the palm and
+knuckles lowered, ampliﬁcation of the unprocessed signal
+decreased, with ampliﬁcation increasing as the height of the
+hand was raised. Perceptually, this created an eﬀect similar
+to amplitude modulation.
+The vertical movement of the hand away from the keys
+controlled a reverb eﬀect. As the pianist moved his or her
+hands vertically away from the piano, reverb was applied to
+the live piano sound.
+Of the three gestures recognised, the lateral swaying of
+the hands had also been previously investigated in the ﬁrst
+iteration of user testing [1]. From the qualitative analysis of
+those interviews, the lateral swaying of the hands resulted
+in being very easy for both classical and jazz pianists to
+understand and embody due to the close correlation with
+the gesture performed by string players to obtain a similar
+eﬀect. This ancillary gesture had previously been noticed
+by most of them in their own playing.
+In the same interviews, pianists expressed interest in be-
+ing able to modulate the intensity of the piano sound just
+like string players. Taking into consideration the research
+of Tits et. al. [8] regarding the correlation between eigen-
+movements and expertise of the pianist, a mapping between
+palm height and volume of the unprocessed audio of the pi-
+ano was chosen.
+The vertical movement of the hands away from the keys,
+was chosen to explore an additional touch-free gesture na-
+ture of the sound modulation. This gesture was discovered
+and explored by a pianist which can be seen in the following
+recorded performance2.
+5. APPLICATION AND FUTURE WORK
+To date the system has been explored by four musicians who
+have all created performances with it exploring the gesture
+sets provided by the system3. Moreover, in multiple user
+tests the system has been explored by eighteen pianists,
+ranging from classical to jazz, that provided useful insight
+for the development and reﬁnement of the system.
+What has emerged from this feedback is how interfaces
+that exploit ancillary gestures can be successfully used by
+pianists and keyboard players to intuitive manipulate audio
+processing parameters at a ﬁrst encounter.
+Taking this research forward, larger user studies could
+be conducted further examining the tacit ﬁndings of the
+research to date.
+6. REFERENCES
+[1] N. Granieri, J. Dooley, and T. Michailidis. Harnessing
+ancillary microgestures in piano technique:
+Implementing microgestural control in to an
+expressive keyboard-based hyper-instrument. In
+Innovation in Music - Performance, Production,
+Technology and Business. Routledge, 1st edition,
+2019.
+[2] J. Guna, G. Jakus, M. Pogaˇcnik, S. Tomaˇziˇc, and
+J. Sodnik. An Analysis of the Precision and
+Reliability of the Leap Motion Sensor and its
+Suitability for Static and Dynamic Tracking. Sensors,
+14(2):3702–3720, 2014.
+[3] R. Lamb and A. Robertson. Seaboard : A New Piano
+Keyboard-related Interface Combining Discrete and
+Continuous Control. In Proc. of NIME’11, pages
+503–506, Oslo, Norway, 2011.
+[4] S. Louise Nicolls. Interacting with the Piano. PhD
+thesis, Brunel University, July 2010.
+[5] A. McPherson and Y. Kim. Design and applications of
+a multi-touch musical keyboard. Proc. SMC’11, 2011.
+[6] E. R. Miranda and M. Wanderley. New Digital
+Musical Instruments: Control And Interaction Beyond
+the Keyboard (Computer Music and Digital Audio
+Series). A-R Editions, Inc., Madison, WI, USA, 2006.
+[7] A. Tanaka. Musical performance practice on
+sensor-based instruments. Trends in Gestural Control
+of Music, 13(389-405):284, 2000.
+[8] M. Tits, J. Tilmanne, N. D’Alessandro, and M. M.
+Wanderley. Feature Extraction and Expertise Analysis
+of Pianists’Motion-Captured Finger Gestures. In
+Proc. of ICMC’15, pages 102–105, Oct. 2015.
+[9] Q. Yang and G. Essl. Augmented Piano Performance
+using a Depth Camera. In Proc. of NIME’12, Ann
+Arbor, Michigan, 2012. University of Michigan.
+[10] A. V. Zandt-Escobar, B. Caramiaux, and A. Tanaka.
+PiaF: A Tool for Augmented Piano Performance
+Using Gesture Variation Following. In Proc. of
+NIME’14, pages 167–170, London, United Kingdom,
+June 2014. Goldsmiths, University of London.
+2Aria alla Francese - https://youtu.be/gzLTwMbGjxM3Video playlist - https://www.youtube.com/playlist?
+list=PL8p0R8QNT3sSFIatGuEWYGBRYYSNlyj9P
+376

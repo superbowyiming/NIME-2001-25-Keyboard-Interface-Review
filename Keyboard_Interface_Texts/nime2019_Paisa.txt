@@ -1,0 +1,535 @@
+Enhancing the Expressivity of the Sensel Morph via
+Audio-rate Sensing
+Razvan Paisa
+Aalborg University
+A. C. Meyers Vaenge 15, 2450
+Copenhagen, Denmark
+rpa@create.aau.dk
+Dan Overholt
+Aalborg University
+A. C. Meyers Vaenge 15, 2450
+Copenhagen, Denmark
+dano@create.aau.dk
+ABSTRACT
+This project describes a novel approach to hybrid electro-
+acoustical instruments by augmenting the Sensel Morph,
+with real-time audio sensing capabilities. The actual action-
+sounds are captured with a piezoelectric transducer and pro-
+cessed in Max 8 to extend the sonic range existing in the
+acoustical domain alone. The control parameters are cap-
+tured by the Morph and mapped to audio algorithm propri-
+eties like ﬁlter cutoﬀ frequency, frequency shift or overdrive.
+The instrument opens up the possibility for a large selection
+of diﬀerent interaction techniques that have a direct impact
+on the output sound. The instrument is evaluated from a
+sound designer’s perspective, encouraging exploration in the
+materials used as well as techniques. The contribution are
+two-fold. First, the use of a piezo transducer to augment
+the Sensel Morph aﬀords an extra dimension of control on
+top of the oﬀerings. Second, the use of acoustic sounds from
+physical interactions as a source for excitation and manipu-
+lation of an audio processing system oﬀers a large variety of
+new sounds to be discovered. The methodology involved an
+exploratory process of iterative instrument making, inter-
+spersed with observations gathered via improvisatory trials,
+focusing on the new interactions made possible through the
+fusion of audio-rate inputs with the Morph’s default inter-
+action methods.
+Author Keywords
+Electro-acoustic instruments, Real-time audio processing,
+Physical Interface, Sound Design
+CCS Concepts
+•Applied computing→Sound and music computing;
+•Hardware →Sound-based input / output;
+1. INTRODUCTION
+The Morph is a new multi-touch interface created by the
+company Sensel. It is a 240mm by 138mm multi-touch
+pressure sensitive control surface that is provided with an
+API directly from the developers[1]. This makes it easily
+re-conﬁgurable and encourages experimentation across dif-
+ferent domains, including musical interaction. The interface
+senses pressures ranging from 5g to 5kg per touch, with a
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+resolution of 15 bits and a multi-touch limit of 16 simultane-
+ous inputs. It is capable of running at 125Hz with a latency
+of 8ms and tracking precision of 6502dpi in Full resolution
+Mode, or at 500Hz and 2ms latency at a lower precision in
+High Speed Mode[1]. The Morph comes with native support
+for overlays: modular silicone surfaces with various layouts
+that attach magnetically to the interface and change how
+the hardware responds to inputs (Figure 1). At the moment
+of writing, there are 8 diﬀerent overlays for the Morph, each
+providing an unique interactive interface for diﬀerent pur-
+poses. The overlays are detected by the Morph that loads
+a pre-saved mapping scheme when one is attached. How-
+ever, it can also be used without an overlay, providing an
+opportunity for slightly more subtlety and nuance in per-
+formance, as direct-touch interactions without an overlay
+captures user input with no barrier.
+Figure 1: Sensel Morph and overlays
+The device makes it easy to interface with a computer
+in many applications, but due to the relative low sampling
+frequency (even at 500Hz) it cannot be used to detect au-
+dio events that might encode useful information such as
+sharp impacts that generate higher frequencies, or even dis-
+tinguish materials of impact from one another (ﬁngertip /
+knuckle / nail). This projects explores the beneﬁts of aug-
+menting the Sensel Morph with audio-rate capabilities by
+creating a new musical interface that uses an extra real-
+time signal captured by a simple contact microphone as the
+source for an expressive synthesizer built in Max 8 1. It is
+worth mentioning that the use case chosen for this applica-
+tion serves as an example of the combined technologies, but
+the possibilities expand beyond those covered in this work.
+2. BACKGROUND
+There are many existing instruments and products based on
+touch and physical interactions with the body of the instru-
+ment, combined with digital or analog processing. These in-
+clude projects such as Aimi’s Sampled Acoustics approach
+1https://cycling74.com/(accessed: 27.1.2019)
+298
+[2], Merrill, et al.’s Sound of Touch[3], Tomas’ Tangible
+Scores [4], Dahlstedt’s hybrid digital keyboard [5] or Lahdeoja’s
+augmented electric guitar [6]. There are also commercial
+products available, aimed at augmented everyday objects
+such as tables, etc. such as the Mogees add-on for iOS de-
+vices (based on a contact microphone and machine learning
+software).2
+3. IMPLEMENTATION
+This project is built using three core technologies. First is
+the Sensel Morph, utilized without any overlays in order to
+avoid potential audio ﬁltering by the silicone pad, as well as
+preserving the absolute minimum force detection threshold
+for the maximum range of expression. The second com-
+ponent is a piezoelectric transducer connected to an audio
+interface. The transducer is in direct contact with the top
+metallic part of the Sensel. Lastly, there is Cycling 74’sMax
+8 (previously known as Max/MSP) tying the two hardware
+elements together as well as providing the audio processing
+platform.
+3.1 Hardware
+There are several types of piezoelectric transducers or con-
+tact microphones that could be used for capturing the sig-
+nal form the Morph, but due to availability only three have
+been investigated: a clip-on, dampened one sold as acoustic
+guitar pickup, and two bare bone piezo discs with diameters
+of 1 and 2 centimeters. Since most such devices come with-
+out proper documentation, the frequency response of each
+transducer is unknown, and the discrimination has been
+made purely on listening tests conducted between the au-
+thors. The criteria observed was the captured diﬀerence be-
+tween several types of impact materials (ﬁnger, nails, plas-
+tic, rubber), strengths and techniques (direct hit, brush,
+hit+brush, scratch, etc.). Based on this criteria is was con-
+cluded that the guitar pickup was the least sensitive to vari-
+ation, probably due to the damping material on top of the
+piezo disc. This translated into a low-pass ﬁlter-like behav-
+ior, capturing most hits with various materials in a similar
+way. An exception would be the brush and scratch interac-
+tions, due to their time domain characteristics that makes
+them easily identiﬁable. When it comes with the two piezo
+discs, the larger one captured a higher amount of high fre-
+quency content, making it the most sensitive of the three,
+for the current application.
+Each sensor was tested on various locations on the Morph
+concluding that the highest ﬁdelity signal is captured on the
+touching surface, but the most convenient is the exposed
+metal middle portion on the top of the interface. This was
+the position where the sensors was placed for this project.
+The underside of the device also provides good signal rep-
+resentation but proved to be susceptible to friction sounds
+produces by the Morph’s micro-slides on a table. It is worth
+mentioning that the Morph has rubber feet that are 0.75mm
+thick providing suﬃcient dampening to decouple interface
+from the table.
+A constant between the three investigated transducers is
+the frequency response characteristics of the Morph that
+made discrimination between some type of hits more diﬃ-
+cult. This was particularly evident when performing similar
+hits with the ﬁnger tip, the nail and rubber. The resulting
+frequency response is fairly similar as can be seen in Fig-
+ure (2). The piezoelectric transducers were connected to
+the computer through a Behringer UM2 audio interface and
+sampled at 44.1KHz, with a buﬀer length of 256 samples.
+2https://www.mogees.co.uk/ (accessed: 27.1.2019)
+Figure 2: Average frequency response of 100 hits
+3.2 Software
+The software side of the system was build in the Max 8
+environment that supports the Sensel Morph natively, and
+oﬀers a plethora of audio processing tools.
+3.3 Impact discrimination
+Before explaining the signal processing chain, it is worth
+mentioning that an initial attempt at real-time discrimina-
+tion between interaction materials based on the captured
+audio signal has been partially unsuccessful. According to
+Hjortkjaer and McAdams, both temporal and spectral cues
+can be used to discriminate between materials and action
+categories in impacted sounds[7]. The authors found though
+that for single, discrete hits, temporal cues are more reliable,
+while spectral cues are beneﬁcial when resonance occurs, or
+there are repeated hits in a short time period. With respect
+to this, three methods have been implemented with various
+degree of success. These discriminating factors were used
+as training data for a supervised machine learning (ML) al-
+gorithm implemented in Wekinator [8]. For each method,
+more than 100 samples for each type of hit were recorded
+as training data.
+Spectral centroid analysis was the ﬁrst attempted method.
+The ML system could not discriminate at all between hits
+with the tip of the ﬁnger, nails, rubber or a pen, outputting
+arbitrary classiﬁcation with no observable consistency. This
+may have been due to the naturally occurring ﬁltering that
+the physical construction of the Morph provides (Figure 2).
+The second discrimination method used a bounded-Q anal-
+ysis of an incoming sound to detect onsets of percussion in-
+struments, as implemented in the bonk˜ object developed
+by M.Puckette [9]. Two independent trials have been made
+with 11 and 22 ﬁlter banks, and the results were consistent
+between them. The discrimination between pen hits and ev-
+erything else was reliable, working for almost all amplitudes
+of hit force. The results were not as clear when it came to
+diﬀerentiate between ﬁnger tip, nail and rubber, but there
+were several cases when the algorithm consistently detected
+nail hits. This required a particular interaction technique
+of hitting the morph with the back of the nail at an angle
+of approx 45 degrees. When it comes to classifying diﬀerent
+types of interactions, Wekinator was especially successful at
+diﬀerentiating brushes and scratches from hits and knocks.
+Similar results were obtained from using the built-in classi-
+ﬁer implemented in bonk , but with less accuracy.
+The last discrimination method looked at a pure time do-
+main characteristic in an attempt to improve the existing
+results. An augmented envelope follower algorithm was im-
+plemented, that calculated the maximum diﬀerence between
+two consecutive samples, on the assumption that a hit with
+a harder material will have a shorter attack than a similar
+hit with a softer material. While the results were sometimes
+299
+accurate, the main diﬀerence seemed to come from the ac-
+tual hit force rather than the material, as a hard object will
+hit with a higher force due to the smaller area of impact.
+Because of the inconsistency in the discrimination, the
+materials’ impact characteristics have been deemed unnec-
+essary for this stage of the project. Nevertheless, consider-
+ing that all the audio produced by the system originates in
+the signal captured by the piezo disc, an audible diﬀerence
+between materials is still present in the system.
+3.4 Signal chain processing
+The signal chain is separated in four distinct stages: pre-
+processing, envelope, manipulation, and eﬀects. All sounds
+were produced using the exact same patch, with minor vari-
+ations in the envelope stage.
+The pre-processing stage aims at preparing the signal for
+the next steps by eliminating unwanted spectral compo-
+nents while producing a usable dynamic range. To achieve
+this a total of 3 ﬁlters are used in series: one state vari-
+able ﬁlter(SVF) in band-pass mode tuned at 50hz to reduce
+the electric hum, one biquad resonant high-pass ﬁlter with
+a cutoﬀ frequency of 5500Hz and a Q of 0.1, in order to
+remove the noise introduced by the audio interface and a
+subtle boost in the frequencies above 5000 was applied in
+order to compensate for the decrease in sensitivity intro-
+duced by the Morph’s body, as seen in Figure 2. The next
+step in this pre-processing stage is to apply a noise gate with
+a threshold just under the noise ﬂoor, followed by compres-
+sion.
+The envelope stage dictates the temporal characteristics
+of the signal being mapped to the amplitude, and it is only
+triggered by touching the Morph on it’s sensor area. If
+the aluminum case or the piezo are touched, the following
+two stages are bypassed, feeding the audio signal directly
+into the global eﬀects. Several envelopes are used, all of
+which feature a 4 point Attack-Decay-Sustain-Release struc-
+ture(Figure 3). Since most sounds that can be produced by
+interacting with the Morph are impacts, all envelopes used
+have a relatively short attack time.
+Figure 3: Example of used envelope
+The next stage deals with manipulating the incoming sig-
+nal in order to aﬀord expressivity and produce rich and
+interesting sounds. The ﬁrst step in this stage aims at en-
+riching the spectral characteristics of the signal. This is
+achieved by applying a time domain frequency shift to pro-
+duce an extra series of harmonics followed by soft clipping,
+providing overdrive to enrich the result. This process is
+repeated to further enhance the spectral content. The re-
+sultant signal is pitch shifted (transposed) with a variable
+glide time using a ZTX-based real-time pitch shift [10]. All
+the parameters described so far are user controllable. From
+this point on the signal splits into left and right channel, one
+going into the eﬀects, while the other is further over-driven
+before passing through a resonant band-pass ﬁlter with a
+variable center frequency that is user controlled.
+The ﬁnal stage consists of a stereo pair of delays with 5
+lines with ﬁxed lengths and gains. This is done to create
+an optional rhythm in the sounds. There is no feedback in
+the delay implementation. The dry and delayed signals are
+passed to a pair of reverberators with identical parameters,
+as described by [11]. The ﬁnal stereo signal is ﬁltered using a
+state variable ﬁlter in low pass mode, with user controllable
+cutoﬀ frequency.
+3.5 Parameters and Mapping
+The mapping is done using a many-to-many approach[12].
+The aim of this method is to create an expressive inter-
+face that provides a certain complexity level to the user, as
+suggested by Hunt et. all [13]. The authors claim that by
+providing a challenge to the user, the reward from interact-
+ing with an instrument with complex mappings provides a
+feeling of better expressivity.
+The parameters provided by the Sensel Morph’s API are
+as follows: x-y coordinates, force, as well as the number
+of detected contact points. The API provides a detailed
+description of the contact area’s shape, but since most ex-
+pected interactions are short hits, thus having an uncontrol-
+lable contact shape, these descriptors have been ignored.
+All values have been normalized based on the author’s ex-
+perienced extremes.
+The X coordinate of a detected impact point was mapped
+to the center frequency of the resonant band-pass in the
+manipulation stage. The mapping is exponential from 20
+to 1000Hz, left to right. This is the main tonal control of
+the entire interface; therefore it needs to be explicit. By
+using a previously known mapping scheme: left for lower
+tones right for higher ones (as found in a piano) it should
+not provide any challenges for the user.
+The same coordinate axis is mapped to the transpose
+function as described in the manipulation stage. The overall
+range is 4 octaves, left to right, with no shift in the mid-
+dle of the Morph. The mapping is linear and is continuous.
+This parameter’s eﬀect is directly linked to the glide time.
+The Y coordinate is mapped to three distinct control
+parameters. The most noticeable impact comes from the
+global SVF’s cutoﬀ frequency, that is mapped linearly from
+20 to 3000hz, bottom to top. This eﬀect is emphasized by a
+perceived increase in amplitude as hits on the top part are
+closer to the pickup. Furthermore, the Y axis dictates the
+amount of frequency shift in the manipulation stage. The
+mapping is exponential, from 1 to 11, top to bottom and
+the same value is passed to both frequency shifters. This
+parameter controls one aspect of the spectral richness, not
+related to the pitch shifting. It should be noted that the
+two described controls work in opposite directions, creating
+a harmonically rich, but ﬁltered sounds on the bottom side
+of the Morph, and less ﬁltered sounds closer to the top.
+Lastly, Y is mapped to the glide time of the pitch shifting
+algorithm. It ranges from 1 to 10000ms and is mapped
+linearly.
+The last parameter, the force, was mapped to the amount
+of overdrive applied in between frequency shifters, as de-
+scribed in the manipulation stage. Its spectrum is from
+1 (no overdrive) to 11. It is worth mentioning that force
+is updated in real time, having a behavior very similar to
+after-touch.
+4. INTERACTION TECHNIQUES
+This section will describe the intended and discovered inter-
+actions that produce interesting and desirable sounds using
+the system. This is not a complete list of sounds possible,
+300
+but rather an attempt to describe the wide range of interac-
+tions possible. Some of the action-sounds described below
+can be witnessed in the video associated with this paper.
+Single percussive hits probably come to mind ﬁrst when
+seeing the Morph. Playing it like a ﬁnger drum pad with
+either one or two ﬁnger produces impact sounds that range
+from a sub bass kick drum sound (reminiscent of the Roland
+808 kick) to sounds similar to hitting an empty glass bottle,
+depending on the hitting position and intensity. It is some-
+what easy to play in tune if one memorizes the locations for
+certain desired notes. A variation of this interaction uses
+the knuckle to knock on the Morph. However, this action
+will most likely clip the signal as such motions are usually
+associated with a higher forces.
+Multiple ﬁnger hits from both hands in rapid succession
+create an intricate pattern that either descends or ascends
+in pitch depending on the tapping order. This can be rem-
+iniscent of rain-stick sounds, partially because of the noise
+component present in the incoming signal and partially be-
+cause of the delay eﬀect that further adds to similar sounds
+to the mix. This motion usually applies less force on the
+device, thus creating less of a tonal sound.
+As mentioned earlier, impulses coming from hands have
+a similar spectral characteristic, therefore producing rather
+similar tonal results. An exception to this rule is the mo-
+tion resembling the Nike swoosh. If passed to an envelope
+similar to one in Figure 3, it creates a two-stage sound with
+a sharp,noisy attack and decay, followed by a more gentle,
+tonal sound that uses the manipulation stage to a higher
+degree. This motion can accentuate the pitch-shifting char-
+acteristic and produces nice bass tones if used on the left
+side of the Morph.
+The Morph’s contact surface is covered with a very slip-
+pery material, but with enough practice one can produce
+a stick-slip motion creating complex rhythmical and tonal
+sounds, depending on the sliding direction. For instance, if
+moving diagonally from bottom left to top right, the sounds
+increases in pitch, but at the same time it opens up the
+global SVF, oﬀering a crescendo eﬀect. This motion is usu-
+ally achieved by pressing hard on the Morph, an action that
+is directly mapped to an overdrive parameter in the manip-
+ulation stage.
+Interacting with the Morph is not limited to ﬁnger/hand
+motions and can be extended to virtually any object, with
+respect to the Morph’s physical dimensions. One object
+that produced pleasing results was a metal case ﬁlled with
+M2.5 screws slid on the Morph produces an atonal, rhythmi-
+cally rich sound. This is especially interesting when tossed
+on the Y axis, thus opening or closing the ﬁlter. This sound
+can be associated with riser sound, popular in electronic mu-
+sic, but considerably richer(risers are usually ﬁltered noise).
+Another interesting sound was produced by rolling a AA
+battery over the entire width of the Morph. This interaction
+produced a tonal (de)crescendo, similar to a tone sweep. If
+the rolling is rather diagonal than horizontal, the ﬁltering
+and frequency-shifters adds character to the sound. A last
+example of unique action-sound can be found in a spinning
+top toy, a coin, or a common glass rotating in balance on the
+surface. There is a continuous contact point creating a long,
+evolving sound. The more the object moves on the surface
+of the Morph while spinning, the greater the variation in
+the sound it can create.
+5. DISCUSSION
+The main contribution of this project is the augmentation
+of the Sensel Morph with real-time audio input to bring
+back the possibilities of acoustic interaction. The Morph is
+an outstanding device in itself, but it can be transformed
+into an electro-acoustic instrument with audio augmenta-
+tion. Many such instruments have been built recently, as
+mentioned in the background section, but this project is a
+hybrid in a rather diﬀerent way - the controls represent the
+sound sources and the two cannot be decoupled without a
+redesign of the mapping layer. Bringing the richness and di-
+versity of acoustically produced sounds as part of the a digi-
+tal instrument, greatly enhances the sonic range, the action-
+sound palette and its expressivity. One can physically inter-
+act with the device in inﬁnitely many diﬀerent ways serv-
+ing as an open ended platform for exploration and sound
+variation in the hands of a performer. This key element
+as well as the introducing the stochastic nature of physical
+action-sound, so hard to reproduce synthetically, makes the
+augmented Sensel Morph an unique instrument. As men-
+tioned before, the software implementation presented in this
+project serves as an example for the possible physical inter-
+action and it’s correlated sounds thus it can be concluded
+that the augmented Morph could have totally diﬀerent sonic
+characteristics.
+5.1 Expressivity and playability
+All acoustic instruments come with a physical challenge over
+control and usually have a balance between the amount of
+control over each voice and the number of voices[12, 13].
+The same can be said about this project. On top of that,
+having the control gestures have a direct impact on the
+sound captured by the piezo, further increasing the cog-
+nitive load. This does not mean that the instrument is im-
+possible to play, but it does require some practice in order
+to have control over the outcome. Nevertheless, the oppor-
+tunity of acoustical control available literally at the player’s
+ﬁnger tips is a strong feature, and makes for the largest
+portion of expression possibilities [14].
+5.2 Repeatability
+Acoustic sounds have complex spectral and temporal char-
+acteristics, such that absolute repetitiveness is diﬃcult, if
+not impossible via human control. The same can be said
+about the gestural interaction controlling the sound, espe-
+cially true since the Morph does not have any visual or
+haptic cues to help the player in their quest for consistency.
+However, the system will react consistent to identical in-
+puts, a characteristic that is common among most acous-
+tic instruments. This does not mean that all features are
+equally easy to control. For instance, ﬁnding the exact lo-
+cation on the X axis where the resonating ﬁlters are in a
+certain tuning is diﬃcult, because there are no real refer-
+ence points on the Morph. Quantization could be a possible
+solution for this problem, but the result would be more ster-
+ile, perfectly repeatable sound known to push players away
+in longer-term playing.
+5.3 The sound
+The sound of the system is dictated by the processing done
+in Max 8. The focus during development was on action-
+sound aspects, and how could those be translated into musi-
+cally suﬃcient and rich sounds. In order to achieve this, the
+mapping scheme many-to-many provided rich sound varia-
+tions with little eﬀort, but understanding the complexities
+and how to control them is not trivial. The system is ﬂexi-
+ble enough to provide a wide sonic palette that ranges from
+percussive sounds to tonal, melodic ones. Considering that
+the interaction object and it’s material have a large impact
+on the resulting sound (a characteristic of percussion in-
+struments) and the interaction technique plays a similarly
+important role, it is hard to describe the sound of this sys-
+301
+tem. Nonetheless, there are physical constrains regarding
+the hardware and it’s proprieties. For instance, the Morph,
+like any other object, has a resonant frequency that is accen-
+tuated through the processing developed. In addition, the
+frequency response of the piezoelectric transducer could be
+improved through the use of an impedance-matching trans-
+former, and/or the use of a less resonant ceramic disc type of
+piezoelectric transducer. These factors contributed to some-
+times distorted and overly-accentuated frequencies, usually
+triggered in the middle of the Morph, and might be allevi-
+ated by incorporating such hardware improvements.
+6. CONCLUSION
+This paper presents a multi-touch hybrid acoustic-digital
+instrument based on augmenting the Sensel Morph, with
+real-time audio sensing capabilities. The system oﬀers ex-
+tensive interaction possibilities while maintaining the in-
+tuitive aspect of percussive instrumental techniques. The
+acoustic input from the piezoelectric transducer is used as
+the only source of audio input. This is processed in Max 8
+to enrich the sound and oﬀer a much broader range of pos-
+sible spectral and temporal characteristics, while oﬀering a
+high degree of control over the resulting sonic output via the
+pressure sensing matrix inside the Morph. The instrument
+aﬀords a large variety of interaction techniques ranging from
+single ﬁnger hits, to more complex and creative actions, like
+using a spinning top.
+The synthesis engine is relatively simple, yet the map-
+ping layer is somewhat complex. This system is only used
+as an example of the possibilities oﬀered by augmenting
+the Morph with audio-rate sensing. Nevertheless, the in-
+strument provides a remarkably satisfying experience for a
+curious player, heavily encouraging experimentation. In the
+hands of an professional musician it can provide a platform
+for new sounds, given that the performer is willing to dis-
+cover and practice new ways of interacting with the musical
+instrument.
+7. REFERENCES
+[1] Sensel. Documentation.
+https://github.com/sensel/morph-docs, 2019.
+[2] R Aimi. Extending physical instruments using
+sampled acoustics, 2006.
+[3] D. Merrill and H. Raﬄe. The sound of touch. 2007.
+[4] E. Tom ˜A ↪as and M. Kaltenbrunner. Tangible scores:
+Shaping the inherent instrument score. 2014.
+[5] P. Dahlstedt. Mapping strategies and sound engine
+design for an augmented hybrid piano. 2015.
+[6] O L ˜Ad’hdeoja. An approach to instrument
+augmentation: the electric guitar. 2008.
+[7] Jens Hjortkj ˜A↪er and Stephen McAdams. Spectral and
+temporal cues for perception of material and action
+categories in impacted sound sources. The Journal of
+the Acoustical Society of America, 140(1):409–420,
+2016.
+[8] Rebecca Fiebrink and Perry R. Cook. The wekinator:
+A system for real-time, interactive machine learning
+in music, 2010.
+[9] Miller Puckette, Theodore Apel, and David
+D. Zicarelli. Real-time audio analysis tools for pd and
+msp. Proc. Int. Computer Music Conf., 10 1998.
+[10] Cycling 74. Max MSP documentation, 2019.
+[11] Jon Dattorro. Eﬀect design, part 1: Reverberator and
+other ﬁlters. J. Audio Eng. Soc, 45(9):660–684, 1997.
+[12] Palle Dahlstedt. Dynamic mapping strategies for
+expressive synthesis performance and improvisation.
+pages 227–242, 05 2008.
+[13] Andy Hunt, Marcelo M. Wanderley, and Matthew
+Paradis. The importance of parameter mapping in
+electronic instrument design. Journal of New Music
+Research, 32(4):429–440, 2003.
+[14] Palle Dahlstedt. Physical interactions with digital
+strings - a hybrid approach to a digital keyboard
+instrument. In NIME, 2017.
+302

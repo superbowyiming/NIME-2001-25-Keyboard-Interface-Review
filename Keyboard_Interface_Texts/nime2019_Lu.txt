@@ -1,0 +1,207 @@
+Collaborative Musical Performances with Automatic Harp
+Based on Image Recognition and Force Sensing Resistors
+Yupu Lu
+School of Aerospace
+Engineering
+Tsinghua University
+Beijing, China
+yusuin.thu@gmail.com
+Yijie Wu
+Department of Computer
+Science
+The University of Hong Kong
+Hong Kong, China
+wuyj@connect.hku.hk
+Shijie Zhu
+School of Aerospace
+Engineering
+Tsinghua University
+Beijing, China
+zhusj16@mails.tsinghua.edu.cn
+ABSTRACT
+In this paper, collaborative performance is deﬁned as the
+performance of the piano by the performer and accompanied
+by an automatic harp. The automatic harp can play music
+based on the electronic score and change its speed according
+to the speed of the performer.
+We built a 32-channel automatic harp and designed a
+layered modular framework integrating both hardware and
+software, for experimental real-time control protocols. Con-
+sidering that MIDI keyboard lacking information of force
+(acceleration) and ﬁngering detection, both of which are
+important for expression, we designed force-sensor glove
+and achieved basic image recognition. They are used to
+accurately detect speed, force (corresponding to velocity in
+MIDI) and pitch when a performer plays the piano.
+Author Keywords
+automatic harp, force sensing resistor, image recognition,
+collaborative performance
+CCS Concepts
+•Human-centered computing→Collaborative interac-
+tion; Graphics input devices;•Computer systems orga-
+nization →Robotic components;•Hardware →Sen-
+sors and actuators;
+1. INTRODUCTION
+What we want to do is to let the robot play the speci-
+ﬁed music along with the performer, which means that the
+robot needs to know which part of the score the performer
+is playing, the speed and mood of the performer. For pri-
+mary experiment, we designed force sensor glove and used
+image recognition.
+2. RELATED WORK
+2.1 Automatic Instruments
+Automatic instrument is deﬁned as a speciﬁc kind of au-
+tomatons that can play music. In 2004, Dannenberg in-
+vented a McBlare bagpipe robot which can play music be-
+yond human ability, even identify gestures of people and
+improvise [2].
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+In recent years, various automatic instruments have used
+force sensors, cameras to extend the form of collaborative
+performance [4]. Also, historical rehearsal data has been
+utilized to improve the expressive performance of the auto-
+matic music instruments [6].
+2.2 Force sensor
+Force sensing resistors (FSRs) have been widely used in sys-
+tem design of historical NIMEs such as drum-pad controllers
+to get key pressure information [5].
+Tangible tabletop instrument developed by Bosi and Jord` a
+explores gestures for musical expression such as continuous
+ﬁnger/hand pressure and percussive impacts [1].
+3. SYSTEM DESIGN
+We built the whole system covering the hardware and soft-
+ware for experimental real-time control protocols and col-
+laborative algorithms.
+3.1 Mechanical Design
+The body of the harp is made of aluminum proﬁles and
+other accessories are made of plexiglass panels. 16 strings
+on each side are arranged in semitones (Fig. 1).
+Each channel consists of a string, a tongue and the elec-
+tromagnet that pulls the tongue to pluck the string. The
+crankshaft is used to bring the tongue back to its rest po-
+sition after the electromagnet is discharged. The volume is
+determined by the length of the tongue in contact with the
+string that is adjusted by the stepped motor.
+The circuits are controlled by an Arduino board. There
+are three types of events for each channel: turning on/oﬀ
+the electromagnet, turning on/oﬀ the stepper motor, and
+switching its direction. Since the ports in Arduino Uno is
+not enough to accommodate all the 96 outputs, we cascade
+4 shift registers 74HC595 for serial-to-parallel conversion.
+Figure 1: Automatic harp and operating mechanism
+inspired by harpsichord
+3.2 Force Sensor Glove, Image recognition
+3.2.1 Glove design
+One advantage of using force sensors is that before we hear
+the sound of a note, the action of pressing will be detected.
+7
+Figure 2: The force sensor glove and Image recog-
+nition using RGB camera
+The force sensor glove consists of FSRs, rubber glove,
+a voltage divider circuit and an Arduino board. FSRs are
+stuck to the ﬁngertips of the glove (Fig. 2). FS-C10 is chosen
+because the size (10 mm) is close to the size of ﬁngertip,
+cheap (3 dollars each), and sensitive in the range of 200 to
+2000 grams.
+Once the performer presses down, the change in resistance
+is converted to a voltage change by the voltage divider cir-
+cuit, which will be detected by the Arduino Board.
+3.2.2 Image recognition
+The RGB camera is used to position the ﬁnger. The piano
+keys are divided by the interval between them. Each ﬁn-
+gertip of the glove is painted in a diﬀerent colour. Once we
+know which ﬁnger has pressed the key, we can easily locate
+it by ﬁnding the centre of the corresponding colour (Fig. 2).
+Through this visual interface, automatic marking of the
+ﬁngering can be accomplished by painting the ﬁnger and
+associated keys in the same color based on electronic scores.
+3.3 Controlling framework and algorithm
+The upper software is written in Python and integrates net-
+work communication, signal processing and collaboration
+algorithms. Based on the traditional real-time score follow-
+ing algorithm [3], we utilized it by using bar-to-bar compar-
+ison for human-computer performance, which means com-
+paring the speed of one-bar notes after getting the suﬃcient
+number of notes.
+4. EXPERIMENT
+4.1 Collaborative Performance
+The collaborative performance was conducted as follows:
+the player played the left-hand part of the piano score, Two
+Tiger, and the automatic harp played the right-hand part.
+The system calculated the speed of ﬁrst bar, and automatic
+harp started at corresponding speed.
+When performer tried to change the velocity, even played
+the wrong notes, the system could adjust the changes and
+accompany the performer well.
+4.2 Velocity Detection
+We played a series of notes and gradually increased the
+force. The velocity of the note was detected by the force
+sensor glove and the MIDI port. By comparing the relative
+forces by dividing the respective maximum value, we can
+say that force sensor gloves can accurately detect velocity
+information (Fig. 3).
+The relative velocity change of two adjacent notes using
+the force sensor glove is greater than that using the MIDI
+port, indicating that the force sensor glove has at least the
+same accuracy as the MIDI port.
+For most notes, the pressure rises earlier than the note
+time output via MIDI, which provides us a chance to detect
+the press. Even when the ﬁnger is pressed quickly, the full
+width at half maximum exceeds 0.2 seconds (Fig. 3(b)).
+(a) Relative change
+ (b) Relative force
+Figure 3: Relative forces and changes of two adja-
+cent notes through force sensor glove or MIDI port
+5. CONCLUSIONS AND FUTURE WORK
+We designed a complete system including automatic harp,
+force sensing glove, RGB camera, and related control algo-
+rithms. We compared the note information provided by the
+MIDI serial port and conducted the human-machine collab-
+orative performance.
+For further research, better force sensor and glove design
+are needed to achieve higher detection accuracy, so that
+this system can be used to reﬂect and predict performer’s
+emotion in advance, and explore the relationship between
+various key-touch methods.
+Besides, we have designed new operating mechanism to
+eliminate the percussive sound of electromagnet to improve
+the timbre of automatic harp and play quieter songs. The
+automatic marking of ﬁngering will be completed with vi-
+sual interface.
+Machine learning and other apparatus such as electroen-
+cephalography (EEG) will be used to improve performance
+and system.
+6. ACKNOWLEDGEMENT
+I am very grateful to my supervisor Gangtie Zheng, and
+senior Yijie Wu for guiding and teaching me how to do
+research. This research is supported by Tsinghua University
+Initiative Scientiﬁc Research Program.
+7. REFERENCES
+[1] Mathieu Bosi and Sergi Jord` a. Towards fast
+multi-point force and hit detection in tabletops using
+mechanically intercoupled force sensing resisors. In
+NIME. Citeseer, 2012.
+[2] Roger B. Dannenberg, Ben Brown, Garth Zeglin, and
+Ron Lupish. Mcblare: a robotic bagpipe player. In
+Conference on New Interfaces for Musical Expression,
+pages 80–84, 2005.
+[3] Roger B Dannenberg and Christopher Raphael. Music
+score alignment and computer accompaniment.
+Communications of the ACM, 49(8):38–43, 2006.
+[4] Hui Liang, Jin Wang, Qian Sun, Yong-Jin Liu,
+Junsong Yuan, Jun Luo, and Ying He. Barehanded
+music: real-time hand interaction for virtual piano. In
+Proceedings of the 20th ACM SIGGRAPH Symposium
+on Interactive 3D Graphics and Games, pages 87–94.
+ACM, 2016.
+[5] Marcelo Mortensen Wanderley and Nicola Orio.
+Evaluation of input devices for musical expression:
+Borrowing tools from hci. Computer Music Journal,
+26(3):62–76, 2002.
+[6] Guangyu Xia. Expressive collaborative music
+performance via machine learning. 2016.
+8

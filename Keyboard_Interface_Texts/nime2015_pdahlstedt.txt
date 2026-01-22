@@ -1,0 +1,752 @@
+Mapping Strategies and Sound Engine Design for an
+Augmented Hybrid Piano
+Palle Dahlstedt
+Dept. of Applied IT & Academy of Music and Drama, Univ. of Gothenburg, Sweden
+Dept. of Comm. and Psych., Aalborg Univ., Denmark
+palle.dahlstedt@gu.se, dahlstedt@hum.aau.dk
+ABSTRACT
+Based on a combination of novel mapping techniques and
+carefully designed sound engines, I present an augmented
+hybrid piano speciﬁcally designed for improvisation. The
+mapping technique, originally developed for other control
+interfaces but here adapted to the piano keyboard, is based
+on a dynamic vectorization of control parameters, allowing
+both wild sonic exploration and minute intimate expression.
+The original piano sound is used as the sole sound source,
+subjected to processing techniques such as virtual resonance
+strings, dynamic bu↵er shu✏ing, and acoustic and virtual
+feedback. Thanks to speaker and microphone placement,
+the acoustic and processed sounds interact in both direc-
+tions and blend into one new instrument. This also allows
+for unorthodox playing (knocking, plucking, shouting). Pro-
+cessing parameters are controlled from the keyboard play-
+ing alone, allowing intuitive control of complex processing
+by ear, integrating expressive musical playing with sonic
+exploration. The instrument is not random, but somewhat
+unpredictable. This feeds into the improvisation, deﬁning a
+particular idiomatics of the instruments. Hence, the instru-
+ment itself is an essential part of the musical work. Perfor-
+mances include concerts in UK, Japan, Singapore, Australia
+and Sweden, in solos and ensembles, performed by several
+pianists. Variations of this hybrid instrument for digital
+keyboards are also presented.
+Author Keywords
+augmented instrument, piano, keyboard, mapping, hybrid
+instrument, performance, improvisation
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing H.5.2 [Information Interfaces and Presen-
+tation] User Interfaces — Auditory (non-speech) feedback
+1. INTRODUCTION
+During the last few years I have run a research project with
+the goal to design electronic instruments for free improvisa-
+tion meeting the following criteria: 1) They should be free
+of presets, but with an easily operated mechanism for real
+time exploration of the space of possible sounds. 2) There
+should be a correlation between physical e↵ort and sound
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’15,May 31-June 3, 2015, Louisiana State Univ., Baton Rouge, LA
+Copyright remains with the author(s).
+production, and a change in gestural input should corre-
+spond to a change in sonic gestural output. 3) They should
+be as direct and free in the interaction as acoustic instru-
+ments are, and the user should be able to develop a skill
+and musicianship over time.
+This project has resulted in a family of synthesis-based
+instruments using various interfaces and playing styles, e.g.
+instruments using arrays of pressure sensors, percussion con-
+trollers (pitched and non-pitched), MIDI keyboards [1] and
+even the GuitarHero controller [3]. The main break-through
+in this project has been the introduction of an unconven-
+tional mapping approach, where the control parameters are
+dynamically mapped to initially randomized vectors in syn-
+thesis parameter space. The vector system can be re-scaled
+and shifted on the ﬂy, by ear, allowing for control of complex
+explorations and trajectories in a high dimensional space.
+In this paper, a particular development within this project
+is described:Foldings, an implementation of a hybrid pi-
+ano instrument, integrating the acoustic sound of the grand
+piano with processed sound from the same source. The
+processing is controlled by the pianist’s playing on the key-
+board, through the aforementioned vectorization algorithm.
+The electronic sounds are projected from speakers right be-
+hind the piano, causing the two sounds domains to merge
+into a new hybrid instrument that behaves organically. It
+also responds well to non-piano sounds, such as knocks
+on the wood, shouts into the piano, preparations or other
+inside-the-piano playing techniques.
+1.1 Background and previous art
+It is natural for musicians and composers to push the lim-
+its of their instruments, trying to extend the sound and
+performance possibilities. This is often done in collabora-
+tion with the instrument maker (e.g., as throughout the
+development of the modern piano, with involvement of J.S.
+and J.C. Bach, Beethoven, Liszt, Alkan and many other
+pianists), and new techniques that are initially perceived
+as an abuse of the instrument may later be encouraged
+and enhanced, or even explicitly supported, in a newer ver-
+sion of the instrument. But as the design of the piano has
+not changed much during the last century, composers have
+turned to extended techniques (playing inside the piano, di-
+rectly on the strings or on the wooden parts), preparations
+with physical objects so that the strings, although played
+in normal ways, sound like completely new instruments —
+inharmonic, percussive, noisy or bell-like — as pioneered by
+John Cage. Later, composers added pre-recorded sounds to
+the piano sound, or modiﬁed the acoustic sounds through
+electronic means, as in, e.g. Stockhausen’s Kontakte (with
+prerecorded tape part complementing the acoustic piano
+and percussion) and Mantra (using sine wave ring modu-
+lation on live piano sounds).
+The current repertoire for piano and live electronics is
+271
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+Figure 1: A picture from the premiere of the Fold-
+ings system in 2011. The red machine on top of the
+grand piano is the Nord G2 signal processing en-
+gine. It does both mapping and sound processing,
+but is not interacted with directly during the per-
+formance. Later performances have used a smaller
+version without interface, hidden behind the per-
+former. The Moog Piano Bar MIDI sensor can be
+seen on top of the keys, against the keyboard lid.
+huge (see [11] for an extensive list). External processing is
+often controlled through a separate interface (sliders, knobs,
+computer with mouse) by the player or an electronic mu-
+sician. Many piano improvisers and performers (such as
+Sten Sandell and Chris Brown) have added various pieces
+of electronics to the piano to extend its timbral range.
+What I wanted to design here, was instead an instrument
+where such external interfaces and ad hoc e↵ects were not
+necessary, with timbral control integrated with the normal
+playing. Also, I wanted no time-line, no presets, nor any
+predetermined ongoing processes. The instrument should
+always be ready for whatever is needed musically.
+Related work has been done by Andrew McPherson, but
+the other way around [6, 8]. He has constructed a piano
+where the physical strings are excited by virtual oscillators
+and synthesized signals controlled by external machinery, to
+provide the pianist with extended performance possibilities,
+while my system excites virtual strings and other processing
+mechanisms with sounds from the piano.
+To get precise information about key presses, either the
+Moog Piano Bar sensor or a Yamaha Disklavier player pi-
+ano have been used, which both provide MIDI output of
+keyboard, velocity and pedal information. Foldings can also
+be set up using a digital keyboard as sound source, where
+keyboard information through MIDI is generally available.
+This solution has been used during theater productions and
+improvisation tours, where a grand piano has not been avail-
+able. Since this allows for the use of other keyboard sounds
+as source material for the processing, such as celesta or
+harpsichord, and independent control of the source volume,
+it also has turned into a slightly di↵erent hybrid instrument,
+with its own set of possibilities and idioms. Both versions
+will be discussed in this paper. They have also been used
+together.
+1.2 A practiced-based approach
+This project stems from an urge to extend the expression
+of the piano in an improvisational setting. It also aims to
+take advantage of performance motor skills from years of
+keyboard training, applied to new timbres, and the expres-
+sive musical skills acquired through many years of musician-
+ship. The method I usually apply is the following: Based
+on an artistic need or desire, experiment with a number
+of prototypes to try to fulﬁll it. Reﬁne the best prototype
+into a working instrument, and evaluate this in real artistic
+use over long time, solo and with other musicians. Observe
+emerging idiomatics (characteristic playing patterns), recur-
+ring devices and exploitations of particularities of the im-
+plementation, and do a qualitative evaluation based on mu-
+sical experience with the instrument, and skill development.
+Also, study resulting musical interactions with other musi-
+cians on traditional instruments; do I match their proven
+nuances and agility. And how does it compare to playing a
+regular piano? This is not a quantitative evaluation of the
+playability of the instrument. It involves the my own ex-
+periences as the designer and performer of the instrument,
+as well as one other very experienced pianist. The analysis
+made, and the statements about the instrument, are not
+opinions (even though they by nature are subjective), but
+an attempt at accessing the detailed and rich experience and
+knowledge that the performer builds up over several years
+of playing this speciﬁc new instrument, in the light of the
+particular knowledge of the instrument designer, who in this
+case is the same person. This kind of long-term evaluation
+is rarely done with NIME instruments, but quantitative lab
+tests can hardly tell us if an instrument works out there,
+with expert co-players, in front of an audience. This kind
+of research is not about saying ”this instrument is better
+than that one”, but about investigating what is possible to
+do, in which ways we can construct instruments, and how
+we can understand the resulting music and musical inter-
+play in the light of the original intentions, technically and
+aesthetically.
+2. TOOL USER AND TOOL MAKER
+The concept of an augmented instrument initiates a discus-
+sion about the relationship between the tool user and the
+tool, mediated through the tool and the use there-of. The
+creation of any artwork is inﬂuenced by the available tools,
+as described by, e.g., Dahlstedt in his theory of artistic cre-
+ative process [2]. Learning a tool creates pathways in the
+mind, which in turn inﬂuences our imagination. We do not
+think freely, but rather in terms of what is possible, based
+on our cognitive models and experience of certain tools. An
+altered instrument provides new possibilities, and necessar-
+ily has aesthetic implications. When the tool becomes more
+powerful, e.g., by providing generative and computational
+abilities, the relationship between tool user and tool maker
+becomes more entangled, also from an authorship point of
+view. Depending on how the generative properties are im-
+plemented, and what degree of control the performer has
+over them, the results can either have a conforming e↵ect
+(all results sound similar, independent on who uses it), or a
+widening of the space of the possible (the tool takes you to
+new points in a search space provided by the medium you
+work in, and provides new strategies to explore it).
+Xenia Pestova provides an extensive analysis of the rela-
+tion between the musician and the instrument in her thesis
+[12], discussing di↵erent models for interaction: score fol-
+lowing, score orientation and the “live electronic pianist”.
+This latter category is further divided into di↵erent control
+scenarios: the pianist using external interfaces or external
+keyboard to control the electronics, and the possible need
+of an extra live-electronics musician. Pestova’s discussion,
+however, is focused on the notion of composition, where the
+work has a beginning and end. On the contrary, this work
+is oriented toward the idea of an instrument, for use in ei-
+ther solo or ensemble performance. So we need to add the
+category of anaugmented pianoto Pestova’s list, where the
+playing is free, where there is no time-line, and it feels like
+a new instrument to play. It is essentially open-ended.
+Such an augmented instrument can then be used in im-
+272
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+provisation as well as composition. The Foldings system has
+been used in both ways, by several performers, although the
+primary intended use is in free or structured improvisation.
+There is, however, an interesting aspect in the situation
+when the composer-musician is designing the instrument
+himself. He or she integrates many aesthetic choices and
+constraints in the design of the instrument, essentially em-
+bedding his aesthetic preferences in its construction. These
+design choices a↵ect the playing, the possibilities and the
+potential musical outcome, as these built-in constraints res-
+onate with the musical aesthetics of the player. In this case,
+depending on how strong the aesthetic constraints are, the
+instrument itself can be regarded as the work of art, equal
+to a composition. The output is di↵erent on micro level,
+but has a perceivable identity in structure and character,
+directly emerging from the instrument design. This po-
+sition is argued for by Swedish researcher and improviser
+Per Anders Nilsson [10]. When performing solo on Fold-
+ings, I think of it as performing a speciﬁc work, even if the
+music is improvised. Certain ways of interacting with the
+instrument are more rewarding than others, and during de-
+velopment and rehearsals I have developed a speciﬁc way
+of playing each variation of the instrument (same mapping
+mechanism, di↵erent sound engines), and even given a name
+to each sound engine, regarding them as ”movements” in a
+larger work.
+In the case when the instrument is not designed by the
+player, the situation is slightly di↵erent. The aesthetic con-
+straints built into the instrument and those provided by
+the player are not the same, which might lead to a di↵er-
+ent musical output when these interact. This other musi-
+cian might choose to exploit other interaction patterns and
+playing techniques based on his aesthetic preferences, re-
+sulting in very di↵erent music, which could be surprising
+to the original designer of the instrument. This is exactly
+what happened when, in a research workshop in 2011, the
+Foldings instrument was presented to the senior contempo-
+rary music interpreter and improviser John Tilbury1.H e
+approached it with an open mind, and started to explore
+how it responded to his way of playing, exploiting a speciﬁc
+”corner” of the space of the possible – the very soft, subtle
+and micro-tonal subspace.
+The space of the possible has a scope deﬁned by what is
+possible to do with the instrument, and a topology, i.e., a
+structure of proximity, neighborhood and ways to traverse
+it. The topology is also deﬁned by the instrument, since
+this is the very vehicle for navigation of the space. A tool
+deﬁnes a topological network of the space of the theoreti-
+cally possible in the chosen medium (in this case sound).
+The non-toolmaker musician (Tilbury) transcended not the
+space deﬁned by the instrument designer, but the part of the
+space that was known and envisioned by the designer. As
+humans we have limited cognitive capacity, and we cannot
+visualize internally the huge spaces of possibilities deﬁned
+by a generative mechanism of such complexity as a musi-
+cal instrument. Or in other words, Tilbury went beyond my
+cognitive model of the instrument, and explored ways to use
+it that I had not predicted, not only discovering unknown
+parts of the sound and structure space, but also exploring
+them along axes that I was unaware of.
+It can be argued that the mere possibility of such a tran-
+scendence, that the instrument goes beyond the instrument
+designer’s predictive capacity, is an indication that the in-
+strument has potential to surprise its maker and its users,
+and that it can serve as a su ciently complex vehicle for
+1See video example 1, from a concert following the work-
+shop.
+the presentation and development of musical ideas by him-
+self and other users for a long time. On a more humorous
+note, it could also be argued that it is just a sign of the
+maker’s limited visualization capacity, but I do hope this is
+not the case here.
+The issue of ﬁnding somebody else who wants to learn and
+play a novel instrument, and to build a community around
+it, has been further analyzed by McPherson and Kim [9].
+In their case study, based around a set of commissions for
+their augmented magnetic resonator piano, they found not
+only that di↵erent composers approach the instrument in
+very di↵erent ways, but also that a redesign of the instru-
+ment was needed, primarily relaxing the constraints and
+making it more open-ended, which resonates well with my
+observations.
+3. DESIGN
+The technology behind Foldings is as follows: A MIDI-
+enabled grand piano, four microphones, a signal processor
+(Nord Modular G2) with custom software, and two speakers
+behind the piano. In minimal settings it has been performed
+with only a stereo microphone and one full-range monitor
+under the piano.
+The software system consists of a mapping engine trans-
+lating from keyboard control parameters to processing and
+synthesis parameters, and a set of sound engines. Two
+engines have primarily been used during concert perfor-
+mances: a micro-tonal adaptive resonator and an adaptive
+bu↵er shu✏er. Both rely on the sound of the piano, and the
+sound of the keyboard mechanism and the surroundings.
+The electronic sound is projected from speakers behind the
+piano, hence going back into the instrument, providing a
+truly hybrid acoustic-electric instrument. For example, the
+virtual resonance strings provided by one of the engine al-
+lows for sophisticated play with resonances using knocks on
+the piano lid or shouts into the piano.
+3.1 Mapping technique
+The mapping development started in 2005, with keyboard-
+based synthesis instruments with separate timbres for each
+key, and timbral morphing between keys using the pitch
+bend controller. It was calledthe prepared synth, inspired
+by Cage’s prepared piano, and allowed for complex tim-
+bral variation and control, while keeping the keyboard pitch
+mapping. It was implemented as an array of eight synthe-
+sis parameter values per key. This was followed by a more
+general approach, developed in 2006-2012 [4, 1], where each
+control element (pad or key) is mapped to a vector in syn-
+thesis parameter space. The vectors are scaled by control
+magnitudes (pad pressure, key velocity, controller tilt, etc.,
+depending on interface), and when several control elements
+(pads, keys) are activated at the same time, the resulting
+scaled vectors are summed into a result vector, pointing to a
+speciﬁc point in synthesis parameter space. This point rep-
+resents a speciﬁc synthesis parameter set, and hence, cor-
+responds to a speciﬁc sonic results. Internal states of the
+sound engine can complicate the correspondence between
+synthesis parameters and the sounding result, but the gen-
+eral idea is the same.
+This mapping engine has been applied to a set of di↵er-
+ent interfaces. A piano keyboard implementation provided
+speciﬁc challenges. For example, it was discovered that for
+percussion and keyboard applications, the vector-based ap-
+proach was inadequate, since all soft notes would sound
+almost the same (the vectors are too short to make a dif-
+ference). Instead, a gravity model was developed, based on
+the vector model but with an added normalization step, so
+that each pressed key corresponds to a point in synthesis
+273
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+a) b)
+ c)
+Figure 2: a) An illustration of the gravity model.
+When several notes, each corresponding to a point
+in synthesis parameter space, are played with dif-
+ferent velocities, they attain di↵erent gravities. A
+louder note will have a larger attraction e↵ect on
+the resulting point (the small cross). This illustra-
+tion is greatly simpliﬁed. In the real system, the
+gravities vary over time, following attack, decay and
+release settings, and the process takes place in an 8
+or 16-dimensional parameter space. Fig. b) and c)
+show 2D projections of real trajectories (each of 10
+sec duration), taken from video example 4, where
+also the simultaneous control of 8 parameters can
+be seen and heard.
+parameter space. Each point has an attraction strength, a
+gravity, that is scaled by key velocity. If two keys are played
+simultaneously with similar velocity, the resulting point is
+in the middle between them. If one of the two is played
+harder, the resulting point will be closer to this one. This
+gravity amount is controlled by a traditional ADSR enve-
+lope (attack, decay, sustain, release). Adjusting the shape
+of the ADSR, di↵erent playing behaviors can be achieved.
+For example, if the release time is long, the gravity will per-
+sist for a while, a↵ecting the timbre for some time after the
+key was released. Also, these gravity envelopes can be ac-
+cumulated – playing the same key repeatedly increases its
+gravity.
+The spread of the gravity point set can be scaled globally,
+enabling exploration of large parts of the synthesis space,
+or ﬁne-tuned intimate expression. If an interesting point
+in synthesis parameter space is found, the whole point set
+can be shifted to this point. Then, all gravity points will
+be centered around this new origin, and the subspace sur-
+rounding it can be explored. Combined with a reduction of
+point set scaling, this provides a means to zoom in on in-
+teresting timbral regions, or to just alter the general timbre
+at will, by ear. The origin can be re-shifted, or reset to the
+real origin at any time.
+Another challenge posed by the keyboard version of the
+mapping was polyphony. In the previous applications, the
+sound is monophonic, controlled by a large number of iden-
+tical control elements (pressure pads, switches, drum pads,
+etc.). This choice was based on observation of how acoustic
+instruments are designed – there seems to be an inverse cor-
+relation between the number of continuous degrees of sonic
+freedom (timbre, dynamic and pitch) and the number of si-
+multaneous possible sounds. For example, think of church
+organ, piano, guitar, violin and wind instruments. They
+represent a falling scale with respect to polyphony, but a
+rising scale of sonic expressivityper voice. This is probably
+based on the limited cognitive and motor capacity of the
+human performer. However, when applying this mapping
+approach to a keyboard instrument, polyphonic playing was
+a necessity, simply because pianistic playing is based on it,
+and the system is based on a real piano. The solution was
+to use a single set of processing parameters on all voices,
+creating an instrument that has a single, variable timbre,
+instantiated in several polyphonic voices with controllable
+pitch.
+The mapping is an all-to-all mapping, since each con-
+trol parameter a↵ects all synthesis parameters, up or down.
+Research has shown that parameter coupling, inspired by
+how acoustic instruments work, is easier to play and per-
+ceived as more expressive [5]. This idea is here taken to
+an extreme. Larger velocities have more e↵ect, and when a
+chord is played, all keys a↵ect the timbre.
+The point set of the gravity engine is not designed, but
+randomized at design time, i.e., not during playing. The
+number of parameters is too large to set manually, and
+this approach enables exploration of the space of possible
+sounds without constraints. The mapping engine is tech-
+nically comparable to an interactive one-parent genetic al-
+gorithm, with aural evaluation of o↵spring, and the added
+possibility to audition interpolated combinations of di↵erent
+o↵spring (this comparison is further discussed in [4]).
+The output coordinates/parameters of the mapping en-
+gine can be mapped arbitrarily to synthesis parameters,
+since they all show the same kind of behavior. Hence, this
+mapping engine can be applied to almost any sound engine.
+The externally controllable parameters of the mapping
+engine are: Gravity envelope attack/decay/sustain/release,
+and point set scaling.
+3.2 Sound engines
+The Foldings system currently consists of three sound en-
+gines, with quite di↵erent sonic results. Two of them have
+been used extensively in solo and ensemble performances,
+while the third has only been used in ensembles. They are
+all controlled by a similar mapping engine, but with totally
+di↵erent parameter sets.
+3.2.1 The Ballad engine
+This engine is based around the idea of acoustic resonance.
+Each pressed piano key instantiates a corresponding virtual
+string (a tuned delay line with adjustable ﬁltering, hence a
+variation on the Karplus-Strong algorithm), which is fed an
+initial sound-burst from the microphone nearest to the cor-
+responding real string. Note that this is a compound sound,
+possibly resulting from other simultaneously pressed keys,
+from already sounding strings, or from other sounds. In this
+way, the virtual string can sound in di↵erent ways depend-
+ing on musical context. There are external controls (not
+processed by the mapping engine) that a↵ects The envelope
+characteristics of the virtual string are controlled directly by
+external controls (MIDI sliders) or set initially. It uses an
+adaptive feedback control, and is hence capable of inﬁnite
+sustain, but it can also be set to decay as a normal string.
+As long as it sounds, it is also fed an adjustable amount of
+direct sound from the microphones, with adaptive control,
+creating audible resonances and changes in timbres, while
+keeping the sounding energy at a constant level. To blur
+the very deﬁnite pitch of the piano, each virtual string is
+detuned by an amount controlled from the mapping engine.
+The scaling of the detuning can be set globally, allowing
+for micro-tonal playing, glissandi, stepped pitch variation
+of held notes, micro-tonal trills, etc., depending on gravity
+envelope settings.
+To further complicate the sound and provide some tex-
+ture, the sound engine contains a modulated delay side
+chain, fed back into the virtual string model as faint trans-
+formed echoes. The amount of this e↵ect, as well as all
+timbral parameters of the sound engine (delay times, delay
+feed amount, return modulation amounts, ﬁlter parameters,
+etc.) are mapped to parameters from the mapping engine,
+and are hence a↵ected by every aspect of the keyboard play-
+ing, providing a very dynamic and varied performance in-
+274
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+strument2.
+Externally controlled parameters of the Ballad engine are:
+amplitude envelope attack/decay/sustain/release, sound in-
+jection amount (for held notes), and initial sound injection
+length (for virtual string excitation).
+3.2.2 The Shufﬂe engine
+This sound engine is based around a continuous circular
+bu↵er of a few seconds. Input-wise, it acts as an adaptive
+looper, i.e., the loop is always running, and as soon as there
+is sound into the microphones, it records. If the incoming
+sound is soft, it keeps a little of the previous sound, but if the
+incoming sound is loud, it replaces the previous sound com-
+pletely. The sound from the circular bu↵er is played back
+based on parameters from the mapping engine, controlling
+starting position, loop length and playback speed (including
+negative speeds). In this way, the sonic result can be trans-
+posed drastically. Very short loops can sound like metallic
+notes, and long loops become rhythmic gestures. Because
+of the speciﬁc nature of the loop playback parameters, the
+gravity envelope of the mapping engine is simpliﬁed to an
+on-o↵ gate function to avoid excessive glissandi. Also, be-
+cause radical transposition of rich digital sound can create
+very strong treble content, a bandpass ﬁlter is included,
+which tracks the played key on the piano. This provides
+a more controlled spectral output. The width of the band-
+pass ﬁlter can be adjusted down to self-resonance, providing
+a wide range of sonic behavior.
+The most interesting feature of this sound engine is the
+fact that while the keyboard playing a↵ects the looper play-
+back parameters, the very same played notes also produce a
+sound and hence enter the loop. There is no way to decou-
+ple the contents of the looper from the control of the looper
+playback. This takes a while to get used to, but it provides
+very interesting input to the improvisation, and almost gives
+the illusion of improvising with a second performer3.
+3.2.3 The Feedback engine
+This sound engine is based on a complex feedback network
+involving a set of interconnected comb ﬁlters (pitched one-
+cycle delays), a set of e↵ect blocks (frequency shifter, delay,
+phaser and a multimode ﬁlter), all connected in a matrix
+with separate weights at each node. Feedback strengths and
+routings are controlled by parameters from the mapping en-
+gine. The feedback network is injected with sound from the
+piano at the start of the note, but the timbres emerging from
+the feedback network quickly take over, and there is little
+room for the continued injection of the acoustic sounds into
+a held note. The timbre is varied, and alters based on the
+keyboard playing, with musically interesting phase transi-
+tions occurring with drastic parameter changes. However,
+real-time control is not as evident as with the other sound
+engines. It does not feel as organic as the them, since the
+inﬂuence of the acoustic sound is less prominent and quickly
+vanishes. It feels more like a synthesized instrument. Be-
+cause of this, it has mostly been used in ensemble playing.
+Still, it has an acoustic feel due to the acoustic source in-
+strument sounds4.
+3.2.4 Digital keyboards as source and controller
+For practical reasons, digital pianos have also been used,
+primarily due to the unavailability of a grand piano in some
+performance venues, but it quickly turned into a feature.
+With a digital keyboard, di↵erent keyboard sounds can be
+2See video example 2and sound example 13See sound example 2.4It is used by the left pianist invideo example 3.
+used as source sounds. The setup is the same, and it is still
+a hybrid instrument: The “normal” keyboard sound from
+the digital piano goes into the same sound engines as in the
+acoustic version. Hence, the relationship between a “nor-
+mal” keyboard sound and the processed sound is the same,
+even though the original sound is a digital imitation. Since
+grand pianos rarely sound good through stage speakers, ce-
+lesta and harpsichord have often been used, but also bells
+and organs. These timbres work very well the Ballad engine.
+When performing on a digital keyboard, the volume of
+the“acoustic”source sound can be controlled independently,
+and even be muted. When playing only the processed sounds
+in this way, the instrument is radically transformed. It be-
+comes a very expressive electronic instrument that feels very
+acoustic, thanks to the underlying source sound and the vir-
+tual acoustic resonances.
+To provide for even more acoustic interaction, a micro-
+phone has sometimes been taped to the lid of the digital
+keyboard, and mixed into the source keyboard sound, to
+allow for knocks, voice sounds and other non-instrumental
+sounds to go into the resonant strings of the Ballad engine,
+or into the looping bu↵er of the Shu✏e engine, in the same
+way as such sounds can be used with a real grand piano.
+4. PLAYING TECHNIQUES
+During extensive rehearsals, performances and recordings,
+characteristic playing techniques have emerged for the dif-
+ferent sound engines.
+In the ballad engine, a core technique is to hold a chord
+or a note, and inject short bursts of staccato sound into the
+virtual resonance strings, or knocks on the wooden piano
+lid, causing abrupt changes in timbre, sounding very much
+like acoustic resonances. This can be further elaborated
+into textures of quick altering between legato and staccato
+playing, overlapping in both hands.
+Adjusting the gravity envelope times to very short dura-
+tions, which enable abrupt changes in mapped parameters,
+it is possible to produce micro-tonal trills and minute tim-
+bral variations. This is done by holding one or more keys
+and playing another key repeatedly. Since each played key
+introduces a change in all mapped parameters, the sound is
+altered. When the key is released, the parameters go back
+to their previous value. Larger rapid timbral transitions can
+also be e↵ective.
+Controlled glissando gestures, very novel in a piano con-
+text, can be produced in di↵erent ways, for example as de-
+tuning of the virtual string a↵ected by a decaying grav-
+ity point. With accumulation of several gravity envelopes,
+through repeated playing of the same key, further complex
+glissando gestures can be produced.
+Repeated playing of notes or sequences, in tremolo pat-
+terns or on a single note, can be used to provide a kind of
+drifting navigation in the parameter space. This requires
+that the gravity envelopes are rather slow, and that the
+point set scaling is low, so that each key does not have too
+much e↵ect, avoiding large jumps at the note attacks.
+Using a digital keyboard as source and controller, peculiar
+swells can be produced. If the source keyboard sound is
+taken through a volume pedal before it reaches the sound
+engine, the source sound can be muted. Then, a↵ chord
+can be played muted, and when the volume pedal is raised,
+the decaying chord, now audible, causes resonances in the
+virtual strings, resulting in an eerie, distant swell.
+With the Shu✏e engine, the player can exploit the in-
+terdependency of the keyboard as controller and as sound
+source in many ways. One example is to alter between be-
+tween ﬁlling the loop and exploiting it. Even though it is of
+275
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+course always ﬁlled, the performer can concentrate on one
+role at a time.
+When an interesting repetitive sonic texture is found, is
+can be kept by holding the keys and only using quite soft
+playing, slightly altering the looping parameters without in-
+jecting too much new sound into the looping bu↵er. The
+held texture can also be interrupted by loud single presses
+on another key, causing an abrupt change in the playback,
+but going back when the key is released, possibly with
+slightly altered bu↵er contents.
+Since playback speed is one of the mapped parameters,
+the performer can sometimes exploit this as a velocity-to-
+pitch e↵ect, allowing bouncing gestures and melodic playing
+on a single key. This requires that another key or other keys
+are held, so that the velocity of the extra added key maps
+proportionally to the playback speed through the mapping
+engine.
+5. DISCUSSION
+The unpredictability of this instrument evokes a certain
+kind of interaction. It feels like chasing a moving target.
+You react to the aural consequences of your playing, and
+your reaction causes a semi-unpredictable e↵ect, which is
+then causing further reaction, etc. Still, the performer has
+expressive control over dynamics and pitch, and a range of
+repeatable playing techniques at her disposal. But there
+is a certain unpredictable component, which in some cases,
+especially with the Shu✏e engine, feels like you are playing
+with another human musician. The instrument in itself, or
+rather the emergent musical structures, provides impulses
+for further playing. These patterns of impulses given by the
+musician and the impulses returned from the instrument re-
+sults in a particular idiomatics. In a sense, the instrument
+is a composition, with very clear identity, and it invites you
+to play in a certain way. This aspect of an electronic instru-
+ment embodying a set of aesthetic preferences of its designer
+has been discussed in depth by Nilsson [10].
+The instruments have been evaluated qualitatively through
+extensive playing in many di↵erent contexts, by di↵erent
+performers, over several years, in performances all over the
+world (including the UK, Japan, Singapore, Australia and
+Sweden). In total, it has so far been used in 35 public con-
+certs/performances in very di↵erent contexts. The Foldings
+instrument has been used together with many diverse in-
+struments, such as percussion, saxophone, and Japanese
+Noh-ﬂute with its peculiar non-harmonic overtone series
+and micro-tonal phrases. It has also been used to accom-
+pany dance performers in a semi-composed setting, and
+overall it has turned out to be a very versatile and universal
+instrument capable of diverse range of output. Maybe the
+best test was a tour in Sweden and UK together with the
+legendary improvisation ensemble AMM, where two out of
+four players played di↵erent versions of the Foldings system,
+and a third player played theexPressure Pad(the electronic
+improvisation instrument for which the vector mapping was
+originally developed [1]).
+5.1 Future development
+A larger number of voices in the sound engines is needed.
+This would allow for slower, more dynamic navigation of
+the parameter space, through the use of large numbers of
+keyboard events. New sound engines will be developed, as
+well as improvements of the existing ones. As previously
+described, the Feedback sound engine is not really satisfying
+yet, and it needs to become more acoustic in its behavior.
+A pitch class version has been considered, where each
+pitch class (c, d, e, etc.) is mapped to the same point in pro-
+cessing space, regardless of octave. Then, harmonic playing
+and the use of tonal patterns in di↵erent octaves would be
+easier to manage.
+The mapping engine will be tested with enhanced key-
+board sensing, such as McPherson’s key surface sensors,
+providing pressure and position data [7]. This work has
+started, both with acoustic and digital pianos.
+6. CONCLUSIONS
+The Foldings system has proven a successful merge of an
+acoustic and electronic instrument, allowing the the per-
+former to use established keyboard performance techniques
+together with advanced electronic processing, without alter-
+native controllers or distracting laptops screens between the
+musician and the audience. The novel mapping engine to-
+gether with the di↵erent hybrid sound engines provide for a
+number of novel performance techniques, greatly extending
+the timbral range of the piano, without sacriﬁcing its orig-
+inal qualities. Still, the instrument, because it indeed feels
+like a new instrument, behaves organically and responsively,
+and is rewarding to play.
+7. REFERENCES
+[1] Dahlstedt, P.Dynamic mapping strategies for
+expressive synthesis performance and improvisation.
+In LNCS 5493(2009), pp. 227–242.
+[2] Dahlstedt, P.Between material and ideas: A
+process-based spatial model of artistic creativity. In
+Computers and Creativity, J. McCormack and
+M. d’Inverno, Eds. Springer, 2012.
+[3] Dahlstedt, P., Karlsson, P., Widell, K., and
+Blomdahl, T.Youhero - making an expressive
+concert instrument from the guitarhero controller. In
+NIME14(London, U.K., 2014), pp. 403–406.
+[4] Dahlstedt, P., and Nilsson, P. A.Free ﬂight in
+parameter space: A dynamic mapping strategy for
+expressive free impro. InLNCS 4974.2 0 0 8 ,
+pp. 479–484.
+[5] Goudeseune, C.Interpolated mappings for musical
+instruments.Organised Sound 7(2)(2002), 85–96.
+[6] McPherson, A.The magnetic resonator piano:
+electronic augmentation of an acoustic musical
+instrument.Journal of New Music Research 39 (3)
+(2010), 189–202.
+[7] McPherson, A.Touchkeys: Capacitive multi-touch
+sensing on a physical keyboard. InNIME12(Ann
+Arbor, MI, USA, 2012).
+[8] McPherson, A., and Kim, Y.Augmenting the
+acoustic piano with electromagnetic string actuation
+and continuous key position sensing. InNIME10
+(Sydney, Australia, 2010).
+[9] McPherson, A., and Kim, Y.The problem of the
+second performer: building a community around an
+augmented piano.Computer Music Journal 36 (4)
+(2012).
+[10] Nilsson, P. A.A Field of Possibilities: Designing
+and Playing Digital Musical Instruments. PhD thesis,
+University of Gothenburg, 2011.
+[11] Pestova, X.The Piano + LIVE Electronics
+Repertoire List.
+http://xeniapestova.com/electronicrepertoire.html,
+accessed 2015.01.20.
+[12] Pestova, X.Models of Interaction in Works for
+Piano and Live Electronics. PhD thesis, McGill
+University, Montreal, Canada, 2008.
+276
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 

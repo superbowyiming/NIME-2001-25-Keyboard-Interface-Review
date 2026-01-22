@@ -1,0 +1,614 @@
+A Computer Application to Explore 53-Tone Equal
+Temperament Harmonies Through Modal Interchange
+David Dalmazzo
+dalmazzo@kth.se
+KTH-Royal Institute of Technology
+Stockholm, Sweden
+Ken Déguernel
+ken.deguernel@cnrs.fr
+Univ. Lille, CNRS, Centrale Lille,
+UMR 9189 CRIStAL, F-59000
+Lille, France
+Bob L. T. Sturm
+bobs@kth.se
+KTH-Royal Institute of Technology
+Stockholm, Sweden
+Abstract
+We present a novel computer application for real-time exploration
+of microtonal harmonies through intuitive visualization and inte-
+grated MIDI controllers, bridging theoretical concepts and practi-
+cal musical applications. We extend modern harmonic principles
+from 12-tone equal temperament (12-TET), incorporating inter-
+val distinctions from 31-TET (subminor, neutral, supermajor),
+and further expanding into detailed harmonic possibilities of
+53-tone equal temperament (53-TET). Our application leverages
+modal interchange and parallel chord substitutions, offering intu-
+itive navigation through microtonal harmonic trajectories. The
+implementation utilizes MIDI Polyphonic Expression (MPE) via
+our custom MaxForLive application, The Bridge , ensuring precise
+microtonal control and compatibility with digital audio worksta-
+tions (Ableton Live 11/12 ). The system includes real-time visualiza-
+tion, interactive chord manipulation, and a comprehensive Scale
+Editor for harmonic experimentation. Through practical exam-
+ples and theoretical analysis, we demonstrate how this approach
+reveals new harmonic possibilities while maintaining connec-
+tions to established modal frameworks. This research contributes
+to the growing microtonal music field by providing theoretical
+foundations and practical tools that incorporate extended tuning
+systems into contemporary musical practice.
+Keywords
+Microtonality, Music Theory, Modal Interchange, Harmonic Ex-
+ploration, 53 Tone Equal Temperament, Data Visualization
+1 Introduction
+Digital Audio Workstations (DAWs) such asAbleton Live have
+made strides in incorporating microtonality, allowing users to
+experiment with extended tuning systems through features like
+piano rolls with microtonal pitch adjustments. However, these
+implementations are constrained by the limitations of the MIDI
+protocol, which was designed for the 12-tone equal temperament
+(12-TET) system. Microtonal tuning in such environments of-
+ten requires compromises, such as reducing the available pitch
+range when distributing the MIDI range into more detailed pitch
+distributions per octave.
+Although extensive theoretical frameworks for microtonality
+exist [4, 12, 13, 25]—and microtonal practices have been embraced
+by composers and instrument makers around the world—the po-
+tential of microtonal chord progressions, particularly the nuanced
+spectrum of chord qualities and their functional relationships,
+has not been fully exploited in digital musical interfaces. In many
+This work is licensed under a Creative Commons Attribution 4.0 International
+License.
+NIME ’25, June 24–27, 2025, Canberra, Australia
+© 2025 Copyright held by the owner/author(s).
+traditional and contemporary musical contexts, microtonality
+is a common feature; however, the specific domain of extended
+chord quality variations within microtonal systems offers a richer
+palette of harmonic textures that challenge conventional tonal
+relationships. Existing tools in DAWs often lack the intuitive in-
+terfaces and computational support necessary for composers and
+performers to explore and manipulate these subtle yet expressive
+harmonic possibilities in real time.
+This paper presents a computer application for real-time mi-
+crotonal harmony exploration. The system comprises an inter-
+active interface with an 8x8 grid for composing chord progres-
+sions, scale, chord editions, and a voicing editor. This interface is
+controllable through a MIDI controller (launchpad MK[3]). Un-
+like traditional fixed-template approaches, this project enables
+users to experiment with harmonic relationships by applying
+modern concepts like modal interchanges and parallel chord
+substitutions to microtonal contexts. This design philosophy al-
+lows musicians to discover new harmonic possibilities from a
+clear theoretical framework. Supplemental material, audio exam-
+ples, and the application are available on the project’s web page.
+https://fifty-three-tet.github.io/anima/
+2 Literature Review
+We first survey work related to the computational modeling of
+music and cultural practices of microtonality.
+2.1 Computational Analysis of Harmony and
+Tonal Structures
+Computational analysis of harmony and tonal structures is in-
+formed by advances in both cognitive and neo-Riemannian ap-
+proaches. Balzano [6] frames harmonic structures using cyclic
+groups, enabling intuitive explorations of 12-tone and micro-
+tonal systems. The Harmony Space interface [1], introduced by
+Holland (1994) [17], is a pioneering interactive system for ex-
+ploring and learning tonal harmony. Drawing on Balzano’s and
+Longuet-Higgins’ theories, it employs a unique spatial metaphor
+to make complex harmonic concepts accessible to novices while
+providing advanced tools for experienced musicians.
+Furthermore, as seen in chord complexes, topological struc-
+tures extend this analysis by visualizing harmonic trajectories in
+multi-dimensional spaces, providing deeper insights into the rela-
+tionships between chords, particularly in modern music analysis
+and classification tasks [8]. Chew [10] proposes a Spiral-Array
+model representing tonal relationships through an interior-point
+approach in three-dimensional space, where higher-level mu-
+sical structures (chords, keys) are modeled as convex combina-
+tions of lower-level components within a spiral derived from
+the Harmonic Network (Tonnetz). This continuous representa-
+tion, validated through geometric mappings to Lerdahl’s tonal
+pitch space [ 20] and Krumhansl’s [ 19] experimental findings,
+transforms traditionally combinatorial music analysis problems
+NIME ’25, June 24–27, 2025, Canberra, Australia Dalmazzo et al.
+into computationally efficient nearest-neighbor searches while
+maintaining structural consistency with established music the-
+ory. These approaches offer valuable insights into methods for
+modeling, analyzing, and teaching harmony in computational
+and educational contexts, concluding that exploring microtonal-
+ity could open up new, untapped avenues for deeper harmonic
+exploration.
+2.2 Cultural Practices of Microtonal Music
+Microtonal music has been implemented across diverse cultural
+practices and artistic projects. Harry Partch’s pioneering work
+with Greek scales led to his construction of 43-tone scale instru-
+ments for his compositions [14]. Contemporary microtonal music
+has found a significant platform through online platforms, with
+dedicated content creators such as Hear Between The Lines [21],
+Zheanna Erose [11], Mike Battaglia [7], and Maddie Ashman [5].
+Award-winning musician Jacob Collier incorporates microtonal
+chords into contemporary Western popular music. The growing
+interest in microtonal music has influenced instrument develop-
+ment, exemplified by the Lumatone [18]. While this instrument
+represents an advancement in microtonal performance capabili-
+ties, its high cost is a barrier for musicians and researchers. The
+use of 53-TET extends beyond Western music, serving as the
+standard tuning system in Turkish maqam music [29]. The xen-
+harmonic [28] music movement, particularly within electronic
+dance music, has fostered a community of artists exploring al-
+ternative tuning systems, including notable contributions from
+Elaine Walker, Birdhouse, and Stephen James Taylor [27].
+2.3 Microtonality In Computer Music
+Modeling
+Anders and Miranda [4] developed a computational model for
+microtonal music theory and composition using constraint pro-
+gramming implemented in the now-discontinued Strasheela mu-
+sic composition system [3]. This model supported various temper-
+aments and allowed composers to define constraints for shaping
+microtonal compositions across harmony, melody, and counter-
+point, applying Western music theory concepts to microtonal
+contexts. Chadwin [9] explored microtonality in popular music
+and demonstrated that microtonal techniques can be effectively
+integrated into contemporary songwriting across pop, rock, and
+electronic genres, which expands the creative palette for song-
+writers. Hirai et al. [15] introduced a microtonal music dataset of
+100 music pieces with .wav and MIDI files with various tunings,
+offering machine learning and MIR research support. These stud-
+ies underscore the growing interest in microtonality and the need
+for new theoretical frameworks and tools to explore microtonal
+systems in modern music practice.
+3 Musical Context and Notations in 53-TET
+3.1 Why 53-TET?
+The 53-tone equal temperament (53-TET) stands out for its close
+approximation of intervals found in just intonation [23], a tuning
+system in which simple whole-number ratios define intervals.
+For example, the perfect fifth is the interval where the higher
+note’s frequency is 3/2 that of the lower note, yielding a naturally
+consonant sound. As noted by Holder [ 16], if the commas are
+made equal, the octave can be divided into 5 whole tones and 2
+diatonic semitones, with each step—known as a Holdrian Comma
+(HC)—representing approximately 22.6415 cents [26]. Similarly,
+Jing Fang (78–37 BCE) observed that stacking 53 perfect fifths
+(each with the 3:2 ratio) nearly equals 31 octaves [ 22]. 53-TET
+approximates both Pythagorean and just intonation intervals by
+"tempering out" two small intervals: the schisma (32805/32768,
+approximately 1.95 cents) and the kleisma (15625/15552, approxi-
+mately 1.97 cents), effectively treating them as unison.
+3.2 Equal Temperament Calculation
+The methodology to calculate the tempered pitches employs an
+information-based approach that extends modern harmony prin-
+ciples into finer divisions, relying on mathematical precision to
+develop the computational tool. The resolution of temperament
+is achieved by identifying approximate common divisors of irra-
+tional numbers that correspond to musical intervals, a process
+referred to as antanáiresis [12]. This approach is mathemati-
+cally expressed as: cents = 1200 ×log2 (ratio)Here, the octave is
+divided into 1200 cents, with the perfect fifth represented by the
+ratio 3 : 2, which calculates to: 701.9550008653874 cents. Differ-
+ent tempered scales approximate this interval with varying levels
+of precision. The successive approximations of their relation are
+shown in Table 1. The 1200-cent quantization of the octave is
+then multiplied by a ratio to establish the location of the fifth
+interval. This table shows different ratios used to approximate the
+perfect fifth in various temperaments. The 7:12 ratio represents
+a slightly detuned fifth in 12-TET, while 31:53 demonstrates why
+53-TET provides an excellent compromise between accuracy and
+practical implementation with fewer than 100 divisions of the
+octave.
+Cents Ratio P. 5th Approx.
+1200 x 3 : 5 720.00
+1200 x 7 : 12 700.00
+1200 x 24 : 41 702.43902
+1200 x 31 : 53 701.88679
+1200 x 179 : 306 701.96078
+Table 1: The perfect fifth approximations in tempered tun-
+ings.
+3.3 Harmonic Exploration, Modes, and
+Notations
+The central concept of this work is to facilitate harmonic explo-
+ration by focusing on modal logic and chord construction by
+stacking thirds and using substitutions or alterations. Although
+it is not a technical limitation, in this paper, we limit our scope
+to heptatonic modes for simplicity of formalism and to maintain
+clarity and accessibility when extending to 53-TET. We thus re-
+tain the naming conventions of modes from modern Western
+music theory.
+While 53-TET contains the minor and major thirds of 12-TET,
+it introduces other thirds that create new modal colors and chord
+qualities. We can first consider 31-TET, in which appearsubmi-
+nor, neutral, and supermajor thirds, adding gradations between
+the usual minor and major thirds. 53-TET takes this gradation
+even further by introducing more intervallic qualities, such as
+downminor, neutral minor, or upmajor (respectively annotated
+vm, ^^m, and ^M ). The complete list of interval qualities and their
+notations is shown in Table 2.
+Once a mode is established, chords can be constructed by stack-
+ing thirds. Substitutions, alterations, and inversions can enrich
+A Computer Application to Explore 53-Tone Equal Temperament Harmonies Through Modal Interchange NIME ’25, June 24–27, 2025, Canberra, Australia
+n-TET Qualities
+12 minor (m), major (M)
+31 subminor (sm), minor (m), neutral (N), major (M), su-
+permajor (SM)
+53 subminor (vvm), downminor (vm), minor (m), upmi-
+nor (^m), superminor/neutral minor (^^m), subma-
+jor/neutral major (vvM), downmajor (vM), major (M),
+upmajor (^M), supermajor (^^M),
+Table 2: List of possible qualities for a third, seventh, ninth,
+and thirteenth chord intervals, and their notation.
+Figure 1: Scale distances defining the chord qualities
+the harmonic possibilities and improve voice leading in chord
+progressions. Because of the new chord qualities available in 53-
+TET, we need to use a new notation to express the range of chord
+quality. Figure 1 shows the different qualities and notations for
+the different elements in a chord. The notation system for chords
+follows the same syntax as jazz notation, where intervals are
+explicitly indicated: the root is followed by the third quality, the
+seventh, and then potential extension or alteration. For instance,
+the chord with a root of vD, a neutral minor third, and a subminor
+seventh, is annotated:
+root: vD
+third: neutral minor (n)
+fifth: perfect
+seventh: subminor (sm)
+ 
+
+vDnsm7.
+This notation format clearly expresses the chord content.
+The new chord qualities provided by 53-TET significantly en-
+rich harmonic possibilities. Even when keeping a perfect fifth,
+100 possible combinations of the third and seventh exist, leading
+to new harmonic colors. For example, starting from a dominant
+chord featuring a major third and a minor seventh, modifying
+the seventh towards a more neutral quality such asneutral minor
+aligns the chord with the initial tones of the harmonic series.
+This stabilization alters its conventional dominant functional
+role expected in modern Western music theory. Hence, this trans-
+formation of stable, subdominant, or dominant chords creates
+more precise colors and new functional relations.
+Figure 2: Example of modal interchanges in 12-TET
+3.4 Modal Interchanges
+Although harmonic exploration can be made through singular
+modes, a compelling method for expanding research to other
+chords is through modal interchanges. Modal interchange in-
+volves borrowing chords from parallel or relative modes to in-
+troduce new harmonic colors while maintaining a connection to
+the original mode.
+Parallel Interchange: This involves borrowing chords from a
+mode sharing the same root as the original one. For instance, if
+we are in C major/Ionian, we can borrow from C Aeolian.
+Relative Interchange: This involves shifting to a mode where
+the original root functions as a different degree of the scale and
+borrowing chords from the obtained mode. For instance, start-
+ing from C major/Ionian, an Aeolian relative modal interchange
+would place C at the 6th degree of E♭ major/Ionian. Therefore,
+we can borrow from E♭ major.
+The distinction between parallel and relative modal inter-
+changes appears more clearly when applied to chord progressions.
+Figure 2 shows a simple “I vi ii V I” 12-TET progression in C
+major, and the parallel and relative Aeolian interchanges for the
+middle chords. The move from Ionian to Aeolian means adding
+a ♭3 (E♭), ♭6 (A♭), and ♭7 (B♭). In the parallel interchange, the
+chords are still based on the root of C. Am7 becomes A♭maj7 to
+correspond to the new bag of notes of C Aeolian. Similarly, we
+obtain Dm7♭5 and Gm7. In the relative interchange, the chords
+are now based on the root of E ♭. The vi is, therefore, the 6th
+degree of E♭ major, ie. Cm7. Similarly, we obtain Fm7 and B♭7.
+This concept of modal interchanges can be directly applied
+to the extended modal possibilities of 53-TET. Once a mode is
+defined, parallel and relative motion can borrow new chords and
+harmonic content into a progression. This approach is at the core
+of harmonic exploration in our application.
+4 Software Design
+The software design is a two-tier system. It begins with The
+Bridge, a MaxForLive [2] patch programmed in Max 8 (version
+8.6.5) that connects the application to MIDI by translating 53-TET
+note coordinates into a 12-TET piano roll. MIDI polyphonic ex-
+pression (MPE) [24] adjusts intermediate pitches precisely using
+pitch bend parameters. Unlike traditional MIDI, MPE assigns
+each note its own channel, enabling independent control of pitch,
+timbre, pressure, and volume per note, allowing digital instru-
+ments to respond more expressively. In Ableton Live (tested on
+NIME ’25, June 24–27, 2025, Canberra, Australia Dalmazzo et al.
+Figure 3: The Grid Scene: Modal Interchange in 53-TET
+Live 11 and 12), this patch functions as a MIDI effect on any track,
+sending data to another track containing a Wavetable synth or
+any MPE-compatible instrument.
+The second section is an interface visualization that contains
+a Scale Editor to adjust the interval distances, select the root, and
+the inversion of the chords. It includes a voicing visualization and
+editor to change the voicing parameters of the chords. An 8x8
+grid with empty first-row slots, where chords can be dragged to
+compose chord progression; the other seven rows are modal inter-
+change substitutions of the original chord progression, allowing
+listening, testing, and exploring harmonic possibilities of musical
+ideas in microtonality. It is programmed in OpenFrameworks
+version 0.12.0_Nighlty on Mac Sonoma 14.5.
+4.1 The Bridge
+Some DAWs can now map a MIDI piano roll into other temper-
+aments. That is an easy solution for initial explorations, but it
+reduces the pitch range, as the limit of 128 keys is now mapped to
+a more detailed resolution. For example, 53-TET ends with only
+2 octaves and some extra notes; if we start from A0, it reaches
+D2 minus 1 HC.
+Therefore, we resolved this issue by still using the standard
+12-TET range but adjusting the pitches implementing MPE. A
+MaxForLive patch receives an Open Sound Control (OSC) message
+with an array of a tuple with 53-TET notes and velocity. It is
+processed by a [poly∼] object with 15 voices.
+The [poly∼] object converts 53-TET notes to standard MIDI/MPE
+by treating each step in 53-TET as a shift in frequency, with an
+offset frequency 𝐾 = 55.18012 Hz. This offset aligns 0 HC to the
+MIDI note 𝐴1 and 13 HC to 𝐶2. The reference frequency 𝑓 for a
+given scale degree 𝑛is calculated as:
+𝑓 = 2𝑛/53 ·𝐾
+The reference frequency 𝑓 is then translated to MIDI using
+the following formula:
+𝑚= 69 +12 log2 (𝑓/440)
+The mapped reference in MPE is defined as:
+MPE = (⌊𝑚⌋,𝑚 mod 1)
+Here, ⌊𝑚⌋represents the floor function corresponding to the
+MIDI_note. The 𝑚 mod 1 represents the fractional part used by
+the pitchBend. If pitchBend = 1, it is added to the MIDI_note, and
+its value is flattened to pitchBend = 0.
+This method enables arrays of the tuple (53-TET, Velocity)
+chords to be mapped onto any DAW platform without losing the
+full spectrum of frequencies.
+4.2 Interface Design
+The scenes of the computer application are:
+The Grid Scene consists of an 8×8 grid with free slots designed
+for experimenting with chord progressions and modal inter-
+change substitutions, as shown in Fig. 3. It features:
+• A drag-and-drop chord list : It is formed with the Ionian modes,
+starting with its seven chords (Cmaj7, Dm7, Em7, Fmaj7, G7,
+Am7, and Bø7), and all those chords can be placed in the grid’s
+first row to compose a chord progression.
+• A Scale Editor: It allows the edition of notes contained in the
+main modal scale configuration in 53-TET, as shown in the visual-
+ization tool in Fig. 4. The exploration of different configurations
+starts with C Ionian as a reference. The interval names in 53-TET
+are shown, highlighting all relevant qualities available for 3rd,
+5th, and 7th. For example, the harmonic 3rd and 7th are also
+marked. From the Scale Editor, it is possible to experiment with
+other configurations and intervallic distances such as subminor,
+downminor, minor, upminor, and neutral minor. The Scale Editor
+has an inversion wheel to configure other root dispositions of
+the chord, for example, Cmaj7/E. The internal wheel is used to
+choose any of the 53-TET available notes in the first three oc-
+taves to define the tonic of the available chords. All nodes can be
+dragged, and the internal wheels can be rotated.
+• A Voicing Editor: We use the principle of the spiral visualization
+(zenithal view) of the disposition of the note per octave, based
+on Chew’s method [10]. It is assigned by clicking on any chords
+available in the Grid. As shown in Fig. 5, the white notes are the
+active notes where the lower pitch starts in the smaller circle. A
+reference of the guide tones is shown in the reference wheels;
+each wheel is an octave upper from the root. The guide tones are
+shown in their related location of the 3rd, 5th, 7th, and extensions.
+The voicing is predefined concerning its function. However, a
+dynamic voicing checks for previous chords on its corresponding
+row and adapts the higher note to maintain an organic motion
+from chord to chord. The 9th is used as a pivot note that can be
+included to make chord transitions smoother.
+The Modes Scene The second scene displays all modes trans-
+posed to the reference root, starting with standard Greek modes.
+While we retain their names as reference points, they become
+less applicable when scales are edited (see section 5.3). This scene
+A Computer Application to Explore 53-Tone Equal Temperament Harmonies Through Modal Interchange NIME ’25, June 24–27, 2025, Canberra, Australia
+Figure 4: Scale Editor interface
+Figure 5: Voicing Editor interface
+allows users to experiment with new scales and chord colors
+through clickable chords (Fig. 6). It features a list of seventh
+chords derived from each mode, all transposed to the root se-
+lected in the Scale Editor.
+The Scales Scene The third scene contains the scales of all Greek
+modes transposed to the reference root, allowing the user to
+experiment with melodic constructions. As Ableton Live controls
+all sounds, recording this interaction in a MIDI track is also
+possible. All notes are clickable to trigger the sound. The Scene
+is shown in Fig. 7
+The Lumatone Scene The fourth scene displays notes in the
+format of the Lumatone microtonal keyboard [18], allowing users
+to explore its key layout.
+As anAbleton Live extension, all sounds are generated via MPE-
+compatible MIDI instruments, with played chords recordable as
+standard MIDI tracks editable through any DAW tool.
+We integrated the Launchpad Pro [MK3] controller for real-
+time interaction, mapping its touch-sensitive triggers to the 8x8
+interface grid. This grid is organized with the first row for orig-
+inal chord progression composition and seven rows below for
+modal interchange substitutions: parallel Dorian, Phrygian, and
+Aeolian, followed by relative Dorian, Phrygian, Aeolian, and
+Locrian (Fig.3). The Launchpad can also function as a keyboard
+for playing reference scales in other scenes.
+5 Demo and Discussion
+5.1 Modes Examples
+In the Modes Scene , we have a disposition of all modes with
+their respective chords in a 7x8 matrix of clickable buttons. The
+Modes can be changed using the Scale Editor and the Voicing
+Editor.
+The Modes Scene lets users experiment with different scale
+configurations, exploring microtonal harmonies by extending
+Western principles. Users create modes by dividing 53-TET into
+seven-note scales. The HC array [0,9,9,4,9,9,9,4]corresponds
+to 12-TET [𝐶,𝐷,𝐸,𝐹,𝐺,𝐴,𝐵,𝐶 ], forming the Ionian modeCmaj7,
+Dm7, Em7, Fmaj7, G7, Am7, Bø7, Cmaj7. Through the Scale
+Editor, users can explore various 53-TET subdivisions, generat-
+ing new chord qualities and colors.
+To discuss some basic examples of modes and new chord qual-
+ities, in Fig. 8, three configurations are shown:
+• Ionian Mode: The first row shows the standard Ionian modal
+sequence of chord qualities and its corresponding array of HCs
+distances.
+• SubMinor Mode: In the second row, we have an array of HCs
+distances [0,9,3,10,9,3,10,9]with chord degrees Cvm7, Dø7,
+vvD#^m^m7, Fvmvm7, Gm7, vvG#^m^m7, BbMvm7 . The Mvm7
+chord exhibits dominant quality while aligning with the har-
+monic series, making standard 12-TET dominant sevenths sound
+misaligned by comparison. The vm7 sounds like a well-tuned
+minor, and the ^M^M provides a pleasing maj7 sonority.
+• Harmonic 3rd, and Harmonic 7th Mode: The fourth row is
+formed by the HCs distances [0,9,8,5,9,8,4,10]and its chord
+formation CvMvm7, Dm7, vEø^m7, FvMvM7, Gvm7, vA^m^m7,
+vBb^Mmaj7. The vMvm7 appears dominant-like but it is consonant
+with harmonically aligned intervals (5/4, 3/2, 7/4). Dm7 functions
+conventionally, vEø^m7 provides subdominant quality, vMvM7 of-
+fers enhanced consonance, and vm7 works as a traditional minor.
+^m^m7 creates a distinctive consonant block sound with possible
+dominant function, while ^Mmaj7 is less stable than maj7 orvMvM.
+5.2 Examples of Modal Interchanges
+The Modal Interchange navigation is done in the Grid Scene .
+This scene allows the user to drag and drop chords from a list of
+seventh chords formed out of the current configuration of the
+Scale Editor. These chords are placed in the first row, and the
+Modal Interchange occurs automatically. For practical demon-
+stration, we’ve implemented several 53-TET modal interchange
+examples in our application. Hear these chord progressions at
+our project website.1
+1https://fifty-three-tet.github.io/anima/
+NIME ’25, June 24–27, 2025, Canberra, Australia Dalmazzo et al.
+Figure 6: Modes Scene
+Figure 7: Scale Scene
+Figure 9: Modal interchange in vMvM7
+In Fig. 9, we show the functional chord progression "I, IV,
+ii, V, I " using harmonic 3rd and 7th chords, expressed as
+CvMvm7[I], FvMvM7[IV], Dm7[II], Gvm7[V], CvMvm7[I] .
+The second row shows Dorian parallel substitutions:CvMvm7[I],
+Fvm7[IV], vDø^m7[II], vG^m^m7[V], CvMvm7[I]. The third
+row’s Phrygian substitution features notable voice movement
+from F^m^m7[IV] (leading voice D#) to C#vMvM7[II] (D# be-
+comes 9th), to vF#^Mmaj7[V] (leading voice moves to C#, the
+5th), resolving to D (9th) in CvMvm7[I]. Row 7 shows Relative
+Aeolian substitution (Fig. 10) with CvMvm7[I] in the last quad-
+rant (without 9th), and rootvEbvMvm7[I]. Voice movement from
+G#MvM7[IV] (G#, C, D# G) to ^Fm7[ii] (^F, G#, C, D#)
+transforms D# from 5th to 7th, then to ^Bbvm7[V] (^Bb, vC#,
+^F, G#), where leading voice C# resolves to D (9th) inCvMvm7[I].
+As an observation, these harmonic motions demonstrate that
+standard Western modal interchange principles remain struc-
+turally sound in 53-TET while offering greater precision. The
+microtonal system allows for specific chord qualities like vMvm7
+and ^m^m7 that maintain their functional roles within progres-
+sions while providing more accurate representations of inter-
+vallic relationships aligning closer to the harmonic series. This
+higher resolution system extends rather than replaces traditional
+harmonic practices.
+Figure 10: Voicing Aeolian relative substitution
+5.3 Conclusion and Future Work
+We’ve developed a computer application for exploring micro-
+tonal harmony, featuring real-time chord exploration, interactive
+visualization, and MIDI controller support. Our approach extends
+modern harmonic principles into 53-tone equal temperament,
+expanding traditional tonality with modal interchanges, paral-
+lel chord substitutions, and microtonal intervals to reveal new
+harmonic relationships. Our implementation connects standard
+MIDI with microtonal control through a custom MaxForLive "The
+Bridge" and OpenFrameworks interface, demonstrating how es-
+tablished theories can adapt to extended tuning systems. This
+work provides both theoretical foundations and practical tools for
+composers to access a broader spectrum of musical expression.
+Future work will focus on evaluating and enhancing the de-
+veloped application. First, qualitative studies will be conducted
+with relevant artists in the field in order to gather feedback and
+inform further improvements.
+We aim to define new functions and advance microtonality in
+music theory by automating the generation of wav sound files
+containing all possible chords, as detailed in Section 3.3. Each
+chord file, annotated with a corresponding JSON file specifying
+A Computer Application to Explore 53-Tone Equal Temperament Harmonies Through Modal Interchange NIME ’25, June 24–27, 2025, Canberra, Australia
+HCs Root 2nd 3rd 4th 5th 6th 7th
+Major
+Cmaj7 Dm7 Em7 Fmaj7 G7 Am7 Bø7
+0 9 9 4 9 9 9
+SubMinor
+Cvm7 Dø7 vvD#^m^m7 Fvmvm7 Gm7 vvG#^m^m7 BbMvm7
+0 9 3 10 9 3 10
+H_3rd H_7th
+CvMvm7 Dm7 vEø^m7 FvMvM7 Gvm7 vA^m^m7 vBb^Mmaj7
+0 9 8 5 9 8 5
+Figure 8: Scale comparison with related chords
+chord name and voicing, will support supervised learning algo-
+rithms to classify chords by harmonic properties. Specifically,
+we’ll analyze chord consonance and dissonance relative to the
+harmonic series and apply Music Information Retrieval tools to
+extract audio descriptor features. Dimensionality reduction tech-
+niques (PCA, t-SNE) and variational autoencoders will create a
+meaningful lower-dimensional representation, enabling cluster-
+ing algorithms (k-means, hierarchical clustering, GMM) to group
+chords by harmonic similarity. This approach will reveal clear
+patterns in chord qualities for further combinatorial exploration.
+6 Acknowledgments
+This work was supported by the European Research Council un-
+der the European Union’s Horizon 2020 research and innovation
+programme (MUSAiC project, Grant agreement No. 864189).
+7 Ethical Standards
+This work adheres to accepted principles of ethical and profes-
+sional conduct, ensuring transparency and objectivity through-
+out. No data was collected from users; thus, informed consent
+and welfare statements are not applicable to this research. Addi-
+tionally, there are no conflicts of interest, financial or otherwise,
+to disclose.
+References
+[1] 2024. HarmonySpace. https://www.harmonyspace.co.uk/
+[2] Ableton. 2024. Max for Live . https://www.ableton.com/en/live/max-for-live/
+A platform for music and visual creation, developed in collaboration with
+Cycling74.
+[3] Torsten Anders, Christina Anagnostopoulou, and Michael Alcorn. 2005.
+Strasheela: design and usage of a music composition environment based
+on the Oz programming model. In Multiparadigm Programming in Mozart/Oz:
+Second International Conference, MOZ 2004, Charleroi, Belgium, October 7-8,
+2004, Revised Selected and Invited Papers 2 . Springer, 277–291.
+[4] Torsten Anders and Eduardo R Miranda. 2010. A computational model for
+rule-based microtonal music theories and composition. Perspectives of New
+Music 48, 2 (2010), 47–77.
+[5] Maddie Ashman. 2025. Multi-instrumentalist (Cello, Guitar), singer, song-
+writer, and composer based in London. Bandcamp Link. https://
+maddieashman.bandcamp.com
+[6] Gerald J Balzano. 1980. The group-theoretic description of 12-fold and micro-
+tonal pitch systems. Computer music journal 4, 4 (1980), 66–84.
+[7] Mike Battaglia. 2024. Official YouTube Channel . https://www.youtube.com/
+@MikeBattagliaMusic
+[8] Louis Bigo and Moreno Andreatta. 2015. Topological structures in computer-
+aided music analysis. In Computational music analysis . Springer, 57–80.
+[9] Daniel James Chadwin. 2019. Applying microtonality to pop songwriting: A
+study of microtones in pop music . Ph. D. Dissertation. University of Hudders-
+field.
+[10] Elaine Chew. 2007. Out of the Grid and Into the Spiral: Geometric Inter-
+pretations of and Comparisons with the Spiral-Array Model. Computing in
+musicology 15 (2007).
+[11] Zheanna Erose. 2024. Official YouTube Channel . https://www.youtube.com/
+@ZheannaErose
+[12] Adriaan Fokker. 1963. Refinement of pitch. Organ Institute Quarterly 10 (1963),
+13–14.
+[13] Adriaan Daniël Fokker. 1955. Equal Temperament and the Thirty-one-keyed
+Organ. The Scientific Monthly 81, 4 (1955), 161–166.
+[14] Bob Gilmore. 2003. The Climate Since Harry Partch. Contemporary Music
+Review 22, 1-2 (2003), 15–33.
+[15] Toshi Hirai. 2023. Microtonal Music Dataset. https://www.komazawa-u.ac.
+jp/~thirai/MicrotonalMusicDataset/ Komazawa University.
+[16] William Holder. 1731. A treatise of the natural grounds, and principles of
+harmony. Vol. 2. W. Pearson.
+[17] Simon Holland. 1994. Learning about harmony with Harmony Space: an
+overview. In Music Education: An Artificial Intelligence Approach: Proceedings
+of a Workshop held as part of AI-ED 93, World Conference on Artificial Intelligence
+in Education, Edinburgh, Scotland, 25 August 1993 . Springer, 24–40.
+[18] Lumatone Innovations. 2024. Lumatone Microtonal Keyboard . https://www.
+lumatone.io
+[19] Carol L Krumhansl. 2000. Rhythm and pitch in music cognition. Psychological
+bulletin 126, 1 (2000), 159.
+[20] Fred Lerdahl. 2001. Tonal pitch space . Oxford University Press, USA.
+[21] Hear Between The Lines. 2024. Official YouTube Channel . https://www.
+youtube.com/@HearBetweenTheLines
+[22] Ernest McClain. 1979. Chinese cyclic tunings in late antiquity.Ethnomusicology
+23, 2 (1979).
+[23] Daniel Muzzulini. 2020. Isaac Newton’s Microtonal Approach to Just Intona-
+tion. Empirical Musicology Review 15, 3-4 (2020), 223–248.
+[24] ROLI. 2024. MIDI Polyphonic Expression (MPE) . https://roli.com/eu/mpe
+[25] William A Sethares. 2005. Tuning, timbre, spectrum, scale . Springer Science &
+Business Media.
+[26] Habib Hassan Touma. 1996. The Music of the Arabs, trans. Laurie Schwartz.
+Portland, Oregon: Amadeus Press. ISBN 0-9313 (1996).
+[27] Elaine Walker. 2017. What Is Xenharmonic Music? New Music Box. https:
+//newmusicusa.org/nmbx/what-is-xenharmonic-music/ Online article.
+[28] Wikipedia contributors. 2024. Xenharmonic music. https://en.wikipedia.org/
+wiki/Xenharmonic_music [Online; accessed 24-January-2024].
+[29] Ozan Yarman. 2008. 79-tone tuning & theory for Turkish maqam music . Ph. D.
+Dissertation. Istanbul Technical Univeristy.

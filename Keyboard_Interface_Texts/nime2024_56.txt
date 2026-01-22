@@ -1,0 +1,369 @@
+Dextoria – An embedded system to control electric guitar
+effects via sound-producing gestures
+Björn Bernreiter
+∗
+Institute of Design and
+Communication
+University of Applied Sciences
+Graz
+Austria
+bjoern.bernreiter@outlook.com
+Katharina Groß-Vogt
+†
+Institute of Electronic Music
+and Acoustics
+University of Music and
+Performing Arts Graz
+Austria
+vogt@iem.com
+Marian Weger
+‡
+French-German Research
+Institute of Saint-Louis (ISL)
+France
+marian.weger@isl.eu
+ABSTRACT
+Standard guitar effects pedals are limited in their control
+possibilities, difficult to access on stage, and challenging to
+operate while playing. Innovative control systems are often
+not well integrated into the common guitar playing envi-
+ronment. In this paper we present “Dextoria” – a control
+system that allows guitarists to make additional use of their
+sound-producing hand gestures. With the fretting hand,
+guitarists can switch between two effect loops, depending
+on the hand’s fret position that is measured by a distance
+sensor on the guitar’s headstock. The posture of the pick-
+ing/strumming hand is captured by an IMU sensor on a
+hand strap, in order to control guitar effects pedals that
+have an expression input. The Dextoria system is modular
+and embeds into guitarists’ existing live setups.
+Author Keywords
+NIME, guitar effect, effects pedals, augmented instruments,
+expression pedal
+CCS Concepts
+•Hardware → Sensor applications and deployments;•Human-
+centered computing → Interface design prototyping;•Applied
+computing → Sound and music computing;
+1. INTRODUCTION
+The electric guitar has a long tradition as augmented in-
+strument (also referred to as extended or hybrid instrument
+[13]). As guitarists have both hands involved in the sound
+production, control of all additional sound extensions can
+∗MA Bernreiter completed his Master’s with this work.
+†Dr. Groß-Vogt was supervising.
+‡Dr. Weger supervised the prototype’s development.
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’24, 4–6 September, Utrecht, The Netherlands.
+only be achieved by resorting to peripheral aspects of gui-
+tar playing [9]. Therefore, among conventional guitar play-
+ers, floor-based controllers are still the predominant choice
+– for discrete effect changes as well as for expressive con-
+trols [8]. Along with the increase of sonic possibilities and
+corresponding control interfaces, playing the instrument has
+become increasingly complex [10]. In order to avoid exceed-
+ing the physical and mental capabilities of guitar players,
+most control interfaces for electric guitar have been con-
+ceived with simplicity in mind, featuring relatively simple
+controls and traditionally being conveniently placed within
+the guitarist’s reach (typically, an effects pedal that is dis-
+/activated by stepping on it).
+However, effects pedals also come with shortcomings. H¨odl
+& Fitzpatrick [5] state that effects pedals are highly limited
+in their actual control possibilities, often only offering push
+buttons and no gestural or other, more embodied control
+options. Moreover, Konovalovs et al. [7] criticize their sta-
+tionary nature, forcing guitar players to return to their ef-
+fects pedal board to switch effects on/off or even having to
+kneel and reach down to change settings.
+Several research projects have addressed these problems
+and set out to develop mitigating systems. While some
+of them succeeded to provide guitarists with real-time and
+more intuitive effect controls, they do not appear to be well
+integrated into the typical ecology of guitarists. For exam-
+ple, some projects force guitarists to interrupt their play-
+ing movements to access and handle new control interfaces
+[5, 12]. Other studies require guitarists to learn and per-
+form unfamiliar or unconventional movements which may
+add another level of complexity [11, 7, 2]. Finally, virtually
+all comparable projects we found rely on personal comput-
+ers and/or are restricted to specifically programmed effects.
+The conventional (live) guitar rig, however, tends to con-
+sist of a guitar going through various effects pedals into an
+amplifier. Requiring guitarists to incorporate laptops into
+their effects chain therefore constitutes an intrusion into
+their natural playing environment.
+2. THE DEXTORIA OBJECTIVE
+The idea for Dextoria was to develop a system that allows to
+register the sound-producing gestures [6] of both the fretting
+hand and the picking/strumming hand, respectively, which
+are performed during playing, and to use it for extending the
+sonic control possibilities of the electric guitar. These kinds
+of gestures are chosen because guitarists are already familiar
+with them and do not need to learn them anew so that a
+high degree of intimacy [4] can be assumed. Furthermore,
+as they are performed anyways, guitarists do not need to
+focus on other, potentially distracting, gestures during their
+performances.
+To ensure integration into guitarists’ live setups, the de-
+veloped system should not rely on computers and not be re-
+stricted to specifically programmed audio effects. Instead,
+it was conceived to integrate well (plug & play) with off-
+the-shelf (guitar) effects pedals.
+The design of the Dextoria system has been influenced
+by two concepts relating to music and the design of new
+musical instruments and controllers, i.e., musical gestures
+and intimacy.
+As Dextoria should be integrated into the environment
+of guitarists, typical (live) guitar setups and playing tech-
+niques were explored. The findings are based on literature,
+a survey of online sales rankings 1 (types of electric gui-
+tars and effects pedals), and our own informal testing of
+the prototype.
+• Electric guitars
+Our survey showed that the prototype needs to work with
+Fender Stratocaster and Telecaster as well as Gibson Les
+Paul guitars, as well as any other guitars from different
+brands that are modeled after these, to ensure integrabil-
+ity in as many guitarists’ setups as possible. The head-
+stock design of the electric guitar models is of special
+importance as the sensor of the fret-hand setup must be
+fitted onto the headstock.
+• Effects pedals
+The typical ecology of guitarists includes an ample num-
+ber of effects pedals. It is therefore important that Dex-
+toria is compatible with this wide array of effects pedals
+and thus easy to integrate in existing setups. The fret-
+hand setup can be used in conjuncture with all guitar
+effects in various constellations. The pick-hand setup is
+compatible to pedals with expression pedal input.
+• Amplifiers
+As Dextoria focuses on what is happening with the gui-
+tar signal before entering the amplifier, it works with any
+kind of amplifier. It is much more important to empha-
+size that guitar players still use amps and renounce using
+computers in their live setup.
+3. DEXTORIA’S FUNCTIONALITY
+The Dextoria system is made up of two setups, one for the
+fretting hand and one for the picking/strumming hand, as
+shown in Fig. 1 and named fret-hand and pick-hand setup,
+respectively. Both setups use two ESP32 microcontrollers
+each, programmed by using the Arduino Integrated Devel-
+opment Environment. ESP-NOW [3], a wireless commu-
+nication protocol, was selected for data transmission. The
+Arduino source code and electronics schematics are shared
+in a public repository [1].
+To better convey the capabilities of Dextoria, two short
+demonstration videos were made, a fret-hand demo 2 and a
+pick-hand demo3.
+3.1 Fret-hand setup
+The fret-hand setup allows guitar players to switch between
+two effects loops according to the position of the fretting
+hand along the guitar’s neck. The setup consists of two
+1Reverb.com online marketplace for musical equipment:
+http://Reverb.com
+2fret-hand: https://phaidra.kug.ac.at/o:130874
+3pick-hand: https://phaidra.kug.ac.at/o:130875
+components, the Scout (see Fig. 1(a)) and the Mothership
+(depicted there in the corner).
+The Scout is attached to the headstock of the guitar and
+can detect the fret position of the fretting hand. It com-
+prises an optical Time-of-Flight (ToF) sensor, an ESP32
+microcontroller as well as a custom-made attachment de-
+vice. The ToF model chosen for this project is a VL531X
+on a breakout board manufactured by Blue Dot.
+The attachment solution consists of a mount, originally
+designed for cameras, that was slightly adapted to hold the
+ToF sensor and ESP32. It can be clamped onto the head-
+stock and, subsequently, adjusted to place the ToF sensor
+in the correct position. While it is flexible enough to fit
+onto common guitar headstocks of brands like Fender and
+Gibson, it is at the same time sturdy enough to maintain
+its true position while the headstock is moved during per-
+formance.
+The Mothership is designed to sit on a pedalboard, next
+to the effects pedals. It splits the incoming guitar signal
+into two effect loops and switches between them according
+to the signals received by the Scout.
+It is comprised of another ESP32 as well as several small
+electronic circuits, namely a buffer/splitter and a mixer that
+is controlled by a digital potentiometer MCP4251. Further-
+more, the Mothership features a small OLED display and
+a rotary knob to set the fret threshold. All its components
+are housed in a box in the shape of a large effects pedal with
+a main input jack, send and return jacks for each effect loop
+as well as a main output jack.
+The Scout uses the ToF sensor to measure the distance
+from the guitar’s nut to the fretting hand. The distance
+data obtained is used to calculate the corresponding fret
+position of the fretting hand. To convert the distance mea-
+surements into the corresponding fret number k, Eq. 1(a)
+was used:
+k = 12 · log2
+L0
+L0 + ∆Lk
+(1a)
+with the scale length L0, the distance ∆ Lk from nut to
+finger/fret,
+∆Lk = Lk − L0, (1b)
+and the string length Lk at fret k,
+Lk = L0 · 2−k/12. (1c)
+Since a guitar player’s fingers are always between the area
+of two frets, a range of a fret can be defined by the upper
+value being the fret distance of fret k and the lower value
+being the fret distance of fretk−1, see Fig. 2. Following this
+principle, fret ranges were defined. Slight, manual adjust-
+ment was necessary when working with the actual setup.
+Currently, the prototype detects frets from one to nine ac-
+curately, with guitarists being able to play (barre) chords
+as well as single notes.
+The current and previous fret positions of the fretting
+hand are then sent wirelessly to the Mothership using ESP-
+NOW. On the Mothership, guitarists can set the fret thresh-
+old from frets 1-9 via a rotary knob. This threshold deter-
+mines the fret where one effect loop is engaged while the
+other is disengaged. The Mothership receives the incom-
+ing position data sent by the Scout and its ESP32 decides
+which loop to engage according to the fret threshold set by
+the guitar player. Actual switching is done by the digital
+potentiometer in the mixer circuit.
+The fret-hand setup is conceived to work alongside all off-
+the-shelf guitar effects pedals and guitarists have the possi-
+(a)
+ (b)
+Figure 1: The Dextoria setup. (a) shows the Scout of the fret-hand setup with the Mothership depicted in small, (b) shows
+the Expressor of the pick-hand setup with the Expressionist in small.
+Figure 2: Depiction of the lower and upper limit of the fret
+range.
+bility to individually customize their signal chain according
+to their needs.
+3.2 Pick-hand setup
+The pick-hand setup allows guitarists to control effects ped-
+als that possess an expression pedal input by the movements
+or posture of the strumming/picking hand. The setup is
+made up of two components, the Expressor as shown in
+Fig. 1(b) and the Expressionist (depicted in small).
+The Expressor is the device attached to the hand and
+arm of the guitarist, capable of capturing the playing and
+strumming movements of the player’s hand. It consists of an
+IMU (inertial measurement unit) sensor (Blue Dot BNO055
+breakout board), an ESP32, and custom-made textile straps
+to fix the mentioned parts to the guitarist’s body.
+The Expressionist sits on the ground on a pedalboard,
+similar to the Mothership. It receives and processes the
+data sent by the Expressor and uses it to control any guitar
+effects pedal that has an expression pedal input. It com-
+prises another ESP32, the digital potentiometer MCP4251,
+an indicator LED, and an expression output (to be con-
+nected to an effects pedal’s expression input through a TRS
+cable). The components are housed in a stomp box similar
+to standard effects pedals.
+The pick-hand setup is intended to work like a common
+expression pedal, with the difference that instead of being
+controlled via foot, it can be set via the motion data of the
+picking/strumming hand. The IMU sensor on the Expres-
+sor measures the hand’s orientation and linear acceleration
+data. These data streams are then sent wirelessly via ESP-
+NOW to the Expressionist which processes and maps the
+data. Via a rotary knob, guitarists can select which data
+(orientation or acceleration) should be used to control the
+effects pedal. The digital potentiometer alters the control
+voltage that is supplied by the effects pedal, as an analog
+expression pedal would do. The circuit also features a LED
+whose brightness visualizes the expression pedal status and
+gives players visual feedback.
+Using the roll angle of the absolute hand orientation for
+sweeping through an effect parameter works well, for ex-
+ample, with filter-type effects such as a Wah-Wah. Using
+linear acceleration data, smoothed by a moving average fil-
+ter, works well for controlling effect strength, e.g., of a delay
+effect.
+4. CONCLUSION
+The objective of this project was to design a control system
+that allows to further leverage the sound-producing hand
+gestures of guitarists to enable a smoother and more inti-
+mate control of effects while at the same time being capable
+to control off-the-shelf effects pedals to better integrate into
+guitarists’ existing live setups.
+The Dextoria system introduces guitarists to a novel, in-
+novative approach to effects control while, at the same time,
+enabling them to keep using their favorite effects pedals.
+5. ETHICAL STANDARDS
+We comply with the NIME NIME Principles & Code of
+Practice on Ethical Research [14].
+6. REFERENCES
+[1] B. Bernreiter, K. Groß-Vogt, and M. Weger. Dextoria
+git repository, 2024. Available:
+https://git.iem.at/sidlab/dextoria.
+[2] L. B. Donovan and A. P. McPherson. The Talking
+Guitar: Headstock Tracking and Mapping Strategies.
+In Proceedings of the International Conference on
+New Interfaces for Musical Expression, pages
+351–354, London, UK, 2014. Available: https://www.
+nime.org/proceedings/2014/nime2014_407.pdf.
+[3] Espressif Systems. ESP-NOW: A wireless
+communication protocol for quick responses and
+low-power control, 2021. Available:
+https://www.espressif.com/en/solutions/
+low-power-solutions/esp-now .
+[4] S. Fels. Designing for intimacy: creating new
+interfaces for musical expression. Proceedings of the
+Institute of Electrical and Electronics Engineers,
+92(4):672–685, 2004. DOI:
+10.1109/JPROC.2004.825887.
+[5] O. H ¨odl and G. Fitzpatrick. Exploring the design
+space of hand-controlled guitar effects for live music.
+In Proceedings of the International Computer Music
+Conference, pages 69–76, Perth, Australia, 2013.
+Available: https:
+//publik.tuwien.ac.at/files/PubDat_220300.pdf.
+[6] A. R. Jensenius, M. M. Wanderley, R. I. Godøy, and
+M. Leman. Musical gestures: concepts and methods
+in research. In R. I. Godøy and M. Leman, editors,
+Musical gestures: Sound, movement, and meaning,
+pages 12–35. Routledge, New York, 2010. ISBN:
+9780203863411.
+[7] K. Konovalovs, J. Zovnercuka, A. Adjorlu, and
+D. Overholt. A Wearable Foot-mounted /
+Instrument-mounted Effect Controller: Design and
+Evaluation. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 354–357, Copenhagen, Denmark, 2017. Aalborg
+University Copenhagen. Available:
+https://www.nime.org/proceedings/2017/
+nime2017_paper0067.pdf.
+[8] M. Kristoffersen and T. Engum. The Whammy Bar
+as a Digital Effect Controller. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 352–355, 2018.
+[9] O. L ¨ahdeoja. An Approach to Instrument
+Augmentation: the Electric Guitar. In Proceedings of
+the Conference on New Interfaces for Musical
+Expression, pages 53–56, Genova, Italy., 2008. DOI:
+10.5281/zenodo.1179585.
+[10] O. L ¨ahdeoja, B. Navarret, S. Quintans, and A. Sedes.
+The Electric Guitar: An Augmented Instrument and
+a Tool for Musical Composition. Journal of
+Interdisciplinary Music Studies, 4(2):37–54, 2010.
+DOI: 10.4407/jims.2010.11.003.
+[11] O. L ¨ahdeoja, M. M. Wanderley, and J. Malloch.
+Instrument Augmentation using ancillary gestures for
+subtle effects. In Proceedings of the 6th Sound and
+Music Computing Conference, pages 327–330, Porto,
+Portugal, 2009. Available:
+https://www-archive.idmil.org/_media/
+publications/2009/lahdeoja_2009_smc.pdf.
+[12] D. MacConnell, S. Trail, G. Tzanetakis, P. Driessen,
+and W. Page. Reconfigurable Autonomous Novel
+Guitar Effects (RANGE). In Proceedings of the Sound
+and Music Computing Conference, pages 674–677,
+Stockholm, Sweden, 2013. Available:
+https://www.academia.edu/download/95037235/
+nime2013range.pdf.
+[13] E. R. Miranda and M. M. Wanderley. New Digital
+Musical Instruments: Control and Interaction beyond
+the keyboard. A-R Editions, 2006. ISBN: 089579585X.
+[14] F. Morreale, N. Gold, C. Chevalier, and R. Masu.
+NIME principles code of practice on ethical research,
+2023. Available: doi.org/10.5281/zenodo.7545682.

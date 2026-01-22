@@ -1,0 +1,825 @@
+The EV: An Iterative Journey in Digital-Acoustic String
+Instrument Augmentation
+Brian Lindgren∗
+wdt7wr@virginia.edu
+Composition and Computer Technologies (CCT)
+Department of Music
+College of Arts and Sciences
+University of Virginia
+Charlottesville, Virginia, USA
+Abstract
+Numerous experiments in bowed string augmentation have been
+undertaken, with each reflecting the values and interests of the
+builder. The EV takes a unique approach, with the convolution
+of a synthesized and acoustic string signal at the foundation of
+its design. Through an iterative hardware and software develop-
+ment process, three versions of the instrument have been created,
+each building toward the goal of a robust compositional and
+performative platform for exploring the shared boundary of elec-
+tronic and acoustic sound. Spatialization and physical modeling
+algorithms have furthered the instrument’s engagement with
+the interaction between physical and virtual acoustics. This pa-
+per examines the iterative design process behind the instrument
+and its relationship between digital augmentation and acoustic
+resonance.
+Keywords
+chordophone, string controller, convolution, cross-synthesis, aug-
+mented stringed instrument
+1 Background
+Over the past 50 years, the bowed string interface has remained a
+rich site of exploration for instrument builders. Seeking to expand
+its expressive potential within the context of electro-acoustic mu-
+sic, each experiment has grappled with the challenge of adapting
+these instruments to electronic and digital frameworks. Their
+pitch is not identified as easily as that of a keyboard and the
+amplitude of the four strings is harder to track than that of mono-
+phonic instruments. Despite resistance to straightforward digital
+integration, the violin family’s central role within Western clas-
+sical music and its expressive potential have sustained ongoing
+experimentation. Rather than discouraging innovation, these
+complexities have sparked waves of creative responses, each
+navigating the tensions between acoustic traditions and digital
+augmentation in diverse ways.
+Some approaches aimed to enhance or augment the instru-
+ment’s natural resonances. Max Mathews’s Electronic Violin
+incorporated electronic resonators to emulate the reverberance
+of an acoustic violin’s body [16]. While this method sought to
+preserve the instrument’s traditional sound within an electronic
+medium, other approaches have explored ways of extending
+∗
+This work is licensed under a Creative Commons Attribution 4.0 International
+License.
+NIME ’25, June 24–27, 2025, Canberra, Australia
+© 2025 Copyright held by the owner/author(s).
+its sonic potential beyond acoustic precedent. Actuated instru-
+ments, such as the Halldorophone [30], use transducers both on
+the strings and within the acoustic body to extend resonance
+through the creation and control of feedback loops.
+Other experiments use the violin as a controller, extracting
+only pitch and amplitude information. The VSC-1, a prototype of
+the Zeta, used conductive sensors to track finger position with
+the goal of controlling synthesizers [19] [17]. Eventually, the Zeta
+abandoned this approach in favor of pitch tracking the acoustic
+string [29]. Other experiments explored hardware-assisted pitch
+tracking, in which the physical location of the depressed string
+was reported to the software, improving detection accuracy [22].
+Rather than using pitch information to control a synthesizer, the
+Svampolin built upon this prior work to correct pitch and timbral
+inconsistencies, outputting the result through an actuator on the
+instrument’s body [21].
+Abandoning the traditional violin form entirely, the BoSSA
+(Bowed-Sensor-Speaker-Array) is a “deconstructed violin” that
+separates the instrument into its primary physical interfaces [27].
+Forgoing acoustic strings, its fingerboard houses a single linear
+position sensor which tracks finger position; the bow rubs against
+four force-sensing sponges, driving synthesis algorithms. Depart-
+ing the physical realm, Coretet is a virtualized string quartet that
+uses Oculus Touch controllers [6] as an interface. Players interact
+in a shared virtual space via headsets, while hearing each other’s
+instruments (which are synthesized with physical models).
+Some instruments extend the conventional functionality of
+the violin with arrays of onboard sensors. Built on an electric
+upright bass, the SBass is extended with additional pickups, but-
+tons, and even a mouse trackpad, which control processing on
+a laptop [ 1]. The Overtone Violin was designed to push “the
+cutting edge of musical performance... and [maximize] human
+physical/cognitive skills in the control of digital multimedia sys-
+tems” [20]. Equipped with a range of sensors, it aimed to “put
+real-time signal processing under direct expressive control of the
+performer, thereby pushing the envelope of violin performance
+and composition into completely new areas” [20].
+Two questions have persisted within augmented string experi-
+ments: Is the physical string retained (or replaced with a sensor)?
+And if retained, what role does it play in sound generation? In the
+Electronic Violin, the string functioned as an acoustic element,
+with Mathews’s innovation lying in the recreation of the violin
+body using electronic resonators. The Zeta, by contrast, used the
+string as a source of pitch and amplitude data. In many actuated
+instruments, the string serves both as a melodic component and
+as the exciter or agent within a feedback loop.
+Embracing the traditional bowed string mechanism, the EV
+(short for electronic viola or violin) explores the boundary be-
+tween the acoustic and electronic through cross-synthesis. Its
+NIME ’25, June 24–27, 2025, Canberra, Australia Brian Lindgren
+pickups capture the acoustic sound for two uses: to extract pitch
+and amplitude data, driving a synthesizer, and to convolve the
+acoustic signal with the synthesized output. The result is a sound
+that embodies the physicality of the string while extending it
+into the imaginative space of computer-generated audio. In the
+EV, the string’s vibration becomes the nexus of the player’s inten-
+tion—just as the voice of a singer conveys their emotive expres-
+sion. Jean-Claude Risset described synthesized sound as evocative
+of a virtual world: immaterial yet perceptually real, capable of
+suggesting alternate realities rooted in perception rather than
+physical environment [24]. Seeking to unite the nuanced expres-
+sivity of the acoustic string with the expansive sonic palette
+Risset describes, the EV uses FFT convolution algorithms to fuse
+these two realms.
+Eschewing additional control modalities, the instrument’s on-
+tology centers on shaping electronic sound using the traditional
+techniques of a trained acoustic string player. As the instru-
+ment has evolved, this foundational premise—the juxtaposition
+of acoustic and electronic sound—has expanded to include im-
+mersive virtual spaces and physical modeling.
+2 Objectives
+The EV’s design has been shaped by two interrelated objectives:
+capturing the idiomatic nuances of string playing for the cre-
+ation of electronic music, and retaining the expressive power of
+embodied string performance.
+2.1 An Interface that Captures the Nuance of
+String Playing
+Sensors used to translate physical movement into control data
+are often reductive and limited in dimensionality. While their
+ease of implementation is a clear advantage, they can fall short,
+especially when compared to the storied precedents in instru-
+ment design over past centuries and across diverse cultures. Even
+with the advent of advanced sensors, interfaces tend to gravitate
+toward simpler arrangements of buttons and knobs. For example,
+the absence of string-like controllers pales in comparison to the
+ubiquity of keyboard-based interfaces. While there are multiple
+explanations for this, Ryan Didick points to a “claviocentricism”
+in Western music, where the centrality of the keyboard has fos-
+tered an embedded “historical standardization” and “cultural
+logic” [4]. Numerous instances are evident throughout digital
+music frameworks, from MIDI to DAW design. The keyboard was
+termed “dictatorial” by Buchla, and distracted from the “knobs
+and the wires and the interconnections and the timbres” [ 26].
+Wessel and Wright questioned the electronic music industry’s
+“insistence on standard keyboard controllers” [28], and technolo-
+gist Jaron Lanier laments that MIDI can only represent “the tile
+mosaic world of the keyboardist, not the watercolor world of
+the violin” [8]. While this standardization has been beneficial
+in many ways, its limitations become especially apparent when
+attempting to interface with computer music systems at the level
+of dimensionality that non-keyboard instrumentalists are accus-
+tomed to. In contrast, the EV aims to capture the full spectrum
+of sonic nuance articulated by the performer.
+The bow shapes sound based on various factors: placement
+relative to the bridge, drawing speed (which can also affect pitch),
+and arm pressure. Additional considerations include the bow’s
+angle and its tilt relative to the string.
+The left hand also plays a significant role. Beyond determining
+pitch, the pressure (or lack thereof) applied to the string and
+the part of the finger used (the tip versus the fleshy pad) affect
+both timbre and the string’s ability to vibrate. The coordinated
+actions of the bow and left hand can produce less obvious effects
+as well. For example, simultaneously releasing both bow and
+finger pressure causes a more pronounced decay, as the reduced
+finger pressure dampens the ringing of the strings.
+Through the use of a phase vocoder, these sonic nuances be-
+come embedded as information within spectral analysis. While
+there are many potential applications of this data, the EV focuses
+on the convolution of the instrument’s acoustic signal with that
+of a synthesizer, tracking pitch and amplitude. The electronic
+music palette is vast, and its possibilities are compelling for mu-
+sic creation. Similarly, the expressive potential of bowed string
+instruments is also vast, and equally compelling in performance.
+The EV strives to integrate the strengths of these two practices
+into a complementary whole.
+2.2 The Power of Embodied String
+Performance
+While the computer can generate limitless sonic possibilities, this
+very strength can also present a challenge in performance. Before
+the advent of electronic and digital platforms, sound creation
+relied on kinetic input, with the sonic result typically correspond-
+ing to its intensity. Wessel noted that “we hear in accord with
+hypotheses that we have about the world” [2]. This suggests that
+our musical experience is intertwined with our experience of
+the world. Marc Leman explores this connection, asserting that
+both listening to and creating music are “constrained by body
+movements, which play a central role in all musical activities.
+The embodied music cognition approach posits that the (musical)
+mind results from this embodied interaction with music” [10].
+While many forms of electronic music performance have phys-
+ical aspects (even pushing ‘play’ for a tape piece), the EV’s objec-
+tive is to not only preserve the embodied creation of sound but
+also to retain the kinetic dynamic of the bow’s force against a
+physical string. In live string performance, this relationship—fully
+expressed—can create a powerful experience. The somatic con-
+nection between listener and performer, as described by Leman, is
+further appreciated through the dynamic between the performer
+and the instrument’s acoustic result. Preserving this interaction
+as the foundation for electronic sound generation is a central aim
+of the EV.
+3 The EV’s Genesis and Overarching Design
+Concerns
+The EV has undergone three iterations: EV 1, EV 2, and EV 2.5.
+Design efforts have centered on sensors (for pitch and amplitude
+tracking), the instrument’s body, and software. Throughout these
+iterations, musical output has remained a central focus.
+Software design has primarily been within Pure Data (PD),
+accompanied by additional C++ code. Body specifications have
+prioritized securely housing the sensors, structural integrity, and
+ease of play, while retaining the standard dimensions of a 16-inch
+viola.
+4 EV 1
+EV 1 served as the initial foray into the project, a step into the
+unknown before a larger trajectory had been fully considered.
+A retrofitted acoustic viola, shown in figure 1, was chosen as an
+accessible point of entry.
+The EV: An Iterative Journey in Digital-Acoustic String Instrument Augmentation NIME ’25, June 24–27, 2025, Canberra, Australia
+Figure 1: EV 1 with two processing boxes and its initial pickup.
+4.1 Sensors
+As earlier pitch-tracking experiments using fiddle~ proved un-
+desirable due to latency and accuracy issues, the decision was
+made to embed conductive sensors under each string to track
+finger position (similar to [9]). A current would travel through
+the strings and, when depressed, would pass to the conductive
+fingerboard. Functioning as a voltage divider, the voltage output
+from the sensor could be mapped to a corresponding frequency.
+Drawing on the use of graphite as a resistive material in poten-
+tiometers, a mixture of methylene chloride, graphite powder, and
+thermoplastic beads was created to form the sensor. A groove
+was cut in the fingerboard under each string, and the material
+was packed into the cavity in layers. Once dried, it was filed
+down to be flush with the surface of the wood. Contacts were
+installed at both ends of each resistive strip, with a conduit cut
+into the neck to house five wires: one for each string and an-
+other for ground. Power was supplied at the other end of the
+fingerboard. To improve contact between the strings and the fin-
+gerboard, the A and D strings were replaced with a second set of
+G and C strings, pitched up a step. In software, these strings were
+re-pitched to their original octave, but when processed through
+the FFT convolution, they resulted in a darker timbre.
+To enable independent amplitude tracking for each string,
+a quadrophonic pickup was designed. Four bobbins were con-
+structed, each with a cylindrical nickel-alloy magnet core. The
+resistance of the wire winding was tested during the winding pro-
+cess to ensure consistency across pickups. Once assembled, the
+four pickups were encased in thermoplastic to improve durability
+and structural integrity.
+Truncated RJ45 (Ethernet) cables were used to connect both
+the pickup output and the conductive strips to Ethernet couplers
+fastened to the lower bout of the viola. Longer cables connected to
+the other side of the couplers were used to carry both signal sets
+from the instrument to two processing boxes. One box housed
+a quad preamp and envelope follower circuit of Nic Collins’s
+design [3], and the second box contained pull-down resistors for
+the pitch strips and an Arduino Mega for analog-to-digital (ADC)
+conversion. The preamp unit also included four audio outputs,
+which bypassed the envelope follower.
+4.2 Software
+An Arduino program 1 was developed to transmit the 10-bit
+value for each sensor to PD via the comport external, yielding a
+1 kHz sample rate per sensor. Each sensor sample was split into
+a 7-bit data byte and a status byte that encoded the upper bits
+along with a sensor-specific offset, enabling synchronization and
+recovery in the event of dropped bytes during serial transmission.
+The fingerboard sensor data was then mapped to corresponding
+frequencies using a linear interpolation algorithm. The software
+gradually took shape, informed by the composition process. The
+signal flow structure adhered to a conventional audio production
+paradigm: control input, audio generation (synthesis), and mixing
+(including effect sends).
+EV 1 incorporated an FM synthesizer, four FFT algorithms—two
+from [25], one from [7], and one designed by the author—as well
+as the rev1~ reverb object. Additionally, a mixing console was
+implemented (enabling signal routing between synthesis mod-
+ules) along with a CV matrix (for applying envelope control to
+various synthesis parameters).
+4.3 Results
+4.3.1 Successes. The initial EV 1 iteration proved successful: de-
+tailed pitch and amplitude tracking provided a level of control
+over the synthesizer that felt intimately connected to the sensa-
+tion of string playing. There were concerns that the 10-bit con-
+version might not offer sufficient resolution; however, it proved
+acceptable. Furthermore, the various convolution algorithms pro-
+duced compelling sonic results, adding the desired nuance to the
+synthesized sound and occasionally yielding welcome surprises.
+1https://github.com/brianlindgren/arduinoSensorTransmit
+NIME ’25, June 24–27, 2025, Canberra, Australia Brian Lindgren
+The instrument’s latency measured approximately 50 ms, which
+remained usable for slow to moderate tempi.
+EV 1 was used to create two compositions. The first wasEtudes
+& Vignettes [11], a work of six short movements, each composed
+of multi-layered tracks. The use of FFT convolution (section 1)
+can be heard throughout. In the first movement, the opening D
+pizzicato triggers an FM synthesizer, which is convolved with the
+string’s acoustic signal. This algorithm (FFT 2), of the author’s
+design, asymmetrically combines the two sounds: only Source
+B’s magnitude and Source A’s phase are used. This results in the
+output’s spectral shape and loudness being shaped by Source
+B, while Source A governs its temporal evolution and harmonic
+structure, producing a noisy, inharmonic convolution. This can
+be heard in the strident quality of the opening line. The other two
+layers are processed similarly, however, the FM synthesizer is sent
+wet-only to the convolution algorithm, and the pulse-width of
+the square wave is modulated by the string’s amplitude, resulting
+in an output that is slightly less direct, yet more dynamic than
+the first layer. In contrast, the second movement makes use of an
+algorithm by [7]. The FFT data from the synthesizer functions as
+as a magnitude filter for the string’s phase content, giving the
+string a brighter timbre, like an overblown wind instrument, and
+also more harmonic than FFT 2.
+The second work, Nuages [12], adopted a more acousmatic
+approach, treating EV 1 as a sound source from which short
+fragments were extracted, transformed, and reassembled into a
+fixed-media composition. Due to the nature of the composition
+process, processing parameters were not noted.
+4.3.2 Shortcomings. Despite its successes, EV 1 had several short-
+comings. While the pitch data obtained via the Arduino remained
+consistent for an hour or so, it would eventually drift from the
+string pitch, requiring remapping. In retrospect, this may have
+resulted from fluctuations in the battery-powered envelope fol-
+lower, compounded by inconsistencies in the conductive material:
+the groove dimensions were irregular and the material contained
+air pockets. Additionally, the analog envelope follower had a
+limited dynamic range, restricting the instrument’s full expres-
+sive potential. Loose electrical connections on the instrument’s
+body also became an issue, as the retrofitting lacked proper fas-
+tening methods for securing components. A major hindrance
+was persistent crosstalk between strings. Suspecting sympathetic
+resonances were being amplified by the instrument’s body, in-
+sulating foam sealant was applied inside the body, but the issue
+remained unresolved. Both the successes and the identified short-
+comings led to the development of a second iteration, EV 2.
+5 EV 2
+EV 2 introduced a custom-built 3D-printed body (figure 2) de-
+signed to better accommodate sensors and connections, while
+the adoption of printed circuit boards (PCBs) aimed to mitigate
+wiring and connection failures.
+5.1 Body
+A new body was designed using Autodesk Fusion 360, with pri-
+mary considerations including structural integrity under string
+tension, optimal sensor housing, and the tactile feel of a tra-
+ditional instrument. The specifics of 3D printing both forced
+accommodation in the design and presented opportunities. Due
+to the flexible nature of polylactic acid (PLA) filament, it was
+decided that the conduit running through the neck would also
+house a carbon fiber rod for structural reinforcement. Addition-
+ally, the limited size of the printing bed required the instrument
+to be printed in three separate pieces: fingerboard, body, and
+chinrest. Dovetail joints were incorporated to securely lock the
+3D-printed components together, while the carbon fiber tube
+and bolts ensured the joint could withstand string tension. As an
+added benefit, 3D printing allowed for the integration of conduits
+through the fingerboard and body, providing dedicated pathways
+for wiring.
+Guitar machine tuners were selected for tuning stability and
+ease of installation. Positioning the tuners near the chinrest
+shifted the instrument’s balance toward the collarbone, making
+it feel lighter in the left hand compared to a traditional viola. The
+instrument retained two Ethernet jacks for transmitting pitch
+and amplitude information to a processing box.
+5.2 Sensors
+The presence of inter-string crosstalk was a hindrance in EV 1.
+Suspecting that the oscillation of a string might be transduced by
+its neighboring pickup, EV 2 employed a custom-built infrared
+(IR) pickup. An IR LED was positioned 180 degrees opposite an
+IR photodiode, casting the oscillating shadow of the vibrating
+string. The same preamplifier design was retained, but the hard-
+ware envelope follower was omitted in favor of a software-based
+solution. This included a slew limiter (restricting upward and
+downward signal motion over 44 samples), a two-pole lowpass
+filter at 200 Hz, a highpass filter at 120 Hz, a full-wave rectifier,
+and a one-pole lowpass filter with an amplitude-derived variable
+cutoff between 20–120 Hz. Finally, thethreshold ~ object was used
+as a Schmitt trigger.
+In an effort to achieve more consistent resistance across the
+length of the conductive strips, EV 2 used conductive PLA instead
+of the graphite-thermoplastic mixture. Each strip was printed
+and inserted into corresponding grooves along the fingerboard.
+5.3 Software
+Rather than an Arduino, EV 2 employed a Bela single-board com-
+puter for digital signal processing. An enhancement, the Bela’s
+ADC supported a higher 16-bit resolution and an analog sam-
+pling rate of 22.05 kHz. It also had the capacity to run PD patches
+independently, without the need for a computer. However, due to
+the limited number of audio input pins the sensors were routed
+through the analog inputs, foregoing the benefits of delta-sigma
+noise reduction. The patch was transferred to the Bela, with the
+exception of the GUI objects, which remained on the laptop and
+communicated with the DSP processes on the Bela via Wi-Fi.
+The patch also required increased processing efficiency on the
+less-capable Bela; many switch~ objects were added to reduce
+unnecessary computational load. Additionally, a throttle was
+designed to control the GUI update rate; because the Bela’s de-
+sign prioritizes audio processing, excess GUI (network) data can
+overwhelm the networking functionality.
+A second FM synthesizer (based on a different design) and
+a phase distortion synthesizer were added, along with transfer
+functions for waveshaping at various points in the signal chain.
+5.4 Results
+While EV 2 demonstrated clear advancement, new issues emerged
+and some existing challenges persisted.
+5.4.1 Successes. Overall the electrical connections became sig-
+nificantly more reliable. Unlike EV 1, which was deemed too
+The EV: An Iterative Journey in Digital-Acoustic String Instrument Augmentation NIME ’25, June 24–27, 2025, Canberra, Australia
+Figure 2: EV 2 with a processing box housing an Arduino and preamplifier.
+unstable for stage use, EV 2 was successfully employed in sev-
+eral performances, a major step forward toward creating a ro-
+bust, stage-worthy instrument. While latency was not formally
+measured, it was noticeably reduced. The conductive strips also
+proved more reliable for pitch tracking, likely due to the consis-
+tency in resistance, and possibly a more stable power supply.
+5.4.2 Shortcomings. Contact between the string and the surface
+of the strip remained an issue. Although the string could be de-
+pressed onto the strip, the electrical contact was not as consistent
+as it had been with EV 1, perhaps due to the textured 3D-printed
+surface. Another concern was flex in the neck; as the strings were
+tightened, the action became slightly higher than anticipated in
+the design. Furthermore, any change in pressure on the neck
+would result in a small shift in pitch.
+Crosstalk between strings was a persistent problem. Suspect-
+ing that light may be scattering into adjacent photodiodes via
+unintended reflections, heat shrink tubing was added to each
+transmitter and receiver to act as a blinder. While this did not
+resolve the problem, it did make the receiver less susceptible to
+ambient light. Later, a hood was designed for the pickup, enabling
+outdoor performance in sunlight or under incandescent stage
+lights.
+After transferring the PD patch to the Bela, the sound of the
+processing changed dramatically. It was discovered that some
+objects central to the project could not be compiled for use on
+the Bela. Although this setup was used to compose Recording 7
+Noise [5] and for live improvised performances, processing was
+ultimately moved back to the laptop, and the Bela was replaced
+with the Arduino.
+Having taken the first step in designing a custom body for the
+EV, but still encountering unresolved issues with basic function-
+ality, plans for EV 2.5 quickly came into focus.
+6 EV 2.5
+Designed as a revision, EV 2.5 (figure 3) aimed to address the
+shortcomings of EV 2.
+6.1 Body
+Recognizing that the EV 2’s neck lacked sufficient stiffness, EV 2.5
+incorporated tough PLA in place of standard PLA. Additionally, a
+more robust carbon fiber tube support was implemented: a 6 mm
+diameter tube inserted into an 8 mm tube, resulting in a 4 mm
+thick wall.
+6.2 Sensors
+Rather than 3D-printed conductive strips, EV 2.5 used conductive
+rubber. Recognizing that the contact between the string and the
+conductive surface was critical, it was hypothesized that the
+pliability of the rubber could slightly “hug” the string, improving
+the connection. Strips of 0.5 mm-thick rubber were cut and placed
+into the grooves of the fingerboard’s surface. Electrical contact
+at the top and bottom of each strip was established using small
+bolts. Corresponding nuts were inserted into slots within the
+body’s surface; the bolts passed through small holes in the rubber,
+pressing it against the nut.
+Still contending with crosstalk issues, the original Nic Collins
+preamp design was re-evaluated. It was discovered that the hex
+inverter was the source of the problem. While the original de-
+sign is monophonic, the quadrophonic version had impedance
+mismatches, allowing output from one channel to flow from the
+summing stage back into the signal path of another. Switching
+to an op-amp ultimately resolved the issue.
+Although the pickup noise had dramatically improved since
+EV 1, the system’s noise floor still prevented reliable tracking of
+quiet playing. Suspecting an issue with the infrared design, the
+positions of the transmitter and receiver were changed: rather
+than the transmitter shining directly into the receiver, both were
+angled at 60 degrees to each other. In this configuration, the
+light reaching the receiver was reflected off the string. While
+measurements were not taken between the two versions, the
+adjusted placement noticeably reduced the noise floor.
+Lastly, the Bela was reintroduced as an ADC due to its higher
+sample rate and greater bit depth. A C++ program was developed
+to transmit sensor data via USB using Open Sound Control (OSC)
+to PD, where a system was implemented to parse the data with
+NIME ’25, June 24–27, 2025, Canberra, Australia Brian Lindgren
+Figure 3: EV 2.5 with a processing box housing a Bela and preamplifier. Also shown is the hood for the IR pickup
+Figure 4: EV’s signal flow
+minimal latency2. A circular buffer writing to the auxiliary OSC
+process ensured uninterrupted data flow between the Bela and
+PD, where a corresponding circular buffer (to protect against
+transmission jitter) received data.
+6.3 Software
+As the EV achieved greater reliability, efforts were made to ex-
+pand software capabilities. A preset system was implemented to
+2https://github.com/brianlindgren/Bela-to-PD-over-OSC
+enable changes in system state. While the instrument had always
+been polyphonic, most settings were previously global across all
+strings; with EV 2.5, each string gained independent parameter
+control. New effects included a grain delay and a buffer freeze
+(based on a PD PaulStretch implementation [23]), which could
+be applied independently to each mix channel. The grain delay
+also included a function that allowed the delay line to cease writ-
+ing new input and recirculate existing material. As additional
+software modules were introduced, the number of parameters
+The EV: An Iterative Journey in Digital-Acoustic String Instrument Augmentation NIME ’25, June 24–27, 2025, Canberra, Australia
+Figure 5: EV’s GUI. 1) Current string displayed. 2) The three synthesizers. 3) Four FFT convolution engines, with settings for
+sample rate, overlap, window size, input swap, and source selection. 4) Karplus-Strong effect. 5) Buffer freeze, with settings
+for overlap, window size, playback rate, and refresh. 6) Granular delay. 7) CV matrix. 8) LFOs. 9) Envelope generator. 10)
+Mixer. 11) Reverb. 12) Ambisonics options.
+per preset grew accordingly, with each string currently using 396
+independent parameters.
+The CV matrix was expanded with additional sources, includ-
+ing a spectral centroid tracker, LFOs, and a triggerable custom-
+drawn envelope, along with corresponding new parameter des-
+tinations. A major step forward in spatial control came with
+the addition of a panning engine for multichannel playback. Ini-
+tially, a system similar to Vector Base Amplitude Panning was
+developed, but this was soon replaced by a third-order ambisonic
+engine, coined ambiNilla3.
+A basic physical model, derived from the Karplus–Strong al-
+gorithm, was implemented. All sound modules and signal paths
+were also upgraded to support up to eight multichannel voices,
+each capable of slight detuning and controlled parameter random-
+ization. Individual voices could be spatially distributed across the
+soundfield, enabling immersive sonic possibilities.
+With the growing processing overhead, the pd ~ multicore
+object was introduced, assigning each string to its own core,
+while the ambisonic decoder and GUI were allocated separate
+cores, utilizing six cores in total.
+As with previous EV iterations, the mixer retained the ability
+to route any mix channel’s (now multichannel) signal to the input
+of another module. The newly added modules further expanded
+the routing possibilities. For example, a synthesizer’s output can
+be sent to a convolution algorithm, processed with reverb, routed
+to another convolution engine, and then passed through the grain
+delay before reaching the final output. See figure 4 for a signal
+flow diagram and figure 5 for an annotated view of the GUI.
+6.3.1 Zero Crossing Pitch Tracking. While experimenting with a
+C++ port of the EV software, a simple zero-crossing pitch detec-
+tion method was implemented. Its accuracy and responsiveness
+were impressive, perhaps due to the clarity of the IR pickups (fig-
+ure 6). Even the ‘noise’ at the beginning of a pizzicato or bowed
+note, which caused a fast succession of misreadings, convincingly
+3https://github.com/brianlindgren/ambiNilla
+paralleled the acoustic noise of a transient. The C++ detector was
+then ported as a PD external called zDet~4.
+Unlike the earlier sensor-based finger-tracking approach, this
+method eliminated the need for a time-consuming calibration
+process. A significant breakthrough in the EV journey, this re-
+solved the earlier pitch tracking issues, rendering the conductive
+strips obsolete.
+6.4 Results
+Perhaps the more significant of the two revisions, EV 2.5 resolved
+most of the remaining issues present in EV 2, and realized the
+vision first imagined in EV 1.
+Crosstalk was eliminated with the op-amp. Body flexion was
+improved and no longer affected the action; however, slight flex-
+ing remains and will be addressed in future versions. Pitch track-
+ing was stabilized using the zero-crossing detection method. The
+signal-to-noise ratio (SNR) improved, though with a dynamic
+range of approximately 60 dB, there remains room for refinement.
+Lastly, the software capabilities expanded considerably.
+The EV was finally able to reliably perform Etudes & Vignettes
+live [13], fulfilling the composition’s original vision. Additionally,
+a new work, Daughter of the Stars [15] [14], was composed to
+take advantage of features introduced in EV 2.5.
+String players often consider a room’s reverberation as an
+extension of both the instrument’s body and the resonance of the
+strings. With its new multichannel capabilities, the EV further
+explored the hybridization of real and virtual space. In Daughter
+of the Stars , the immersive qualities of ambisonics, combined
+with artificial reverberation, allow the performer to ‘play’ the
+virtual space in much the same way that an acoustic environ-
+ment merges with an instrument’s natural resonance. With the
+signal chain now supporting up to eight voices (section 6.3), the
+expanded reverberation can more convincingly render an im-
+mersive environment, helping to “assimilate the unknown to the
+familiar, ” as described by Risset [24].
+4https://github.com/brianlindgren/zDet
+NIME ’25, June 24–27, 2025, Canberra, Australia Brian Lindgren
+Additionally, the inclusion of the grain delay and buffer freeze
+effect made possible the perpetuation of sound beyond the draw-
+ing of the bow, allowing for the decoupling of input and continu-
+ous sound, and expanding compositional potential. For example,
+throughout Daughter of the Stars , sound is continually captured
+and recirculated within the buffer of the grain delay, allowing
+for the creation of multi-layered sound without fixed media.
+A recent development was the adaptation of the EV software
+as a processing tool for external instruments. Much like classic
+synthesizers—such as the Korg MS-20—that allow external sig-
+nals to be routed through their internal signal chains, the EV
+software was repurposed for use in experiments from the n-space ,
+a composition for HYPERCUBE: a quartet of saxophone, guitar,
+piano, and percussion. The result was compelling: the compo-
+sition has timbral and aesthetic similarities to the EV, but cast
+onto a different instrumental framework, merging the quartet’s
+acoustic voices with the EV’s processing paradigm.
+6.4.1 Latency Measurement. Latency was measured at 27 ms
+total (figure 6). Performing an acoustic-to-acoustic round-trip
+latency measurement, a microphone was placed next to the EV
+string, and another next to the output speaker; a string was
+then plucked with the software configured to pass the signal un-
+modified. Recorded in Audacity, the distance between transients
+was measured. Sources of latency include: the Bela ADC buffer
+(360 𝜇s) [18], circular buffer (360 𝜇s) (section 6.2), OSC and USB
+transmission, PD receiving circular buffer (5 ms) (section 6.2),pd~
+subprocess (2.9 ms), PD buffer delay (5 ms), and the UAD Apollo
+output latency.
+Source Latency
+Bela input ADC buffer [18] 360 𝜇s
+Circular buffer (section 6.2) 360 𝜇s
+OSC and USB serial tx
+PD rx circular buffer (section 6.2) 5 ms
+pd~ subprocess 2.9 ms
+PD buffer delay 5 ms
+UAD Apollo output latency
+Table 1: Latency sources and their known contributions.
+With the measured sources totaling 13.6 ms, the soundcard
+and USB latency can be calculated at 13.4 ms. Additional latency
+is incurred with the use of the envelope follower: 5 ms, (for a
+total of 33 ms) likely introduced by the low-pass filter smoothing
+stages (section 5.2). Furthermore, the addition of FFT convolution
+adds latency equivalent to the length of the analysis window. For
+example, a 256-sample analysis window adds 6 ms (bringing the
+total to 39 ms of latency).
+6.4.2 Pitch Detection Analysis. A comparative analysis was per-
+formed between zDet~ and sigmund~ to evaluate how the zero-
+crossing detector performed against an established industry stan-
+dard within the context of the EV. The EV was tuned to standard
+viola tuning, and an ascending major scale was played on each
+string. sigmund~ was used with default settings (1024-sample
+window, 512-sample hop size, and a 50,ms analysis delay). Each
+detector’s output was sampled at 100 Hz during the performance.
+The two recorded output streams were re-synchronized to ac-
+count for sigmund~’s inherent delay and charted in figure 7. In
+conclusion, zDet~ performed comparably, with 50 ms less latency
+and fewer dramatic misreadings during note onsets.
+Figure 6: EV 2.5 Latency Measurement of 27 ms. Top track:
+EV string recorded via a microphone directly. Bottom track:
+the EV string via the IR pickup and passed unchanged
+through the EV system and output through a speaker.
+Figure 7: Frequency detection comparison between zDet~
+and sigmund~. A one-octave major scale is played on each
+string.
+7 Future Work
+The EV has developed into a robust tool for both studio and
+performance applications. That said, much work lies ahead in
+continuing to improve portability, latency, sensor accuracy, and
+aesthetic. The design for EV 3 is currently underway, aiming to
+address these issues.
+EV 3 will be self-contained, with onboard processing handled
+by four Bela Minis (one per string). This design eliminates the
+need for a laptop and audio interface, simplifying setup. The
+GUI interface will be ported to a wirelessly-connected tablet
+application. An additional benefit will be reduced latency: the
+Bela’s sub-2 ms round-trip latency [18] outperforms the current
+27 ms (section 6). With a dedicated Bela per string, the audio input
+will be used, affording the use of the lower-noise delta-sigma
+The EV: An Iterative Journey in Digital-Acoustic String Instrument Augmentation NIME ’25, June 24–27, 2025, Canberra, Australia
+converter. This is expected to improve the current SNR beyond
+the current 60 dB (section 6.4). In addition, this will hopefully
+solve an issue where the current envelope follower andthreshold ~
+object struggle to detect quiet notes close to the noise floor.
+While the past two EV versions are 3D-printed plastic, EV
+3 will be CNC-machined from curly maple. This will provide
+three improvements. First, it allows for a smooth, finished neck
+surface, as might be expected from a traditional instrument. In
+previous iterations, the bottom of the neck was buttressed by
+supports when printing, leaving a slightly rough feel. Second,
+the use of maple increases structural stiffness. Although tough
+PLA supported by carbon fiber rods was used for EV 2.5, the
+neck still flexed slightly under tension, a limitation the wooden
+construction is expected to overcome. Finally, the aesthetic of
+wood is valued in instrument design. It will be interesting to see
+how this material affects the instrument’s visual presentation.
+Although the use of embedded computing has many benefits, a
+drawback will be a limited processing capability. To mitigate this,
+the current PD software is being ported to an efficiency-oriented
+C++ version.
+As the EV reaches a more refined state, user feedback surveys
+will be conducted. At this earlier stage, development has been
+driven by the author’s own usage and reflective evaluation.
+Lastly, there remain exciting software possibilities to be im-
+plemented—particularly physical modeling. EV 2.5 includes a
+rudimentary physical model based on the Karplus-Strong algo-
+rithm. However, the potential of physical modeling remains to
+be thoroughly implemented, aiming to explore the hybridization
+of real and virtual sound within composition.
+8 Conclusion
+Over the past four years, the EV project has evolved from an
+idea into a fully functional instrument with a distinct sonic iden-
+tity. Initial experiments with EV 1 demonstrated the creative
+potential of cross-synthesis between the instrument’s acoustic
+and electronic sound. Though constrained by rudimentary and
+unreliable hardware, the convolution algorithms revealed their
+capacity to carry the expressive nuance of a trained string player
+into the realm of synthesized sound. EV 2 aimed to address the
+many limitations of the initial prototype, particularly the con-
+straints imposed by the retrofitted viola body and homemade
+circuitry. Embracing digital fabrication, the development of a
+custom-designed body and use of manufactured PCBs solved
+many issues of reliability. However, these changes also intro-
+duced a host of new problems, leading to the development of EV
+2.5. Resolving the majority of hardware issues allowed the expan-
+sion of the instrument’s software capabilities, opening the way
+for new sonic possibilities. The increased reliability allowed the
+instrument to be brought from the studio to the stage, imbuing the
+author’s electro-acoustic compositions with the performance dy-
+namics typically associated with live string performance. While
+much work lies ahead, the guiding question remains: What excit-
+ing new music is the EV creating right now?
+9 Ethical Standards
+This project was undertaken within the standards of the NIME
+Principles & Code of Practice on Ethical Research. The design
+and fabrication of the EV across versions 1, 2, and 2.5 involved
+iterative prototyping processes that necessarily generate mate-
+rial byproducts. Every effort has been made to minimize waste
+by repurposing components and reusing materials across ver-
+sions wherever feasible. When reuse was not possible, compo-
+nents were recycled using the most responsible methods available.
+There are no observed conflicts of interest in this project.
+Acknowledgments
+Thank you to my viola teachers Beth Gorevic and John Graham;
+to those at the Eastman Computer Music Center, where the EV
+was conceived; to all my teachers at both the Brooklyn College
+Sonic Arts program including Doug Geers, Morton Subotnick,
+and Jules Gimbrone; and at the University of Virginia Compo-
+sition and Computer Technologies program including Matthew
+Burtner, JoVia Armstrong, Luke Dahl, and Ted Coffey; and to
+my friends who have supported me in this journey, including
+Francois Deville and Sol León.
+References
+[1] Curtis Bahn and Dan Trueman. 2001. Interface: electronic chamber ensemble.
+In Proceedings of the International Conference on New Interfaces for Musical
+Expression. nime.org, Seattle, WA, NIME01–19–NIME01–23. Publisher: Inter-
+national Conference on New Interfaces for Musical Expression.
+[2] CNMAT. [n. d.]. David Wessel on Music Cognition. https://www.youtube.
+com/watch?v=kpErjiDacAA
+[3] N. Collins. 2020. Handmade electronic music: The art of hardware hacking .
+Routledge/Taylor & Francis Group, New York and London. https://books.
+google.com/books?id=lQC4zAEACAAJ tex.lccn: 2019058410.
+[4] Ryan Alexander Diduck. 2015.Global controller: making the musical instrument
+digital interface, 1983-1999 . Ph. D. Dissertation. McGill University, Montreal,
+Canada. https://api.semanticscholar.org/CorpusID:197743602
+[5] Experimental Sound Studio. 2021. TQC - Brooklyn College Sonic Arts ft Brian
+Lindgren, $YNDRM, CEAC Trio June 3, - 2021. https://www.youtube.com/
+watch?v=vgMMpoT2fbw
+[6] Rob Hamilton. 2019. Coretet: a 21st century virtual interface for musical ex-
+pression. In 14th International Symposium on Computer Music Multidisciplinary
+Research. Springer, Marseille, France, 1010–1021.
+[7] Johannes Kreidler. 2009. 3.8 Fourier analysis. http://www.pd-tutorial.com/
+english/ch03s08.html
+[8] Jaron Lanier. 2010. You are not a gadget: a manifesto (first edition ed.). Alfred
+A. Knopf, New York.
+[9] Christopher Harte Laurel S. Pardue and Andrew P. McPherson. 2015. A Low-
+Cost Real-Time Tracking System for Violin. Journal of New Music Research 44,
+4 (2015), 305–323. https://doi.org/10.1080/09298215.2015.1087575 Publisher:
+Routledge _eprint: https://doi.org/10.1080/09298215.2015.1087575.
+[10] Marc Leman. 2007. Embodied Music Cognition and Mediation Technology . The
+MIT Press, Cambridge, MA. https://doi.org/10.7551/mitpress/7476.001.0001
+[11] Brian Lindgren. 2021. Etudes & Vignettes. https://youtu.be/pP6jA42DLZs
+[12] Brian Lindgren. 2021. Nuages. https://youtube.com/playlist?list=OLAK5uy_
+kLPzHwCI1jKSwMUUWfTKct6Mt5lmXIeOo&si=AdRzusxCJS7sFh_B
+[13] Brian Lindgren. 2023. Etudes & Vignettes @ SEAMUS 2023. https://www.
+youtube.com/watch?v=eG0xUboYmJI
+[14] Brian Lindgren. 2024. Daughter of the Stars. In Proceedings of the 29th In-
+ternational Conference on Auditory Display (ICAD2024) . International Com-
+munity for Auditory Display, Rensselaer Polytechnic Institute, 197. https:
+//doi.org/10.21785/icad2024.000
+[15] Brian Lindgren. 2024. Daughter of the Stars @ EMPAC. https://youtu.be/
+AMClpxQQENA
+[16] Max V. Mathews and Joseph Kohut. 1973. Electronic simulation of violin
+resonances. The Journal of the Acoustical Society of America 53, 6 (June 1973),
+1620–1626. https://doi.org/10.1121/1.1913511
+[17] Keith A. McMillen. 2004. Keith McMillen Timeline. http://www.keithmcmillen.
+com/wp-content/uploads/2014/12/keith_mcmillen_timeline.pdf
+[18] Andrew Mcpherson and Victor Zappi. 2015. An Environment for
+Submillisecond-Latency Audio and Sensor Processing on BeagleBone Black.
+In Journal of The Audio Engineering Society . The Audio Engineering Society,
+Warsaw, Poland. https://api.semanticscholar.org/CorpusID:46893189
+[19] Steven Michaels. 1983. PROFILE OF A COTTAGE INDUSTRY: Interview with
+Keith McMillen of Zeta Systems. Mix Magazine 7, 1 (Jan. 1983), 86–88.
+[20] Daniel James Overholt. 2007. Musical interface technology: multimodal control
+of multidimensional parameter spaces for electroacoustic music performance .
+Ph. D. Dissertation. University of California, Santa Barbara, Santa Barbara,
+Calif. OCLC: 759567197 978-0-549-36518-1.
+[21] Laurel Pardue, Kurijn Buys, Dan Overholt, Andrew P. McPherson, and Michael
+Edinger. 2019. Separating sound from source: sonic transformation of the
+violin through electrodynamic pickups and acoustic actuation. InInternational
+Conference on New Interfaces for Musical Expression (NIME 2019) . nime.org,
+Porto Alegre, Brazil, 278–283. https://doi.org/10.5281/ZENODO.3672958
+[22] Laurel Pardue, Dongjuan Nian, Christopher Harte, and Andrew P. McPherson.
+2014. Low-Latency Audio Pitch Tracking: A Multi-Modal Sensor-Assisted
+Approach. In International Conference on New Interfaces for Musical Expression
+(NIME 2014) , Baptiste Caramiaux, Koray Tahiroglu, Rebecca Fiebrink, and
+NIME ’25, June 24–27, 2025, Canberra, Australia Brian Lindgren
+Atau Tanaka (Eds.). nime.org, London, United Kingdom, 54–59. https://doi.
+org/10.5281/ZENODO.1178899
+[23] Jerry Raski. 2023. Pure Data Paulstretch. https://github.com/Elektromatic/
+paulStretch original-date: 2020-09-27T19:19:35Z.
+[24] Jean-Claude Risset. 1996. Real-World Sounds and Simulacra in my
+Computer Music. Contemporary Music Review 15, 1 (1996), 29–47.
+https://doi.org/10.1080/07494469608629687 Publisher: Routledge _eprint:
+https://doi.org/10.1080/07494469608629687.
+[25] Zack Settel and Cort Lippe. 1998. Real-time frequency-domain digital sig-
+nal processing on the desktop. In Proceedings of the 1998 International Com-
+puter Music Conference . Michigan Publishing, Ann Arbor, Michigan, USA.
+https://hdl.handle.net/2027/spo.bbp2372.1998.318 tex.bibsource: dblp com-
+puter science bibliography, https://dblp.org tex.timestamp: Wed, 04 May 2022
+13:01:19 +0200.
+[26] John Tresch and Emily I. Dolan. 2013. Toward a New Organology: Instruments
+of Music and Science. Osiris 28, 1 (2013), 278–298. https://www.jstor.org/
+stable/10.1086/671381 Publisher: [Saint Catherines Press, The University of
+Chicago Press, The History of Science Society].
+[27] Daniel Trueman. 1999. The Infinite Virtual Violin: The Deconstructed Violin
+Reconstructed. Ph. D. Dissertation. Princeton University. https://dtrueman.
+mycpanel.princeton.edu/rtv/chapter_3.pdf
+[28] David Wessel and Matthew Wright. 2002. Problems and prospects for intimate
+musical control of computers. Computer Music Journal 26, 3 (2002), 11–22.
+https://doi.org/10.1162/014892602320582945 tex.bibsource: dblp computer
+science bibliography, https://dblp.org tex.timestamp: Tue, 25 Aug 2020 16:49:56
++0200.
+[29] Lilit Yoo and Ichiro Fujinaga. 1998. ZETA violin techniques: Limitations and
+applications. Journal SEAMUS 13, 2 (1998), 12–16.
+[30] Halldór Úlfarsson. 2018. The halldorophone: The ongoing innovation of a cello-
+like drone instrument. In Proceedings of the International Conference on New
+Interfaces for Musical Expression , Thomas Martin Luke Dahl, Douglas Bowman
+(Ed.). Virginia Tech, Blacksburg, Virginia, USA, 269–274. https://doi.org/10.
+5281/zenodo.1302579 ISSN: 2220-4806.

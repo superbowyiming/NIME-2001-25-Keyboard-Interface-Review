@@ -1,0 +1,674 @@
+Minimally Invasive Gesture Sensing 
+Interface (MIGSI) for Trumpet
+Sarah Reid, Ryan Gaston,, Colin Honigman, Ajay Kapur  
+California Institute of the Arts  
+Valencia, California  
+sarahreid@alum.calarts.edu, ryangaston@alum.calarts.edu  
+chonigman@calarts.edu, akapur@calarts.edu 
+ABSTRACT 
+This paper describes the design of a Minimally Invasive 
+Gesture Sensing Interface (MIGSI) for trumpet. The interface 
+attaches to any B-flat or C trumpet and requires no permanent 
+modifications to the host-instrument. It was designed first and 
+foremost with accessibility in mind—an approach that is 
+uncommon in augmented instrument design—and seeks to 
+strike a balance between minimal design and robust control. 
+MIGSI uses sensor technology to capture gestural data such as 
+valve displacement, hand tension, and instrument position, to 
+offer extended control and expressivity to trumpet players. 
+Several streams of continuous data are transmitted wirelessly 
+from MIGSI to the receiving computer, where MIGSI Mapping 
+application (a simple graphical user interface) parses the 
+incoming data into individually accessible variables. It is our 
+hope that MIGSI will be adopted by trumpet players and 
+composers, and that over time a new body of repertoire for the 
+augmented trumpet will emerge. 
+Author Keywords
+Augmented trumpet; hyperinstrument; minimally invasive; 
+gesture sensing; arduino; force sensing resistor; interface for 
+improvisation 
+ACM Classification Keywords 
+H.5.2 [Information Interfaces and Presentation] Interface Design– 
+Prototyping, I.2.9 [Artificial Intelligence] Robotics–Sensors, H.5.5 
+[Information Interfaces and Presentation] Sound and Music 
+Computing. 
+1.  INTRODUCTION 
+The augmentation of acoustic instruments has tremendous 
+potential to expand the creative limits of musical composition 
+and performance practice. Researchers and music technologists 
+have been compelled by the idea of electronically augmenting 
+instruments for numerous years, resulting in exciting 
+technological developments and a growing body of literature. 
+Certain music technologists such as Perry Cook, among others, 
+have looked beyond the scope of traditional musical 
+instruments by turning every day objects such as coffee cups 
+and salt shakers into augmented gestural controllers[2]. These 
+controllers, while quite simple in design and in function, 
+respond to gestural input in real time to create interesting pieces 
+of music.  
+Miranda and Wanderly[12] break down the concept of a 
+gestural controller into four general categories:  
+1. Augmented Musical Instruments : acoustic instruments 
+augmented by the use of various sensors;  
+2. Instrument-Like Gestural Controllers : modeled after 
+acoustic instruments, with the goal of completely 
+reproducing original features;  
+3. Instrument-Inspired Gestural Controllers : inspired by 
+pre-existing instruments, but do not try to reproduce them 
+exactly; and  
+4. Alternate Gestural Controllers : which do not bear a 
+resemblance to pre-existing instruments. 
+This paper focuses on the Augmented Musical Instrument  
+category, and presents a new design for the augmentation of an 
+acoustic trumpet. Augmented instruments—also referred to as 
+hyper, hybrid, meta, or extended instruments—can be further 
+defined as acoustic instruments that have had digital sensors 
+strategically attached to them, with the purpose of collecting 
+performative and gestural data, as well as providing the 
+performer with extended digital control[7].  
+Although research and development in this field had begun 
+years earlier, the term hyperinstrument was first formally 
+introduced by Tod Machover in 1987[10]. In his writing, 
+Machover stated that he believed hyperinstruments would 
+become the “instruments of the future”, and that they would 
+positively impact the development of music by giving 
+musicians—both professional and amateur—tools through 
+which they could explore their full creative and expressive 
+potential. Examples of early hyperinstruments are the 
+Metasaxophone[1], Hypercello [10], the Hyper-Flute[15], and 
+the Cook/Morrill trumpet controller[3], among others. This type 
+of instrument was designed to provide musicians with a deeper 
+level of possible interactions, allowing them to not only 
+produce individual notes or melodies, but also to trigger and 
+manipulate additional sounds that exist beyond the acoustic and 
+technical capabilities of their instrument[11]. 
+However, despite the fact that hyperinstruments have the 
+potential to enhance performance to such a degree, their 
+adoption by musicians other than the original creators has been 
+minimal and idiosyncratic. Generally speaking, most new 
+interfaces for musical expression are created expressly for the 
+creator[11], which suggests that concerns for accessibility may 
+simply have not been highly considered in the design process. 
+Furthermore, Jenkins, et al. highlights the fact that 
+hyperinstruments are expensive and difficult to replicate, 
+frequently require permanent modifications to the host-
+instrument, and often require significant technical expertise for 
+maintenance and ongoing operation—all factors which could 
+certainly pose a challenge for adoptability[7]. 
+419
+This paper describes the design of a Minimally Invasive 
+Gesture Sensing Interface (MIGSI) for trumpet. In this paper 
+we will present: 
+• A history of augmented trumpet controllers, detailing 
+different approaches and designs. 
+• Discussion of hyperinstrument design ideals centered 
+around adoptability. 
+• The creation of a new gesture-sensing interface for 
+trumpet. 
+• The creation of a standalone application for mapping, 
+monitoring, and personalization of sensor data. 
+• A description of MIGSI being used in live performance. 
+2.  RELATED WORK 
+The trumpet controller built by Perry Cook and Dexter 
+Morrill[3] used sensors on the valves, mouthpiece, and bell for 
+pitch detection and extended computer control. Although one of 
+the initial musical applications of the Cook/Morrill trumpet was 
+unfortunately deemed a “miserable failure”[2], this 
+revolutionary project laid the groundwork for the development 
+of numerous new musical interfaces, and inspired many others 
+to explore the possibilities of trumpet augmentation.  
+In the years that followed the pioneering work of Cook and 
+Morrill, many significant contributions were made to the field 
+of trumpet augmentation. Well known examples include Ben 
+Neill’s Mutantrumpet[13], the Meta-Trumpet[6] created by Bert 
+Bongers and Jonathan Impett, and Hans Leeuw’s 
+Electrumpet[9].  
+The Mutantrumpet originated as an acoustic instrument that 
+combined parts of three trumpets and a trombone into one 
+hybrid instrument. In the mid 1980’s, electronics were added to 
+the instrument in collaboration with Robert Moog, which were 
+then refined by Neill in subsequent years[13]. The 
+Mutantrumpet is performed on by its creator Ben Neill, 
+however it has not been widely adopted by other trumpeters, 
+likely due to the extensive modifications required and the 
+expense of recreating the instrument[7]. 
+The Meta-Trumpet, created by Bongers and Impett, employs 
+magnetic “Hall Effect” sensors permanently affixed to the 
+bottom of each valve piston, numerous buttons, switches, and 
+pressure sensors, as well as a number of ultrasound sensors and 
+an accelerometer on the bell of the trumpet. This instrument 
+also requires permanent modifications to the host-instrument. 
+Hans Leeuw created the Electrumpet, a wireless hybrid 
+instrument that does not require direct destructive modification 
+of the original instrument. The Electrumpet employs an array of 
+buttons, knobs, a second mouthpiece with breath control, an 
+infrared emitter/detector placed in the bell, and a series of other 
+touch-activated sensors. This instrument also contains facilities 
+for sonic analysis and re-synthesis when used in conjunction  
+with external microphones and a software of Leeuw’s creation. 
+Leeuw continues to develop and perform with the instrument. 
+While the technology is removable, it does not lend itself to 
+frequent installation/removal , due to the complexity and 
+quantity of components.  
+MIGSI is notably distinct from the above augmented 
+trumpets due to the fact that it was designed to be minimally 
+invasive, easily removable, and readily adoptable by 
+experienced trumpet players. Much like a mute, MIGSI can 
+become a part of a trumpeters toolkit—something that can be 
+attached to the performer’s personal instrument to give them 
+extended musical control and expressivity, without impeding 
+playability or quality of sound.  
+3.  MOTIV ATION AND DESIGN 
+Our primary goal was to design an augmented trumpet that 
+could be easily adopted by expert trumpet players (who are not 
+necessarily expert technologists), for both composed and 
+improvised music. This means that accessibility and playability 
+are fundamental to the design. An important distinction to make 
+is that in this context “playability” does not exclusively refer to 
+ease or simplicity of playing, but rather to having a full 
+spectrum of musical and expressive control, just as an expert 
+musician would expect from their regular instrument. It is not 
+enough to build an instrument that can simply play notes. There 
+must be enough fine-grained control that the notes can be 
+played expressively, with subtle inflections and changes to 
+timbre, intensity, taper, and articulation[11]. 
+Our design allows us to take advantage of a professional 
+trumpet player’s years of training and experience by capturing 
+physical gestures that are inherent to trumpet technique. 
+Furthering this point is Cook’s design principle that “Copying 
+an instrument is dumb, leveraging expert technique is 
+smart”[2]. As lifelong trumpet players ourselves, our approach 
+was to build a flexible yet minimal interface, through which the 
+quality of sound production, range of motion, and overall 
+instrument functionality are not impeded. 
+3.1  Design Considerations
+Our approach was inspired largely by the recently developed 
+Easily Removable Optical Sensing System  (EROSS) for 
+trumpet[7]. EROSS is unique among the other augmented 
+trumpets referenced in this paper, insofar that it was not 
+designed for a specific trumpet player or musical application, 
+but rather as the beginnings of an exploration into a minimal, 
+easily removable, user-accessible trumpet interface. To date, 
+there is only a small body of literature which discusses the 
+accessibility and adoptability of augmented trumpets[18][7]
+[17]. It is our hope to be able to bring more awareness to this 
+field, and to encourage musicians and music technologists to 
+consider these concepts in their designs. 
+Figure 1. Preliminary design rendering of MIGSI. The 1000 mAh battery and two Force Sensing 
+Resistors are housed inside of the trumpet’s hand guard, which is not illustrated here. 
+420
+The following criteria formed the basis for the design of 
+MIGSI: 
+• The technology is easy to attach and remove, much like 
+inserting a trumpet mute. 
+• No damage or permanent modification is required to the 
+host trumpet.  
+• The interface does not impede instrument playability or 
+discourage use of unconventional and extended techniques 
+(extended techniques are methods for producing non-
+traditional sounds, such as pressing a valve down only half-
+way or singing and playing at the same time[19]).  
+• The interface is minimal enough not to impact the quality 
+of acoustic sound production or the trumpet’s functionality, 
+and is familiar enough not to interfere with the performer’s 
+ability to play the instrument 
+3.1.1  Physical Considerations 
+Similar to EROSS, MIGSI has discreet optical sensors that 
+capture a stream of continuous data from each of the trumpet’s 
+three valves. A similar optical sensing technique for trumpet has 
+been proposed as part of a project at Cornell University[5], 
+however it was used to sense binary, or “open” and “closed” 
+states, rather than continuous control. While in traditional and 
+classical trumpet playing valves are predominantly used in a 
+binary fashion, there is a substantial—and continuously 
+expanding—area of practice in which throttling, or half-valve 
+playing, is prevalent[19][18]. Being able to utilize all of the 
+microtonal fluctuations and subtle changes to timbre that result 
+from half-valve playing is an important part of contemporary 
+trumpet technique. Our design was therefore developed in order 
+to leverage this technique by capturing continuous rather than 
+discrete valve data.   
+EROSS is an extremely minimal interface, which uses 
+nothing but the optical sensors beneath each valve. Although 
+compellingly simple, this approach poses some challenges 
+when it comes to playability. The valves on a trumpet are 
+necessarily operational components, meaning that in order to 
+change pitches or to play a musical passage, they must be 
+pressed or released in some configuration. For a composer or 
+improvisor this may be very limiting. If, for example, every 
+time valve combination “1 & 2” was pressed down, “X” 
+happened, and every time “2” was pressed, “Y” would occur, 
+one might find themselves feeling the need to choose between 
+making functional decisions or musical ones. 
+The approach that we adopted to overcome this issue was to 
+leverage the unused surface area of the interface to add more 
+levels of control that could be used independently from playing 
+the trumpet. By adding sensors that capture hand tension and 
+instrument position in addition to the optical sensors, the 
+performer gains valuable expressive control; now they have the 
+ability to gradually introduce the synthesized sound material 
+triggered by the valve movement, to create subtle and nuanced 
+interactions with the computer, or to transition between 
+different states or modes. In the original designs, the 
+accelerometer was placed on the bell of the trumpet, similar to 
+the Meta-Trumpet[6], however this was later reconsidered in 
+favor of a smaller overall footprint. In the later iteration the 
+sensor was placed just beneath the optical sensors. Figure 1 is a 
+computer generated mockup that shows MIGSI’s physical 
+layout and sensor placement. 
+MIGSI is more multifaceted than the EROSS in terms of 
+hardware and sensing capabilities, yet it is just as minimal in 
+terms of design footprint. In fact, a direct contribution of our 
+work to EROSS is the repurposing of unused space on the 
+trumpet’s hand guard—which is used in their designs to help 
+secure the optical sensors to the trumpet—to also house the 
+battery. EROSS used two AAA batteries, which were mounted 
+beneath the optical sensing system, below the valve casing. 
+Switching the AAA batteries out for a thinner 1000mAh LiPo 
+and adding a discreet pocket on the inside of the hand guard 
+minimizes the impact of the optical sensing system. Because the 
+LiPo batteries are thin and flat, there is no discernible difference 
+to the trumpet player when the battery is inserted into the 
+pocket.  
+MIGSI also contains force sensitive surfaces in the hand 
+guard, allowing us to gain additional gestural control without 
+increasing the size or physical impact of the interface. All 
+connecting wires from these sensors are contained inside the 
+hand guard. The rest of the electronics are contained in a small 
+area beneath the instrument’s valve casing and therefore do not 
+physically impede normal playing. The electronic compartment 
+is directly attached to a silicone-lined bracket, a small box 
+whose inner dimensions closely match those of the valve 
+casing’s exterior. The entire array of electronics is thereby held 
+in place with the slight amount of tension/friction provided 
+from the contact of this silicone-lined bracket with the metal of 
+the valve casing itself (see Figure 2). There are no mechanical 
+components, latching mechanisms, or magnets involved. The 
+electronics securely remain in place during extended use and 
+can be attached to and removed from the valve casing as easily 
+as a mute is attached to and removed from the instrument’s bell. 
+Careful consideration was given to using materials that would 
+not scratch or damage the trumpet in any way, even after 
+prolonged and/or repeated use. 
+3.1.2  Cognitive Considerations 
+Although not the primary focus of this paper, it is important to 
+consider factors such as cognitive load and the performer’s 
+relationship with his/her instrument, also referred to as their 
+embodied relationship[14]. Moreover, we believe that it is also 
+beneficial to consider the engagement of the audience members 
+in addition to the performer. There is a lot we can learn from the 
+people who are watching, listening to, and experiencing these 
+performances from the outside.  
+In his design principles, Cook states that “Some players have 
+spare bandwidth, some do not”[2] and also that “Trumpet 
+players lie squarely in the ‘some players have spare bandwidth’ 
+category”[2]. While we feel that it is important to focus on a 
+minimal design in the interest of accessibility, it seems there is a 
+necessary balance to be struck between minimality and 
+expressive capability, or playability. In order for the performer 
+to feel engaged and satisfied with the music they are playing, 
+they should have full expressive control over their instrument. 
+Jenkins et al. express concern that requiring a trumpet player to 
+interact with controllers which are beyond their learned 
+technique may result in a cognitive load similar to trying to play 
+two instruments at once[7]. However, not giving the performer 
+enough control can also have adverse effects. Our approach was 
+to carefully consider which sensors were to be used, and to 
+select ones that could be utilized without impeding normal 
+playing technique. Numerous researchers have noted that 
+trumpets lend themselves to the addition of sensors more than 
+other instruments[2][18][9]. During initial pilot testing by three 
+Figure 2. MIGSI prototype.
+421
+players, the addition of the extra sensors to supplement the 
+control of the optical sensors proved successful in performance 
+and as reported, did not overload the trumpet players’ 
+“bandwidth”. We look forward to conducting a more in-depth 
+evaluation with a larger sample of performers. 
+MIGSI is a fully wireless system. The reasoning behind this 
+decision was twofold. Firstly, we wanted to give the performer 
+as much freedom to move about the stage and to interact with 
+other performers as possible. Knowing that the trumpet player 
+would likely be changing the position of their instrument by 
+raising and lowering the bell or tilting from side to side, we also 
+wanted to minimize the chance of any wires being snagged or 
+tripped over. Secondly, we wanted to give the performer the 
+option of not having an onstage computer workstation. Since 
+there is no strict need to interact directly with the computer 
+during the course of a performance, it would just sit idle and 
+unused. It is possible that this could cause an unnecessary 
+distraction or source of confusion for the audience members, 
+causing them to focus more on the technology and "how it 
+works" than on the music itself[16]. 
+4.  HARDWARE IMPLEMENTATION 
+The current MIGSI prototype is built around the Arduino Fio 
+development board,  selected for the accessibility of its 1
+programming, its reasonable number of analog inputs, its 
+comparatively small footprint, and its intended use as a wireless 
+microcontroller. Using the built-in scheme of integration for the 
+Digi XBee radio module,  the Fio can transmit sensory data to 2
+any computer equipped with the appropriate XBee radio 
+receiver USB dongle. Though range will vary based on 
+location, our tests have shown that line-of-sight and non-line-
+of-sight communication are achievable at distances in excess of 
+50 meters. This should be sufficient for most typical uses, and 
+in situations where XBee range is insufficient, data may be 
+easily rebroadcast via User Datagram Protocol (UDP) over 
+WiFi from the computer to which the XBee receiver is attached. 
+Refer to Figure 3 for hardware block diagram. 
+4.1  Optical Sensors 
+The optical valve sensors are largely borrowed in concept and 
+design from EROSS. Once implemented, the valves themselves 
+become sources of continuous data. To a trained trumpeter these 
+become a particularly fast, responsive, and controllable source 
+of data. 
+A Vishay Semiconductors VCNL4000  infrared emitter/3
+detector placed beneath each valve generates continuous data 
+related to the valve’s current displacement. As noted by Jenkins 
+et al.[7], despite the VCNL4000 being an I 2C device it is fixed 
+by Vishay at a set address, so groups of these sensors cannot act 
+as individually addressable slave nodes as would be the case in 
+typical I2C implementation. In addition to this complication, the 
+Arduino Fio has only one input capable of communicating with 
+I2C sensors, so simply reading them at different inputs on this 
+microcontroller is not possible. Instead, a multiplexing circuit is 
+implemented in order to rapidly read and store data from each 
+sensor in sequence.  
+In the EROSS design, this task was handled utilizing an I 2C-
+based multiplexer, the Texas Instruments PCA9544A . In our 4
+own tests, however, we discovered that equally useful results 
+can be had using a simple analog multiplexer. The current 
+MIGSI prototype accomplishes this task by way of a Texas 
+Instruments CD4052BE  2x4-channel multiplexer. 5
+The I 2C serial clock (SCL) line is multiplied from the 
+microcontroller and attached directly to each sensor while the 
+serial data (SDA) line of each sensor is connected to the inputs 
+of the CD4052BE. Three digital outputs from the Fio are 
+assigned to the the multiplexer’s logic inputs and activated in 
+such a way that it becomes a sequential switch, with the Fio 
+taking readings as it switches between the sensors in series. 
+These readings are taken mere milliseconds apart, so the 
+resulting data is convincingly continuous.  
+The CD4052BE analog multiplexer was selected for its easy 
+programmability, low cost, and accessibility for prototyping. 
+Because it is readily available in a Parallel Dual In-Line (PDIP) 
+through-hole packaging, it can easily be used in the process of 
+breadboarding and prototyping without the need for specialized 
+tools for Surface Mount Device (SMD) soldering. Currently, the 
+PCA9544A multiplexer used in the EROSS design is 
+exclusively available as an SMD component . This is a further 
+contribution of our work, considering that not everyone has the 
+means necessary to work with SMD components. 
+Despite the VCNL4000’s 16-bit resolution (yielding 65,535 
+individual steps across the sensor’s range), the usable range 
+yielded within the distance from the bottom of the trumpet’s 
+valves in their open and closed states is typically less than 7,000 
+individual steps. Of course, this resolution is still perfectly 
+usable for most musical applications.  
+It is also worth noting that the scaling of these sensors is 
+inherently logarithmic, with less change in value per millimeter 
+as the valve approaches the sensor. This can be scaled as needed 
+in the MIGSI Mapping application on the receiving computer 
+(see 5. Software Implementation).  
+A further issue with this optical sensing system is that the 
+data output range of each sensor varies considerably from 
+trumpet to trumpet. The length of the valve casing varies 
+between different trumpet brands, models, etc., so the practical 
+output range of these sensors varies accordingly. However, a 
+calibration tool in the MIGSI Mapping application solves this 
+problem, allowing for quick and easy rescaling when switching 
+between trumpets. As a result, music written for MIGSI is 
+playable on any standard B-flat or C trumpet. 
+4.2  Accelerometer 
+Basic instrument orientation is detected using an Analog 
+Devices ADXL335  accelerometer. The ADXL335 provides 6
+readings for pitch (vertical instrument angle relative to ground) 
+and roll (left and right instrument tilt). The sensor is located 
+directly below the trumpet valve casing parallel with the 
+trumpet itself so that the pitch output is at ¼ its potential 
+capacity (90º) and the left and right tilt readouts are opposite 
+(180º and 0º respectively) in the typical resting position.  
+ https://www.arduino.cc/ 1
+ http://www.digi.com/lp/xbee/2
+ http://www.vishay.com/docs/83372/vcnl4000.pdf3
+ http://www.ti.com/lit/ds/symlink/pca9544a.pdf4
+ http://www.ti.com/lit/ds/symlink/cd4051b.pdf5
+ http://www.analog.com/media/en/technical-documentation/data-sheets/ADXL335.pdf6
+Figure 3. Simple block diagram for MIGSI prototype
+422
+As with the optical sensors, the values yielded from the 
+accelerometer may be scaled as desired in the MIGSI Mapping  
+application on the receiving computer. Conversion of these 
+continuous values into multi-level momentary and latching 
+switches opens up the possibility of creating a multitude of 
+specific physical “behavior zones,” so that both local and global 
+changes in the computer’s behavior become accessible by the 
+player simply altering his/her posture. The MIGSI Mapping 
+application contains facilities for mapping these “behavior 
+zones”. 
+4.3  Force Sensing Resistors 
+Physical contact with the valve casing is detected by Force 
+Sensing Resistors (FSRs) placed inside a hand guard at points 
+that make contact with key parts of the instrument’s valve 
+casing. Sensors placed near the locations where a player’s left 
+hand thumb, index, and middle finger make contact with the 
+trumpet are used as a source of continuous control. A trained 
+trumpet player has a high degree of control of their hand tension 
+in these areas, as the fingers that typically make contact here do 
+so for entirely functional reasons: in conventional trumpet 
+playing, the thumb is responsible for frequent manipulation of 
+the first valve slide, while the index and middle finger provide 
+support for the instrument’s weight and balance on the opposite 
+side of the valve casing[19]. Careful placement of the sensors 
+makes them accessible to these particularly well-suited fingers 
+without impeding their normal functionality as instrument 
+support and tuning control.  
+However, not every musical style, instrument, or player 
+promotes or uses precisely the same hand position. For greater 
+flexibility and easier integration on any player’s instrument, 
+future designs may include arrays of smaller sensors arranged in 
+groups at key points of contact from the player’s left hand. This 
+would allow for definable regions of the valve casing to be 
+mapped and and averaged into individual variables for 
+distribution from the MIGSI Mapping application, and would 
+allow for greater personalization of this aspect of the interface. 
+5.  SOFTWARE IMPLEMENTATION 
+The several streams of data transmitted by the MIGSI hardware 
+are sent to the receiving computer via XBee radio receiver USB 
+dongle. The MIGSI Mapping standalone application, developed 
+in Max/MSP, provides a simple GUI for sensor calibration and 
+visualization and modification of the received data (see Figure 
+4). The calibration procedure allows for personalization of 
+MIGSI’s physical response. Ability to monitor the incoming 
+data aids in realtime debugging. 
+Each incoming stream of data is assigned an OSC variable 
+name, allowing all messages to maintain the original degree of 
+resolution and to be easily utilized in any number of software 
+environments. MIGSI does not inherently generate MIDI data, 
+nor does the MIGSI Mapping standalone in its current form.  
+We do not consider the lack of MIDI support to be a 
+shortcoming. As noted by Impett[6], standard MIDI 
+implementation is a bit “thorny” in communicating common 
+practice technique from non-keyboard instruments. 
+Additionally, no form of note detection is a goal in our design. 
+We chose not to link the trumpet’s sounding pitch to any aspect 
+of the systems MIGSI controls. We believe that this provides 
+the artist greater creative freedom and control of the audience’s 
+experience, nudging their focus away from the technology itself 
+and toward the music it is used to create. 
+The MIGSI Mapping application also contains support for 
+data scaling and basic reformatting. Data ranges may be scaled 
+as desired, and continuous data can be reformatted into a series 
+of basic logic functions, including multi-level latching and 
+momentary switches. OSC data is named and sent both before 
+and after this scaling/reformatting process, so both the raw data 
+and reformatted data may still be used as desired.  
+Mapping configurations may be saved as presets. Presets are 
+a global collection of all of the Mapping application’s internal 
+variable data (scaling ranges, digital conversion thresholds, 
+etc.), saved to the host computer in the form of JSON text files. 
+Presets may be generated and altered either by manually 
+adjusting these individual variable parameters or by editing the 
+JSON file itself via the Mapping application GUI. 
+6.  MIGSI IN LIVE PERFORMANCE 
+MIGSI was premiered in May 2015 at the Digital Arts Expo 
+hosted by California Institute of the Arts. Two different pieces 
+were presented at the event: a solo improvisation titled “Before 
+North”, and a telematic audio-visual composition in 
+collaboration with Perry Cook called “Stockhausen by Proxy 
+Syndrome”. During the improvisation, data was mapped in such 
+a way that MIGSI became a spontaneous performative partner
+—gestural data controlled timbre and the level of rhythmic 
+activity of electronic sounds, and accelerometer data was used 
+to spatialize the same material. In the piece with Perry Cook, 
+MIGSI was mapped in part to generate visualizations such as 
+score fragments and phonemes, as well as to manipulate 
+graphics being transmitted from Cook’s performance location.   
+These performances confirmed the functionality of the interface 
+and established an exciting trajectory for future development 
+and creative work. We have continued to develop additional 
+mappings for improvised performance, which we look forward 
+to sharing with the community in the near future (and after 
+more thorough testing). 
+7.  FUTURE WORK 
+Now past the prototyping stage, MIGSI schematics are being 
+drafted for the development of PCBs with little to no hand 
+soldering required. Being that nearly all involved electronic 
+Figure 4. Scaling and conversion module for the valves’ 
+optical sensors from the MIGSI Mapping application.
+423
+components are available in various SMD packagings, a printed 
+version of the circuit promises to be considerably more discreet 
+than the already minimally invasive prototype. 
+We plan to continue experimentation with grouping and 
+placement of FSRs or other touch-sensitive surfaces along the 
+valve casing. This hopefully will lead to a more natural use of 
+left-hand control for the player. Additional hardware 
+developments will include integration of a small number of 
+buttons along the bottom of the interface, primarily for the 
+purpose of enabling and disabling the interface and switching 
+between stored scaling/distribution presets in the MIGSI 
+Mapping application. 
+New developments in the MIGSI Mapping application itself 
+will include improved facilities for data smoothing, data 
+response curve reshaping, and a more intuitive GUI for defining 
+accelerometer-related “behavior zones.” We also hope to 
+incorporate facilities for data recording into the MIGSI 
+Mapping application itself, opening up the interface’s potential 
+as a platform for pedagogical analysis of performance 
+technique. 
+MIGSI and the Mapping application are currently in the 
+hands of several performers and composers. We are already 
+collecting valuable feedback from these musicians in regards to 
+the functionality of the hardware, software, and the new 
+possibilities they are finding hidden within their already highly 
+developed technique and practices. We are excited to continue 
+to explore the trumpet’s creative potential and to rediscover 
+exactly what that means. 
+8.  CONCLUSIONS 
+This paper presents a valuable contribution to the field of 
+augmented instruments and gestural controllers. MIGSI is a 
+Minimally Invasive Gesture Sensing Interface that can be 
+attached to a trumpet as easily as inserting a mute. It requires no 
+damaging modifications to the host-trumpet, is  fully wireless, 
+and leverages familiar expert techniques rather than requiring 
+interaction with controllers outside of the trumpet paradigm.  
+One of the most unique and valuable aspects of MIGSI, is 
+that it strikes a balance between minimal design and robust 
+capabilities—the interface feels familiar and unobtrusive to a 
+trumpet player, and yet is capable of offering a full range of 
+expressive control. We believe that due to its minimal design 
+and strong focus on accessibility, MIGSI has the potential to be 
+adopted by trumpet players and composers in a more 
+widespread manner than is typical of new interfaces for musical 
+expression. Even though it is still in its initial stages, MIGSI has 
+been used in multiple public performances and demonstration, 
+with great success. We look forward to continuing our work in 
+this field. 
+9.  ACKNOWLEDGMENTS  
+Leonardo Jenkins for discussion in the early stages of design 
+and for inspiration. Perry Cook for collaborating on one of 
+MIGSI’s debut performances, “Stockhausen by Proxy 
+Syndrome.” Ajay Kapur, Colin Honigman, and Rebecca 
+Fiebrink for their encouragement and wisdom. Brian 
+McWhorter for his ongoing support, and for inviting us to bring 
+MIGSI into the UofO trumpet studio. 
+10.  REFERENCES 
+[1] M. Burtner. 2002. The metasaxophone:  concept,   
+ implementation, and mapping strategies for  a new  
+ computer music instrument. Organized Sound. 7(2):201–
+ 213. 
+[2] P. Cook. 2001. Principles for designing computer  music 
+ controllers. In Proceedings of the International Conference 
+ New Interfaces for Musical Expression (NIME), 1–4. 
+[3] P. Cook and D. Morrill. 1989. Hardware,    
+ Software, and Compositional Tools for a Real-Time  
+ Improvised Solo Trumpet Work. Center for Computer  
+ Research in Music and Acoustics, Stanford    
+ University. 
+[4] P. Cook, D. Morrill, and J. O. Smith. 1993. A MIDI  
+ Control and Performance System for Brass    
+ Instruments. In Proceedings of the International   
+ Computer Music Conference (ICMC). 
+[5] T. Craig and B. Factor. Trumpet MIDI Controller.  
+Retrieved on Sept 18, 2015 from https://
+courses.cit.cornell.edu/ee476/FinalProjects/s2008/
+twc22_bef23/twc22_bef23/index.html 
+[6] J. Impett. 1994. A Meta-Trumpet(er). In    
+ Proceedings of the International Computer Music  
+ Conference (ICMC), 147–150. 
+[7] L. Jenkins, W. Page, S. Trail, G. Tzanetakis, and P.  
+ Driessen. 2013. An Easily Removable, wireless   
+ Optical Sensing System (EROSS) for the trumpet. In  
+ Proceedings of the International Conference New  
+ Interfaces for Musical Expression (NIME), 352–357. 
+[8] J. E. Oliver La Rosa. 2008. To Un-Button:    
+ Strategies in Computer Music Performance to   
+ Incorporate the Body as Re-Mediator of Electronic  
+ Sound . Master’s Thesis, University of California,  San  
+ Diego, CA. 
+[9] H. Leeuw. 2009. The electrumpet, a hybrid electro- 
+ acoustic instrument. In Proceedings of the    
+ International Conference New Interfaces for Musical  
+ Expression (NIME), 7–12. 
+[10] T. Machover. 1992. Hyperinstruments: A Progress  
+ Report, 1987–1991.  MIT Media Laboratory.  
+[11] R. Medeiros, F. Calegario, G. Cabral, and G.   
+ Ramalho. 2014. Challenges in Designing New   
+ Interfaces for Musical Expression. In Design, User  
+ Experience, and Usability: Theories, Methods, and  
+ Tools for Designing the User Experience. Aaron   
+ Marcus (ed.). Springer International Publishing,   
+ 643–652. 
+[12] E. Miranda and M. Wanderly. 2006. New Digital   
+ Musical Instruments: Control and Interaction   
+ Beyond the Keyboard . A-R Editions, Inc. 
+[13] B. Neill and B. Jones. 2010. Posthorn. In    
+ Proceedings of the 28th International Conference  
+ Extended Abstracts on Human Factors in Computing  
+ Systems (ACM), 3107–3112. 
+[14] Garth Paine. 2013. New Musical Instrument Design  
+ Considerations. In IEEE MultiMedia, vol. 20, no. 4, 76–
+ 84. 
+[15] C. Palacio-Quintin. 2003. The hyper-flute. In   
+ Proceedings of the International Conference New  
+ Interfaces for Musical Expression (NIME), 206–207. 
+[16] S. Reid. 2014. Music and Augmented Reality:   
+ Creating an Immersive Environment for Performers and 
+ Audience Members. In Proceedings of the IEEE  Games, 
+ Entertainment, and Media Conference (IEEE-GEM),  
+ 247–250. 
+[17] C. Rinaldi, F. Battista, M. Carli, and L. Pomante.  2015. 
+ Design of a Non-intrusive Augmented Trumpet , In Arts 
+ and Technology: Lecture Notes of  the Institute for  
+ Computer Sciences, Social Informatics, and    
+ Telecommunications Engineering ,  Anthony Lewis Brooks, 
+ Elif Ayiter, and Onur Yazicigil (eds.). Springer   
+ International Publishing, 108–115. 
+[18] J. Thibodeau. 2010. Trumpet Augmentation: Rebirth and 
+ Symbiosis of an Acoustic Instrument . Master’s thesis,  
+ McGill University, QC.  
+[19] A. N. Tribuzi. 1992. Extended Trumpet Performance  
+ Techniques. Master’s thesis, California State   
+ University, Hayward, CA.
+424

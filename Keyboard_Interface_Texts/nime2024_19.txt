@@ -1,0 +1,653 @@
+Exploring Design Patterns for Spatial Instruments:
+User-Driven Strategies, Spatialized Synthesis and
+Loudspeaker Topologies
+Enrique Tomás
+Tangible Music Lab
+University of Arts Linz
+Austria
+enrique.tomas@kunstuni-
+linz.at
+Florian Goeschke
+Tangible Music Lab
+University of Arts Linz
+Austria
+florian.goeschke@kunstuni-
+linz.at
+Martin Kaltenbrunner
+Tangible Music Lab
+University of Arts Linz
+Austria
+martin.kaltenbrunner@kunstuni-
+linz.at
+ABSTRACT
+This paper investigates the field of spatialization tools and
+controllers within the context of immersive sound formats.
+After examining conventional approaches, we redefine spa-
+tialization tools as musical instruments challenging prevail-
+ing views of digital musical instruments confined to interface
+and synthesis components. Our exploration encompasses
+the projection, movement, and control of sound objects
+in diverse loudspeaker setups, emphasizing the reconnec-
+tion of synthesis and space-related modulations. Address-
+ing the multidimensional challenges associated with sound
+spatialization, we highlight some observed mapping strate-
+gies for the control of gestural and spatial information. In
+particular, we examine user-driven strategies, such as ’re-
+purposed’ controllers, ’interpreted’ instruments, custom in-
+terfaces, and spatialized synthesis algorithms. Addition-
+ally, we introduce design patterns emphasizing an aesthetic
+standpoint, positioning music as space , advocating for the
+integration of loudspeaker topologies in the design process,
+and recoupling synthesis and spatialization. Illustrating our
+theoretical framework, we present three case studies of spa-
+tial digital musical instruments. These examples showcase
+the integration of spatialization with synthesis, offering a
+comprehensive approach to sound design. In conclusion,
+our exploration advocates for spatialization controller de-
+sign strategies urging a transition to a more user-centric,
+adaptable, and holistic paradigm.
+Author Keywords
+NIME, spatialization, controllers, spatial synthesis
+CCS Concepts
+•Applied computing → Sound and music computing;•Human-
+centered computing → Interaction design theory, concepts
+and paradigms; Interaction design process and methods;
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’24, 4–6 September, Utrecht, The Netherlands.
+1. INTRODUCTION
+Sound spatialization reaches back to the beginnings of elec-
+troacoustic music [3] and has since then been considered
+a central feature of musical performance. With the rise
+of accessible and budget-friendly multichannel loudspeaker
+systems, there’s a growing interest in developing interaction
+tools for immersive sound formats. While artistic concepts
+surrounding the discourse of sound and space are predomi-
+nant, the study of corresponding spatialization instruments
+in musical performance and interactive live practice has re-
+ceived considerably less attention. In our opinion, spatial-
+ization tools can be viewed as musical instruments, given
+they fulfill ”certain aspects of instrumentality, immediacy,
+liveness, and learnability ” [18].
+Within the scope of this paper, spatialization of sound is
+understood as a) the projection of sound objects either in a
+surround or periphonic loudspeaker setup (eg. Ambisonics,
+Wave Field Synthesis) or the binaural playback of virtual
+sound sources via headphones, b) the control of sound ob-
+ject trajectories in a three-dimensional soundfield, c) the
+control of other space related parameters such as intensity,
+presence, timbre, duration, virtual room acoustics, etc.
+Sound spatialization techniques have been approached
+from different perspectives in recent decades. While some
+authors sketch the evolution of technologies from a histori-
+cal and musicological perspective [4, 9], others discuss com-
+positional and aesthetic strategies [2, 1], or propose clas-
+sifications focusing on spatialization systems and rendering
+frameworks [10, 16, 15]. Only a few authors have specifically
+discussed spatialization controllers for real time interaction
+[13, 8, 18]. Interestingly, all these cited scholars see a con-
+temporary trend in electroacoustic composition and acous-
+matic performance to consider space not only as an addi-
+tional compositional material, but as a core feature of musi-
+cal performance practice. However, only a few [18, 15] note
+a general lack of standardized evaluation criteria for defin-
+ing constraints in spatialization controller design. They at-
+tribute this issue to the extremely diverse and idiosyncratic
+realizations of composers and instrument designs.
+In a web-based survey on individual needs and prefer-
+ences concerning spatialization1, Peters et al.[17] elaborate
+that in most cases sound spatialization is done using ”no
+hardware”. Preferred controllers were mixing consoles, fader
+boards, touchpads, joysticks and motion tracking systems.
+The same survey describes that, on the software side, spa-
+tialization is mainly done using DAWs (Digital Audio Work-
+stations) and audio sequencers (75 percent) with built-in
+panning tools. According to the survey, only a small per-
+1Of the 52 participants, 85 percent were male and predom-
+inantly from Europe and North America.
+centage of the participants were familiar with the use of
+custom-made interfaces.
+Pysiewicz and Weinzierl [18] have provided the most com-
+prehensive classification of spatialization controllers to date.
+The authors have pinpointed distinctive solutions based on
+their affordance characteristics (touch, extended, augmented,
+mixed) and in terms of their control scope (exclusive spatial
+control or inclusion of sound synthesis control parameters).
+Their inventory of around three dozen instruments and con-
+trollers include analog and digital mixing consoles as well
+as virtual and hybrid instruments for both sound produc-
+tion and spatialization. Although the majority of controllers
+rely on touch, only a few of them are wearable or handheld.
+The authors emphasize a historically grown split between
+sound production and spatialization 2 and conclude that, if
+spatialization controllers were to be understood as musical
+instruments, ”new design strategies would be required”.
+In the development of DMIs for spatialization, Lopez-
+Perez [15] advocates for a ”holistic” approach encompassing
+a wide array of design considerations, such as questions of
+agency, mapping possibilities, accessibility, and compatibil-
+ity with existing spatial rendering frameworks, along with
+state-of-the-art HCI design constraints.
+Many of the discussed taxonomies can be useful in defin-
+ing design patterns for the development of future spatializa-
+tion DMIs. In our view, it is crucial to extend these classifi-
+cation systems toward other characteristics which are often
+overlooked. For instance, synthesis-spatialization couplings
+and the integration of loudspeaker topologies. These fac-
+tors require a comprehensive approach, along with tailored
+solutions to address highly individualized problems.
+2. MULTIDIMENSIONAL CHALLENGES
+Conventional approaches to composing and performing spa-
+tialized music, as outlined by Marshall [10], typically involve
+a two-step process. Initially, sound elements are recorded
+or synthesized, typically in mono or stereo format. Sub-
+sequently, these audio tracks are spatialized. The crucial
+aspect is that analog or digital audio can be sent directly
+to loudspeakers via routing hardware, or it can be rendered
+for a virtual space using spatialization algorithms (e.g. pan-
+ners, Ambisonics, Wave Field Synthesis, and others). With
+this approach sonic materials transform into spatial sound
+objects encompassing attributes such as position in a sound-
+field. The core technical challenge lies in devising mapping
+strategies between control mechanisms (whether hardware
+or software) and the parameters offered by the spatializa-
+tion algorithm used. Since each sound source can be char-
+acterized by numerous parameters and the number of sound
+sources may also vary, this results into a multidimensional
+control issue. This complexity makes the real-time control
+of spatialization a cumbersome task.
+The second challenge linked to sound spatialization in-
+volves the gestural control of these spatial parameters. For
+instance, position trajectories can take on a highly ges-
+tural nature. Ideally, an effective spatialization controller
+should offer the flexibility to effortlessly create or draw var-
+ious types of movements in a 3D space. However, designing
+hardware controllers to meet this demand is challenging.
+While some sensors can capture specific gestures, they may
+not cover all possibilities. As a result, GUI applications
+are frequently employed to draw and animate trajectories
+in space.
+2The problem of performing both sound synthesis and spa-
+tialization simultaneously has also been addressed by Mar-
+shall et al. who discuss different degrees of responsibility
+depending on the ”cognitive load” of the performers [10].
+As outlined in the preceding section, there is a relatively
+small number of spatialization controllers documented within
+the context of NIME. In the field of acousmatic music, the
+mixing desk emerged as the default control surface, despite
+its inherent gestural limitations. Nevertheless, this choice
+established the necessary conditions for the development
+of a stable practice. Practitioners in sound diffusion have
+crafted impressive musical techniques for gesturally control-
+ling sound in space using mixing desks, passing down this
+knowledge from scholars to students. In contrast, other spa-
+tialization strategies lack the same stability. In our view,
+conceptualizing spatialization merely as the parametric con-
+trol of audio sources poses a significant challenge in creating
+stable controllers. Breaking down the musical process into
+two stages — initially sound design and later spatialization
+— improves the efficiency of the computational workflow.
+However, this approach poses technical challenges in design-
+ing practical spatialization controllers for live performance.
+In the following section, we explore some of these issues
+and see how different artists have come up with various so-
+lutions.
+3. USER-DRIVEN STRATEGIES
+Over the past three years, we have collaborated within the
+group of technologists and artists established around the
+open immersive audio platform OTTOsonics 3. We have
+worked together in artist in residence periods with around
+a dozen composers4 with extensive experience in spatializa-
+tion. We have also enabled an Ambisonics Summer school 5
+with twenty participants, and we have organised two edi-
+tions of a yearly festival dedicated to immersive audio with
+more than thirty artists in total. Through these events, we
+have identified a list of the strategies taken to address the
+multidimensional mapping issue. To illustrate these solu-
+tions, we would like to introduce here a ’user-driven clas-
+sification’. Instead of being an exhaustive taxonomy, this
+type of classification recognizes that users often discover in-
+novative or unintended ways to use devices beyond their
+original design. In this context, spatialization devices are
+categorized based on the diverse ways users adapt and re-
+purpose them for different applications. The focus of this
+classification lies in understanding user behaviors and appli-
+cations rather than adhering strictly to the device’s original
+intended use. In our approach to tackling this issue, we
+have observed the following design strategies:
+1. Repurposed controllers: they consist in using existing
+controllers which are not initially intended for spatial-
+ization. For instance, a 2D touchpad or tablet can be
+repurposed to determine the azimuth and elevation
+values of a sound source within a loudspeaker hemi-
+sphere. Typically, only minor adjustments of input
+values to software parameters ranges are needed to
+achieve their use. The primary challenge lies in map-
+ping physical gestures to control parameters of the
+spatialization algorithm. The challenge then shifts to
+3An open hardware and software platform for the develop-
+ment of affordable and accessible loudspeaker systems, mul-
+tichannel amplifiers, etc. Link: https://tamlab.kunstuni-
+linz.at/projects/ottosonics/ (accessed 6 May 2024)
+4There were no formal contributions by any of these artists
+to the contents of this paper, but we acknowledge that their
+practice has shaped and informed this section. The names of
+these artists can be found in the Ethical Standards section.
+5Organized by Phonon Crew in ´Ust´ ı nad Labem in July
+2023. More info: https://www.phonon.cz/ambisonics-
+summer-school/ (accessed 6 May 2024).
+finding suitable controllers that offer enough parame-
+ters and enable swift control of the specific spatializa-
+tion technique.
+2. Interpreted controllers: they consist in utilizing ex-
+isting controllers alongside custom intermediate soft-
+ware applications to operate at a higher level. Given
+that controlling numerous sound sources and spatial
+characteristics involves specifying extensive sets of pa-
+rameters, one approach could be to employ higher-
+level models. This method entails using a reduced
+number of control variables to affect a large number
+of parameters at lower levels. The approach involves
+computationally extending physical controllers and in-
+struments through multiple layers of mapping, poten-
+tially incorporating machine learning. Intermediate
+programs are essential to translate arbitrary physi-
+cal gestures into higher-level musical strategies or se-
+mantic values, such as trajectories, sonic gestures, se-
+quences, etc. As an example of this type of controllers,
+the composer ˚Ake Parmerud has described us through
+personal conversations the use of a MIDI piano to con-
+trol spatialization trajectories. The composer has de-
+veloped an intermediate Max/Msp patch which an-
+imates these movements and creates smooth transi-
+tions between trajectories.
+3. Custom GUI and TUI interfaces: these are controllers
+crafted to interact with existing spatialization soft-
+ware, typically highly individualistic and tailored for
+executing a specific sound piece. The goal is to de-
+velop a unique tangible controller that interfaces with
+the existing parameters of a spatialization application.
+Recent examples would be the controllers created by
+Johnson, Murphy and Kapur [9] or Bukvic, Sardana,
+and Joo among many others[5]. Typically, these con-
+trollers incorporate OSC or MIDI protocols to com-
+municate with a spatialization software. In our view,
+they often mirror the complexity found in such envi-
+ronments through physical interaction. However, due
+to the constraints of the physical world, these con-
+trollers offer a restricted set of features compared to
+their software counterparts.
+4. Spatialized synthesis techniques: algorithms created
+to inherently synthetize spatialized sounds. With this
+approach, the spatialization process involves synthe-
+sizing sound, or digital sound is inherently spatial-
+ized during synthesis. The aim is to develop syn-
+thesis methods that directly incorporate spatialization
+or spatial distribution. Interestingly, there are exam-
+ples of such solutions in various synthesis domains.
+Firstly, in the realm of granular synthesis[12][23] and
+corpus-based concatenative synthesis[6], studies have
+demonstrated the feasibility of assigning distinct spa-
+tial attributes to individual grains. This enables the
+linkage of spatial behavior to audio features, control-
+lable through gestures or programmed trajectories.
+Secondly, in physical modeling, wave field spatializa-
+tion solutions have been proposed [14]. This approach
+combines physical modelling synthesis with wave field
+renderings for performing sound diffusion. An exam-
+ple would be the sound propagation simulation and
+control of virtual string instruments. Thirdly, highly
+abstract sound textures can be synthetized using mod-
+ulation through spatialization. Rapid movements of
+virtual sound sources lead to frequency modulation,
+accompanied by the appropriate Doppler shift. If a
+sound source is modulated through high-speed move-
+ments, especially within periodic trajectory orbits, ab-
+stract sonic textures can be created. Using this tech-
+nique, called spatial modulation synthesis [11], listen-
+ers have the impression that space and timbre get uni-
+fied. On the one hand, sound velocity determines tim-
+bre. On the other, we perceive these abstract sounds
+at the exact positions where they get modulated.
+With the exception of spatialized synthesis approaches,
+these solutions adhere to the conventional two-phase model
+of synthesis followed by spatialization. In the next two
+sections of this paper, we present guidelines and examples
+which aided us at creating controllers toward rejoining both
+processes.
+4. DESIGN PATTERNS
+4.1 Point of departure: Music as Space
+Gerriet K. Sharma [19] explains the fundamental premise
+that electroacoustic space-sound composition for loudspeaker
+sculptures embodies music as space, akin to an art form that
+shapes space by itself. Specifically, reproduced sound phe-
+nomena have the capacity to constitute ’space’ even with-
+out spatialization. This concept contrasts with the tradi-
+tional approach of music in space or sound in space . For
+Sharma, ”space, here, is not conceived as something exist-
+ing that must be filled with sound, but rather constituted
+topographically as a three-dimensional entity by means of
+sound”. This concept can aid in framing live spatialization
+with controllers as a process that should align with a) the
+intrinsic spatial characteristics of the sound material being
+used; b) the sculptural sonic effect created by the loud-
+speakers; and c) the acoustics and other properties of the
+room where the sound is perceived. From this perspective,
+spatialization controllers could be conceptualized from an
+aesthetic standpoint, rather than solely as physical exten-
+sions of the parameters existing at spatialization software.
+4.2 Embodiment of loudspeaker topologies
+In our view, if the loudspeaker topology gets embodied into
+the design of spatialization controllers, potentially, there
+will be more chances to create meaningful relationships be-
+tween the performer and space performed. This affordance
+will inspire and limit the performer’s gestures, shaping its
+movements and proposing compositional ideas. Indeed, in
+electronic music, loudspeakers go beyond being neutral trans-
+mitters. They function as electroacoustic instruments that
+impart color to sound. But their structural and sculptural
+configuration may also inspire musical concepts and inter-
+actions. When designing embodied synthesis and spatial-
+ization tools, if we have to draw on the concept of DMIs
+and expand them toward spatial instruments, this design
+pattern can assist and inspire controller designs, especially
+when the speaker layout lacks symmetry in space or it is
+custom-made. For instance, in a live performance where
+sound travels through the topology of a long and narrow
+corridor, it would likely make sense to integrate this spatial
+factor into the controller.
+4.3 Recoupling synthesis and spatialization
+As discussed in the previous section, spatial synthesis algo-
+rithms exemplify the reconnection of the traditionally sep-
+arated processes of synthesis and spatialization. Typically,
+these strategies involve the individual spatialization of sin-
+gle sound components at an early stage of the synthesis
+process. The aim is to incorporate sound spatialization into
+the realms of timbre, amplitude, and frequency without re-
+lying on the parametrization of virtual audio sources. This
+notion was anticipated by Stockhausen in his ” Concept of
+Unity in Electronic Music” [20], where the composer articu-
+lated the idea of unity between timbre, pitch, intensity, and
+duration. To achieve this unity, Stockhausen reduced pulse
+trains to extremely short durations. The drawback is that
+phenomenological processes intended to demonstrate this
+synthesis often lead to very artificial soundscapes due to the
+extreme FM or granular synthesis used. For example, spa-
+tial audio modulation[11] works at micro levels and with ex-
+tremely rapid trajectories: sound spatialization modulates
+the sound to create a new timbre. On the other hand, the
+advantage is that the spatial and timbral attributes of sound
+can be coherently controlled through spatial movements in
+the instrument. There is also no spatial parametrization.
+The sound appears as a unit that is both synthesized and
+equipped with a spatial characteristic. Controllers following
+this design pattern could be inspired by higher level musical
+metaphors: spatial spread, elasticity and periodicity of spa-
+tial trajectories, noisiness and chaos, etc. These metaphors
+could result into tangible artifacts exploring the physical at-
+tributes of interesting materials: viscosity, plasticity, flow,
+magnetism, etc.
+5. EXAMPLES
+5.1 Tangible granular spatialization
+This project involves granular spatialization of an existing
+tangible interface instrument driven by concatenative syn-
+thesis. Since 2013, the first author has been designing dig-
+ital instruments called ’tangible scores’[21][22]. They are
+objects and surfaces that he transforms into improvisatory
+musical instruments using concatenative synthesis. The au-
+thor engraves surfaces, and through contact microphones,
+he captures the sound activity produced after tangible in-
+teraction, mostly playing them with his hands 6 (figure 1).
+Using mathematical descriptors, specifically Mel-frequency
+cepstral coefficients (MFCCs), the sound created by the au-
+thor is objectively annotated. The concatenative synthesis
+software is fed with a corpus of sound grains previously
+analyzed and indexed with the same mathematical descrip-
+tor process. Similar to the projects developed by Einbond
+and Schwarz [6], and von Coler[23], the live audio MFCC
+values array from the instrument is employed as a multi-
+dimensional weight to determine the 3D position of each
+synthetized audio grain. The 3D position is limited to the
+surface of a hemisphere above the listeners. This real-time
+process automatically routes each synthetized sound grain
+among 30 audio sources, all equally separated within the
+3D virtual surface. The outcome is a 3D spatialized synthe-
+sis process driven by the timbre produced on the physical
+object. In other words, sound grains with similar timbre oc-
+cupy the same location in the virtual 3D space. These audio
+sources can be then rendered and assigned to various spa-
+tialization techniques: Ambisonics, Wave Field Synthesis,
+etc. In our case, we have mostly played it with 4th and 5th
+order Ambisonics loudspeaker hemispherical arrays. The
+experience of playing the instrument becomes an intrigu-
+ing experiment. Performers synthesize spatial sound while
+they can also perceive how the slightest change in timbre
+is perceived as a spatial change too. Therefore, timbre ex-
+ploration results into spatial trajectories. This converts a
+6Videos of performances with tangible scores can
+be watched in the link https://tamlab.kunstuni-
+linz.at/projects/tangible-scores/ (accessed 6 May 2024)
+physical gesture on the object into synthesized sound with
+inherent spatial character.
+Figure 1: A tangible score. Photo Elisa Unger.
+5.2 Spatial Entanglements
+As part of his ongoing PhD projectSonic Topologies [7], our
+second author presented Spatial Entanglements , a spatial
+instrument7. The system (figure 2) includes a mobile and
+lightweight structure, designed as a tensegrity and shaped as
+an icosahedron, supporting a 12-channel loudspeaker array.
+A maximum of three portable interfaces, designed follow-
+ing the same structural principle and shape, as tensegrities,
+allow the audience to perform synthesis and spatialization
+with a single gesture. The interfaces (figure 3) consist of
+spring steel bands that carry flex sensors and are held to-
+gether by nylon strings. ESP32 microcontrollers placed in
+the centre of the shapes are used to transmit additional mo-
+tion data to a host computer via OSC and WiFi. The data
+is analyzed by Max/Msp and fed into a granular synthesis
+engine.
+The same motion and flex sensor data is used for spa-
+tialization with High Order Ambisonics (HOA) and object-
+oriented panning, rendered in the Ircam spat environment
+with full periphonic (3D) resolution.
+Due to their design as tensegrities, the interfaces are dy-
+namically and organically responsive objects. By turning
+the interfaces around their Cartesian axes while stretch-
+ing or squeezing them, performers can manipulate the sonic
+material and the spatial motion simultaneously. Allowing
+novice players to improvise with the interfaces yielded as-
+tonishing results in terms of the choreographic affordances
+of the interfaces while experimentally exploring the instru-
+ment’s possibilities. Some performers have compared the
+handling of the interfaces to somatic body techniques such
+as Qi Gong or Tai-Chi. In fact, tensegrities have often been
+referred to in biomechanics and physiology to describe the
+interplay of tension and compression elements, such as my-
+ofascia and bones, in the human body.
+5.3 Phonotosphere
+The Phonotosphere is a light and sound installation by the
+artist Boris Shershenkov8, affiliated to our department, the
+Tangible Music Lab. The Phonotosphere (figure 4) com-
+bines an instrument and a loudspeaker sound sculpture ar-
+ranged as a dodecahedron. This project originates from
+lightscape recordings, where the artist deploys a light sensor
+to capture illumination values in cities. Instead of aiming
+7A video of the Spatial Entanglements system can be
+watched here https://vimeo.com/838339681 (accessed 6
+May 2024)
+8More information can be found in the link
+https://shershenkov.com/ (accessed 6 May 2024)
+Figure 2: Spatial Entanglements. Photo Florian Goeschke
+Figure 3: Controller of Spatial Entanglements. Photo Florian
+Goeschke
+for slow signals, the artist focuses on recording rapid pulsat-
+ing lightscapes containing oscillations (e.g. street lamps or
+traffic lights). These signals are adjusted in amplitude and
+played back as light through small lamps suspended from
+the sound sculpture. In the center lies a smaller-scaled do-
+decahedron, equipped with light-sensitive sensors at its cor-
+ners, precisely mirroring the loudspeakers positions of the
+larger dodecahedron.
+Performers can grab a lamp and point it towards the cen-
+tral dodecahedron, translating electricity into sound through
+the corresponding speaker. The closer the lamp, the louder
+the sound in the corresponding loudspeaker. Performers can
+illuminate not only one corner but also its neighbors, dis-
+tributing sound among speakers and creating a richer sound-
+scape in space. Rapid trajectories of illumination around
+the central dodecahedron are possible, resulting in an in-
+tuitively controlled analog sound diffusion. This process
+draws parallels to the light-sensing instruments created by
+David Behrman and Frederic Rzewski in the 1960s. With 10
+lamps incorporated into the dodecahedron, many perform-
+ers can play it simultaneously, transforming the sculpture
+and the instrument into a social space for experimenting
+with spatial audio.
+Figure 4: B. Shershenkov’s Phonotosphere. Photo E. Tom´ as
+6. CONCLUSIONS AND FUTURE WORK
+In this section, we aim to summarize the key contributions
+of this paper:
+• We have reconceptualized spatialization tools as mu-
+sical instruments, challenging the traditional perspec-
+tive that confines digital musical instruments to inter-
+face and synthesis components.
+• Our contribution includes a user-driven classification
+of spatialization instruments, derived from observa-
+tions of how practitioners have adapted existing tools
+or proposed new designs. This classification can help
+in understanding the motivations and challenges that
+musicians and designers face.
+• We have introduced a number of design patterns to ap-
+proach spatialization instrument design, emphasizing
+music’s inherent spatial dimension. These patterns re-
+frame spatialization interface design from an aesthetic
+viewpoint. Specifically, we advocate for embodying
+loudspeaker topologies into the physical affordances
+of instruments, and reuniting synthesis methods with
+spatialization.
+• Finally, we advocate for transitioning towards a more
+user-centric, adaptable, and embodied paradigm for
+spatialization instrument design. As technology con-
+tinues to advance, these insights can contribute to the
+development of more intuitive and expressive tools for
+artists and performers working in the realm of immer-
+sive sound.
+Our future work focuses on three main areas. Firstly,
+we plan to develop software frameworks to facilitate the
+use of spatialization synthesis methods, particularly Spa-
+tial Modulation Synthesis as discussed by McGee [11], and
+spatialized concatenative and granular synthesis, as we de-
+scribed in section 5.1. These frameworks will help musicians
+to compose new works with these methods and explore the
+proposed design patterns. Additionally, we aim to conduct
+user studies involving composers and performers specializ-
+ing in immersive audio to validate our design pattern as-
+sumptions and enhance user experience in this domain. Fi-
+nally, we plan the further development of the open platform
+OTTOsonics to facilitate the use of loudspeaker arrays in
+artistic projects.
+7. ETHICAL STANDARDS
+This project has been entirely funded by Austrian public
+money through our institution, the University of Arts Linz,
+Tangible Music Lab, as well as through the publicly funded
+project OTTOsonics. The user-driven classification of in-
+strument design strategies we have introduced in Section
+3 was developed from informal observations of works pre-
+sented by a number of composers and performers who vis-
+ited the OTTOsonics project and the Tangible Music Lab
+during the last two years. These authors have been Mariam
+Gviniashvilli, ˚Ake Parmerud, Am´ elie Nilles, Theodoros Lo-
+tis, Britt Hatzius, Ida Hirˇ senfelder, Polina Khatsenka, Ur-
+sula Winterauer, Rojin Sharafi, Boris Shershenkov, Robert
+Schwarz and Enrique Mendoza.
+8. REFERENCES
+[1] M. A. Baalman. Spatial composition techniques and
+sound spatialisation technologies. Organised Sound,
+15(3):209–218, December 2010.
+[2] N. Barrett. Spatio-musical composition strategies.
+Organised Sound, 7(3):313–323, June 2002.
+[3] M. Battier. Recent discoveries in the spatial thought
+of early musique concr` ete.Kompositionen f¨ur
+h¨orbaren Raum / Compositions for Audible Space:
+Die fr¨uhe elektroakustische Musik und ihre Kontexte,
+edited by Martha Brech and Ralph Paland, Bielefeld:
+transcript Verlag, pages 123–136, 2015.
+[4] M. Brech and R. Paland. Kompositionen f¨ur h¨orbaren
+Raum / Compositions for Audible Space: Die fr ¨uhe
+elektroakustische Musik und ihre Kontexte, edited by
+Martha Brech and Ralph Paland, Bielefeld: transcript
+Verlag. transcript publishing, Bielefeld, 2015.
+[5] I. I. Bukvic, S. Disha, and W. Joo. New interfaces for
+spatial musical expression. In NIME 20: Proceedings
+of the International Conference on New Interfaces for
+Musical Expression, Birmingham, 2020 , pages
+249–254, 2020.
+[6] A. Einbond and D. Schwarz. Spatializing timbre with
+corpus-based concatenative synthesis. In International
+Computer Music Conference (ICMC), Jun 2010, New
+York, United States., 2010.
+[7] F. Goeschke. The ioscahedron: developing a hybrid
+spatialization instrument. AM ’22: Proceedings of the
+17th International Audio Mostly Conference , 2022.
+[8] B. Johnson, J. Murphy, and A. Kapur. Designing
+gestural interfaces for live sound diffusion. In
+Proceedings of the 39th international computer music
+conference, pages 271–276. ICMC 2013, August 2013.
+[9] B. Johnson, M. Norris, and A. Kapur. Diffusing
+diffusion: A history of the technological advances in
+spatial performance. In Proceedings
+ICMC/SMC/2014, pages 126–132. ICMC/SMC,
+September 2014.
+[10] M. T. Marshall, J. Malloch, and M. M. Wanderley.
+Gesture control of sound spatialization for live musical
+performance. In Gesture-Based Human-Computer
+Interaction and Simulation , pages 227–238. 7th
+International Gesture Workshop, May 2007.
+[11] R. McGee. Spatial modulation synthesis. In In
+Proceedings of the International Computer Music
+Conference (ICMC), 2015.
+[12] A. McLeran, C. Roads, B. L. Sturm, and J. J. Shynk.
+Granular sound spatialization using dictionary-based
+methods. In 5th Sound and Music Computing
+Conference (SMC2008), Berlin, Germany , 2008.
+[13] J. Mooney. Sound diffusion systems for the live
+performance of electroacoustic music. University of
+Sheffield, Sheffield, 2005.
+[14] A. Mueller and R. Rabenstein. Physical modeling for
+spatial sound synthesis. In In Proceedings of the
+International Conference on Digital Audio Effects
+(DAFx), 2009.
+[15] A. Perez-Lopez. 3dj: A supercollider framework for
+real-time sound spatialization. In 21st international
+Conference on Auditory Display , pages 165–172.
+ICAD, July 2015.
+[16] N. Peters. Sweet [Re] production: Developing sound
+spatialization tools for musical applications with
+emphasis on sweet spot and off-center perception .
+McGill University, Montreal, 2010.
+[17] N. Peters, G. M. andd, and S. McAdams. Current
+technologies and compositional practices for
+spatialization: A qualitative and quantitative analysis.
+Computer Music Journal , 35(1):10–27, March 2011.
+[18] A. Pysiewicz and S. Weinzierl. Instruments for Spatial
+Sound Control in Real Time Music Performances. A
+Review. Springer Nature, Singapore, 2017.
+[19] G. K. Sharma. Composing with sculptural sound
+phenomena in computer music. doctoral thesis.
+September 2016.
+[20] E. B. K. Stockhausen. The concept of unity in
+electronic music. Perspectives of New Music ,
+1(1):39–48, September 1962.
+[21] E. Tom´ as. Musical instruments as scores: a hybrid
+approach. Proceedings of TENOR 2016, International
+Conference onTechnologies for Music Notation and
+Representation, Cambridge, 2016.
+[22] E. Tom´ as and M. Kaltenbrunner. Tangible scores:
+Shaping the inherent instrument score. Proceedings of
+NIME 2014, New Interfaces for Musical Expression
+Conference, London, 2014.
+[23] H. von Coler and S. Weinzierl. User-defined mappings
+for spatial sound synthesis. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 464–469, 2020.

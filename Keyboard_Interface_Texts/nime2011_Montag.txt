@@ -1,0 +1,543 @@
+A Low-Cost, Low-Latency Multi-Touch Table with Haptic
+Feedback for Musical Applications
+Matthew Montag, Stefan Sullivan, Scott Dickey, and Colby Leider
+Music Engineering Technology Group
+University of Miami
+Frost School of Music
+{matt.montag, stefan.sullivan}@gmail.com, d.dickey@umiami.edu, cleider@miami.edu
+ABSTRACT
+During the past decade, multi-touch surfaces have emerged
+as valuable tools for collaboration, display, interaction, and
+musical expression. Unfortunately, they tend to be costly
+and often suﬀer from two drawbacks for music performance:
+(1) relatively high latency owing to their sensing mecha-
+nism, and (2) lack of haptic feedback. We analyze the la-
+tency present in several current multi-touch platforms, and
+we describe a new custom system that reduces latency to an
+average of 30 ms while providing programmable haptic feed-
+back to the user. The paper concludes with a description
+of ongoing and future work.
+Keywords
+multi-touch, haptics, frustrated total internal reﬂection, mu-
+sic performance, music composition, latency, DIY
+1. INTRODUCTION
+1.1 Motivation
+Multi-touch input devices have the potential to serve as
+highly expressive musical instruments. The plurality of po-
+tential control inputs (e.g., position, relative distance, rel-
+ative rotation, etc.) and the simultaneity of these inputs
+provides considerable control of parameters compared with
+many current electronic or acoustic instruments. As a per-
+formance device, this provides great potential for interesting
+and dynamic audio/musical control. Additionally, the large
+size of many multi-touch tables accommodates larger gestu-
+ral movements, helping the performer to physically interact
+with the music, as well as allowing for collaboration and
+interaction among multiple users simultaneously.
+A multi-touch table surface can also be used as a video
+projection surface, providing visual feedback to the per-
+former without blocking line-of-sight with the audience. In
+addition to enhancing the performer’s experience, multi-
+touch tables allow audiences to witness performance ges-
+tures, providing increased emotional connection between
+performer and audience [20]. Recent advances in a number
+of technologies have also added to the growing do-it-yourself
+(DIY) multi-touch movement [21], a design philosophy un-
+der which the work described here falls.
+However, camera-based multi-touch tables suﬀer from in-
+put lag and event quantization imposed by the camera’s
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’11,30 May–1 June 2011, Oslo, Norway.
+Copyright remains with the author(s).
+frame-capture rate. The input lag may vary based on id-
+iosyncrasies of the camera and host computer conﬁguration.
+For example, if JPEG frame compression is performed on
+the camera in order to transfer a 640×480 image at 30
+frames per second (FPS) over a USB 1.0 connection, the
+frame must be decompressed by the host computer before it
+is further processed, adding a signiﬁcant delay to the input
+path. This motivates an investigation of camera selection
+and host conﬁguration in the pursuit of minimum latency.
+Additionally, the table interface provides minimal haptic
+feedback—only the sensation of touch that occurs when a
+ﬁnger is physically in contact with the table’s surface.
+1.2 Background
+Optical-based touch surfaces use infrared light and an IR-
+sensitive camera to detect the disturbance caused by a touch
+event. Two common methods are laser light plane illumina-
+tion (LLP) [22] [18] and frustrated total internal reﬂection
+(FTIR) [7]. The LLP method uses infrared lasers to create
+a laser plane a few millimeters above a translucent touch
+surface. When users touch the surface, their ﬁngers are
+illuminated by the light plane and become visible to the
+camera below. Because the laser plane is situated above
+the touch surface, the user is able to create a touch event
+without actually touching the table. FTIR touch surfaces
+operate by shining infrared light into the edge of a sheet of
+acrylic. The light is internally reﬂected by the acrylic, and
+it escapes only when diﬀused at the contact area between
+the surface and the user’s ﬁnger.
+The current project was informed by lessons learned from
+our ﬁrst attempt at a multi-touch table (Figure 1) [18],
+which was constructed using the laser light plane method.
+The FTIR and LLP methods are similar in cost and opera-
+tion, but because the FTIR system registers a touch exactly
+when the user touches the surface, this method is well-suited
+for percussive musical interaction under strict latency con-
+straints.
+1.3 Multi-Touch Latency, Audio, and Haptics
+Audio latency can prove a signiﬁcant impediment to musi-
+cal performance [25] [16] [6], and multi-touch surfaces are
+particularly prone to relatively large latency times, as dis-
+cussed above. In the realm of music, many authors agree
+that latencies of up to 30 ms between gestural input and
+sonic result are allowable in most real-time performance sit-
+uations [14] [17].
+Other studies discuss the perception of haptic-audio asyn-
+chrony (e.g., [1] [24]) and audio-visual-haptic asynchrony
+(e.g., [8]). One study notes that haptic-audio asynchrony
+can be detected with latencies of as little as 2 ms [24] with
+respect to event time-order, while others [15] [1] note just-
+noticible diﬀerences (JNDs) of 18–42 ms to haptic-audio
+events. These numbers give us a reasonable target. The
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+8
+audio latency of our ﬁrst-generation system was over 100
+ms, giving us much room for improvement in building a
+new table.
+2. OUR MULTI-TOUCH TABLE
+In this project, we attempted to leverage an FTIR-based op-
+tical tracking surface with a high-frame-rate camera. The
+system output that drives the audio display is used to simul-
+taneously drive the haptic display, resulting in no latency
+between audio and haptic feedback systems.
+2.1 System Overview
+Incorporating lessons learned from our previous multi-touch
+table and recent literature, we constructed a second-gener-
+ation table. The table surface is 90×67 cm and was con-
+structed using oﬀ-the-shelf materials for around US$ 300,
+plus the cost of a short-throw projector that drives the
+display (Table 1). We edge-light a 3/8” acrylic touch sur-
+face with a strip of 850 nm infrared LEDs. The surface
+is overlaid with a sheet of silicone-treated vellum, which
+serves as a projection surface and compliant layer. The
+compliant layer helps touches appear brighter to the cam-
+era underneath. Our new table incorporates a PlayStation
+Eye camera running at 100 FPS. Community Core Vision
+(ccv.nuigroup.com) is used to process the video input and
+generate TUIO (tangible user interface object) messages
+[13]. Max/MSP or Processing receives the TUIO messages,
+and this software layer performs event logic for turning these
+messages into audio output. Other software conﬁgurations
+are the subject of ongoing research. The host computer is
+connected to a multichannel audio interface that drives a
+10.2-channel audio display comprised of ten Genelec 8020A
+active loudspeaker monitors and two Genelec 7050B active
+subwoofers.
+2.2 Adding Haptic Feedback
+Haptic feedback can be used to provide an additional di-
+mension of feedback for the performer on a multi-touch ta-
+ble. The inclusion of haptic feedback has been shown to
+increase performance accuracy signiﬁcantly [19], and many
+recent musical instruments engage haptics as a central fea-
+ture of their interface [4] [10] [5] [3]. Haptic interaction in
+multi-touch tables has previously been described in the con-
+text of physical “pucks” that a user places on the table [23]
+[12]. More recent haptic multi-touch displays use electrical
+Figure 1: Our ﬁrst-generation multi-touch table, us-
+ing the Laser-Light Plane (LLP) method.
+Table 1: Construction Costs
+Component Cost (US$)
+Polished Acrylic $100
+LED Strip (2 m) $96
+Compliant Surface $20
+Wooden Frame $25
+Short-Throw DLP Projector $400
+Playstation 3 Eye Camera $27
+Power Supply $16
+Ampliﬁer $25
+Actuator $10
+Total $719
+ﬁelds [2], pnematic pressure [9], and magnetic ﬁelds [11] to
+provide tactile feedback. Our implementation is unique in
+that we couple a single large tactile transducer capable of
+producing up to 20 foot-pounds (89 N) of force onto the
+surface of the table itself, which can achieve a variety of
+tactile eﬀects ranging from subtle to startling.
+We found that the most eﬃcient method of vibrating the
+multi-touch surface was to couple a tactile transducer (the
+Aura AST-1B-4) directly to the surface. We had tested
+haptic feedback with a DC motor driven by a microcon-
+troller that was connected to the host computer via USB,
+but this conﬁguration exhibited noticeable latency. On the
+other hand, the tactile transducer which is driven by an au-
+dio signal provides near-zero latency and guarantees that
+haptic events are synchronous with audio output.
+The question of when and how to provide haptic feed-
+back to the user is a function of the software application,
+and may vary from a simple touch response to a method
+of indicating perceived edges or proximity when the user
+drags a ﬁnger across a virtual surface boundary. For in-
+stance, our ﬁrst approach was to generate a short transient
+“bump” on the surface every time a touch event occurred.
+Figure 2: Second-generation multi-touch table, in-
+corporating FTIR sensing, haptic feedback, and a
+simpliﬁed two-channel audio display used during de-
+velopment. Note the transducer coupled directly to
+the surface of the table at the top right.
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+9
+In terms of user experience, this provides only marginally
+more information than the mechanical feedback of touching
+a motionless table, but informal tests suggest this improves
+users’ perception of multimodal simultaneity. We describe
+ongoing eﬀorts to incorporate haptic feedback into a musi-
+cally expressive device later in this paper.
+Comprehensive Custom Solution
+Playstation Eye (Camera)
+Community Core VisionCL Eye C++ Library
+Loudspeaker
+Multi-Touch Surface
+Host Computer
+Haptic Transducer
+MIDI/OSC
+Physical Input
+Computer Vision
+Audio Synthesis
+Physical Output
+Touch Event Logic
+MIDI Instrument
+Image Capture
+TUIO
+MultichannelAudio Signal
+Processing, Max/MSP, SuperCollider
+Portaudio, etc.
+Figure 3: System-level overview of our multi-touch
+table. Boxes in gray are currently implemented,
+and boxes in white are potential altertnatives.
+3. LATENCY TESTS
+To assess the audio and video latency present in this new
+multi-touch table, a variety of tests were performed on the
+table and other existing systems for comparison.
+3.1 Video Latency Tests
+Video tests were performed prior to audio latency tests to
+determine the delay contributed by diﬀerent cameras and
+display devices. The test was carried out in the follow-
+ing manner. The camera and display device under question
+were connected to the host computer. A frame-counter win-
+dow and camera monitor window were shown side-by-side
+on the display device. The camera was aimed at the display
+so that both the frame counter and the video-overlay win-
+dow were visible, creating a video loop. It was then possible
+to photograph the display, recording the counter and a time-
+delayed version of the same counter in one image, allowing
+a simple subtraction of these two counters to determine the
+video latency. We tested the Unibrain Fire-i ﬁrewire cam-
+era (maximum 30 FPS) and the Sony PlayStation Eye USB
+2.0 camera (maximum 100 FPS) with a Toshiba TDP ET-
+10 DLP projector (60 Hz refresh rate), a Dell E173FP LCD
+display (60 Hz), and an E-machines CRT monitor (100 Hz).
+The results were averaged over a minimum of 25 measure-
+ments. This testing setup is shown in Figure 4.
+3.2 Video Latency Results
+The results of the video latency tests showed that the CRT
+was the fastest display device, and the PlayStation Eye was
+the fastest capture device. The results can be seen in Fig-
+ure 5. The Unibrain Fire-i at 30 FPS and PlayStation Eye
+at 100 FPS resulted in a video loop latency of 70 ms and
+Figure 4: Experimental setup for testing latency
+times for our second-generation multi-touch table
+and other devices.
+10 ms, respectively. It is clear that the Unibrain Fire-i suf-
+fers more input lag than can be explained by the frame rate
+alone, which accounts for only 23 ms of the diﬀerence. Al-
+though the display device itself does not impact latency of
+the audio output, it is important to note the large disparity
+in latency among the tested displays. The DLP projector
+exibited a video input lag around 80 ms. This delay is im-
+parted by a particular digital image-processing circuit in
+this Toshiba projector and is not inherent to all projectors
+or DLP technology.
+3.3 Audio Latency Tests
+We measured the delay between input touch event and au-
+dio output of our low-latency multi-touch table conﬁgu-
+ration and benchmarked our system against several other
+multi-touch and MIDI devices. The following devices were
+tested: Korg Triton keyboard, USB MIDI keyboard, Apple
+iPad, Apple iPod Touch, HTC Hero Android-based smart-
+phone, and our new multi-touch table. Multi-touch and
+MIDI tests were conducted with an Intel Macbook 2.2 MHz
+Core 2 Duo running Windows XP, connected to an Echo
+AudioFire 12 ﬁrewire audio interface conﬁgured with a 256
+sample buﬀer at 44.1 KHz. Apple iPad tests were performed
+with the apps Drum Kit Pro and I Can Drum. The Apple
+iPod was tested with Drum Kit Pro; the Android phone was
+tested with DrumKit.
+In all test cases, we placed a microphone near the control
+surface and recorded a stereo audio ﬁle, with the touch/ key-
+press noise on the left channel and the corresponding audio
+output on right channel. We then used a sound ﬁle editor
+to measure the time elapsed between the trigger event and
+the sound output, averaging at least 25 trials. In the case
+of the keyboards, the impact of the key on the keybed was
+chosen to mark the trigger event. This process is illustrated
+in Figure 6.
+3.4 Audio Latency Results
+The results of the audio latency tests show that the Korg
+Triton had latency between 0 ms and –1 ms. Note that this
+is a valid result given the testing method, although it indi-
+cates that the electrical contact for the Triton’s keys occurs
+somewhere before the fully depressed position. The Triton
+has a known latency of less than 2 ms, and our result is
+included as a reference point for the test method. The An-
+droid and Apple devices were shown to have average laten-
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+10
+0
+20
+40
+60
+80
+100
+120
+140
+160
+180
+Fire−i to DLP Fire −i to LCD Fire −i to CRT Fire −i No Vsync PS Eye to CRT
+Video Loop Latency Measurements
+Latency (ms)
+Figure 5: Results of video latency tests.
+cies above 50 ms, depending on the application. The multi-
+touch table with Fire-i camera exhibited a higher latency
+than the Apple iPad and Apple iPod Touch. The measured
+latency of the multi-touch table using the PlayStation Eye
+was much lower and surprisingly comparable to the USB
+MIDI keyboard. Our average overall latency for the table
+was 30 ms. These results are summarized in Figure 7.
+4. ONGOING AND FUTURE WORK
+Our team is currently working on several improvements and
+related projects. These include custom music applications
+that take advantage of haptic multi-touch interaction, im-
+provements to the table itself, assessment and improvement
+of the table’s haptic feedback system, and other long-term
+projects. Each of these is described below.
+4.1 Software Applications
+Our primary ongoing project is to create software appli-
+cations that take advantage of the multi-touch table as a
+musical performance instrument. We emphasize applica-
+tions that use multi-touch input in such a way that could
+not be easily duplicated by point-and-click interaction, for
+example, the simultaneous manipulation of several control
+points along a virtual vocal tract, or the simultaneous con-
+trol of several harmonic overtones in an additive-synthesis
+instrument. We also wish to take advantage of our table’s
+low-latency characteristics and we are creating responsive
+virtual instruments for live performance.
+4.2 Table Improvements
+As seen in the video latency results above, there is consider-
+able room for improvement in the high latency of the tested
+DLP projector. The low-latency audio signal should be ac-
+companied by low-latency visual feedback. We are actively
+looking for low-cost short throw projectors with exceptional
+latency characteristics.
+We are also currently working by trial and error to im-
+prove the performance of the compliant surface used in our
+FTIR table. Silicone applied to the bottom of the vellum
+occasionally sticks to the acrylic surface in the area of a
+touch, preventing the recognition of subsequent touches in
+that area. This deﬁciency impacts musical performance,
+but could be resolved by incorporating the laser light plane
+method in future experiments.
+4.3 Assessment and Improvement of the Hap-
+tic Subsystem
+The table described here delivers a transient vibration on its
+surface each time a user touches it, and, as mentioned, this
+anecdotally improves perception of event simultaneity. A
+more meaningful implementation might be to provide vary-
+ing degrees of haptic feedback as a musician drags a ﬁnger
+across the table, to indicate certain particular tasks/events.
+For instance, the table might vibrate every time a certain
+sound event begins and/or terminates, or every time a ﬁnger
+moves from one parameter to another, or indicating certain
+thresholds of parameters/events. We are also investigating
+haptic feedback to impart additional information about a
+sound as it is being “scrubbed.” For example, search time
+when dragging across a graphical waveform representation
+of a long-duration sound ﬁle to ﬁnd a particular section may
+be minimized by using haptic displays of simulated surface
+texture and intensity to represent a particular feature vec-
+tor, e.g., local novelty. Finally, we are also investigating the
+creation of physical “buttons” on our multi-touch surfaces
+by using the haptic subsystem to generate Chladni patterns
+on the surface of the acrylic.
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+11
+Figure 6: Measuring a 27-ms duration between a ﬁnger tap on the table surface, recorded in the left channel,
+and the synthesized sound output, recorded in the right channel.
+!
+"!
+#!!
+#"!
+$!!
+$"!
+%&'()*' *+,' *+)' -./.01234),(' 1)(506(*7)& 8*(2!*0#"08+9 8*(2!*0:!08+9 +90;320#!!08+9
+%<'*)0=<7><70?,72&@30-2,A<(2B2&7A
+?,72&@30CBAD
+-<E7*7)<@F
+Figure 7: Results of audio latency tests.
+4.4 Future Applications
+This multi-touch table with haptic feedback has the poten-
+tial to be deployed in educational environments, in addition
+to its current use as a software-synthesis performance con-
+troller. We are beginning to explore ways in which haptic-
+multi-touch interfaces can lead to engaging, fun, and col-
+laborative music-making for children, in both schools and
+museums. We are also beginning work on an interactive
+soundscape-exploration system in which geographical maps,
+satellite images, and multi-channel soundscape recordings
+can be quickly navigated, explored, compared.
+5. CONCLUSIONS
+Our goal was to produce an economical multi-touch table
+with haptic feedback that exhibited low enough latency to
+be useful as a musical instrument. Our system succeeded
+in reducing average latency to 30 ms. There still seems to
+be some debate as to the exact JND for multimodal feed-
+back, but subjective reports indicate that the inclusion of
+haptic feedback can improve the perception of simultaneity
+in new musical interfaces. This paper demonstrates proof-
+of-concept of the multi-touch table as a low-cost computer-
+music instrument with haptic feedback. We are creating
+a suite of software instruments for the table that we hope
+will leverage the multi-touch control paradigm with new
+tools for musical performance and composition, as the in-
+tegration of multi-touch technology with haptic feedback
+provides many opportunities for creative exploration.
+6. ACKNOWLEDGMENTS
+This work was supported by the National Science Founda-
+tion under Grant No. IIS 0757552 and by grants from the
+University of Miami. Thank you also to Pat O’Keefe and
+Mark Freeman for their work on our ﬁrst multi-touch table.
+7. REFERENCES
+[1] B. Adelstein, D. Begault, M. Anderson, and
+E. Wenzel. Sensitivity to haptic-audio asynchrony. In
+Proceedings of the 5th international conference on
+Multimodal interfaces,p a g e s7 3 – 7 6 .A C M ,2 0 0 3 .
+[2] O. Bau, I. Poupyrev, A. Israr, and C. Harrison.
+Teslatouch: electrovibration for touch surfaces. In
+Proceedings of the 23nd annual ACM symposium on
+User interface software and technology,p a g e s
+283–292. ACM, 2010.
+[3] E. Berdahl, H. Steiner, and C. Oldham. Practical
+hardware and algorithms for creating haptic musical
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+12
+instruments. InProceedings of the International
+Conference on New Interfaces for Musical Expression
+(NIME-2008), Genova, Italy,2 0 0 8 .
+[4] D. DiFilippo and D. Pai. The AHI: An audio and
+haptic interface for contact interactions. In
+Proceedings of the 13th annual ACM symposium on
+User interface software and technology,p a g e s
+149–158. ACM, 2000.
+[5] M. Eid, M. Orozco, and A. El Saddik. A guided tour
+in haptic audio visual environments and applications.
+International Journal of Advanced Media and
+Communication,1 ( 3 ) : 2 6 5 – 2 9 7 ,2 0 0 7 .
+[6] C. Gunn, M. Hutchins, and M. Adcock. Combating
+latency in haptic collaborative virtual environments.
+Presence: Teleoperators & Virtual Environments,
+14(3):313–328, 2005.
+[7] J. Han. Low-cost multi-touch sensing through
+frustrated total internal reﬂection. InProceedings of
+the 18th annual ACM symposium on User interface
+software and technology,p a g e s1 1 5 – 1 1 8 .A C M ,2 0 0 5 .
+[8] V. Harrar and L. Harris. The eﬀect of exposure to
+asynchronous audio, visual, and tactile stimulus
+combinations on the perception of simultaneity.
+Experimental Brain Research,1 8 6 ( 4 ) : 5 1 7 – 5 2 4 ,2 0 0 8 .
+[9] C. Harrison and S. Hudson. Providing dynamically
+changeable physical buttons on a visual display. In
+Proceedings of the 27th international conference on
+Human factors in computing systems,p a g e s2 9 9 – 3 0 8 .
+ACM, 2009.
+[10] G. Huang, D. Metaxas, and M. Govindaraj. Feel the
+fabric: an audio-haptic interface. InProceedings of the
+2003 ACM SIGGRAPH/Eurographics symposium on
+Computer animation, pages 52–61. Eurographics
+Association, 2003.
+[11] Y. Jansen. Mudpad: Fluid haptics for multitouch
+surfaces. InProceedings of the 28th of the
+international conference extended abstracts on Human
+factors in computing systems,C H IE A’ 1 0 ,p a g e s
+4351–4356, New York, NY, USA, 2010. ACM.
+[12] S. Jord` a, G. Geiger, M. Alonso, and
+M. Kaltenbrunner. The reactable: exploring the
+synergy between live music performance and tabletop
+tangible interfaces. InProceedings of the 1st
+international conference on Tangible and embedded
+interaction, TEI ’07, pages 139–146, New York, NY,
+USA, 2007. ACM.
+[13] M. Kaltenbrunner, T. Bovermann, R. Bencina, and
+E. Costanza. TUIO: A protocol for table-top tangible
+user interfaces. InProc. of the The 6th International
+Workshop on Gesture in Human-Computer
+Interaction and Simulation. Citeseer, 2005.
+[14] N. Lago and F. Kon. The quest for low latency. In
+Proceedings of the International Computer Music
+Conference, pages 33–36. Citeseer, 2004.
+[15] D. Levitin, K. MacLean, M. Mathews, L. Chu, and
+E. Jensen. The perception of cross-modal
+simultaneity. International Journal of Computing
+Anticipatory Systems,2 0 0 0 .
+[16] T. Maki-Patola and P. Hamalainen. Eﬀect of latency
+on playing accuracy of two gesture controlled
+continuous sound instruments without tactile
+feedback. InProc. Conf. on Digital Audio Eﬀects,
+Naples, Italy,2 0 0 4 .
+[17] T. Maki-Patola and P. Hamalainen. Latency tolerance
+for gesture controlled continuous sound instrument
+without tactile feedback. InProc. International
+Computer Music Conference (ICMC),p a g e s1 – 5 .
+Citeseer, 2004.
+[18] A. Mattek, M. Freeman, and E. Humphrey. Revisiting
+Cagean Composition Methodology with a Modern
+Computational Implementation. InProc. NIME 2010,
+2010.
+[19] S. O’Modhrain and C. Chafe. Incorporating haptic
+feedback into interfaces for music applications. In
+Proceedings of the International Symposium on
+Robotics with Applications, World Automation
+Conference,2 0 0 0 .
+[20] K. Scherer and M. Zentner. Emotional eﬀects of
+music: Production rules.Music and emotion: Theory
+and research,p a g e s3 6 1 – 3 9 2 ,2 0 0 1 .
+[21] J. Sch¨oning, J. Hook, T. Bartindale, D. Schmidt,
+P. Oliver, F. Echtler, N. Motamedi, P. Brandl, and
+U. Zadow. Building Interactive Multi-touch Surfaces.
+Tabletops-Horizontal Interactive Displays,p a g e s
+27–49, 2010.
+[22] A. Teiche, A. Rai, C. Yanc, C. Moore, D. Solms,
+G. Cetin, J. Riggio, N. Ramseyer, P. D’Intino,
+L. Muller, et al. Multi-touch technologies.NUI Group,
+2009.
+[23] L. Terrenghi, D. Kirk, H. Richter, S. Kr¨amer,
+O. Hilliges, and A. Butz. Physical handles at the
+interactive surface: exploring tangibility and its
+beneﬁts. In Proceedings of the working conference on
+Advanced visual interfaces,A V I’ 0 8 ,p a g e s1 3 8 – 1 4 5 ,
+New York, NY, USA, 2008. ACM.
+[24] K. Walker, W. Martens, and S. Kim. Perception of
+Simultaneity and Detection of Asynchrony Between
+Audio and Structural Vibration in Multimodal Music
+Reproduction. In Proceedings of the 120th Convention
+of the Audio Engineering Society, Paris, France,2 0 0 6 .
+[25] E. Wenzel. Analysis of the role of update rate and
+system latency in interactive virtual acoustic
+environments. AES Preprint,1 9 9 7 .
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+13

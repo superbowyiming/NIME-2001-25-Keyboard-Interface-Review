@@ -1,0 +1,497 @@
+Inspecting and Interacting with Meaningful Music
+Representations using VAE
+Ruihan Y ang
+Music X Lab
+NYU Shanghai
+ry649@nyu.edu
+Tianyao Chen
+Music X Lab
+NYU Shanghai
+tc2709@nyu.edu
+Yiyi Zhang
+Center for Data Science
+New Y ork University
+yz2092@nyu.edu
+Gus Xia
+Music X lab
+NYU Shanghai
+gxia@nyu.edu
+ABSTRACT
+Variational Autoencoders [9] (VAEs) have already achieved
+great results on image generation and recently made promis-
+ing progress on music generation. However, the generation
+process is still quite diﬃcult to control in the sense that
+the learned latent representations lack meaningful music
+semantics. It would be much more useful if people can
+modify certain music features, such as rhythm and pitch
+contour, via latent representations to test diﬀerent compo-
+sition ideas. In this paper, we propose a new method to
+inspect the pitch and rhythm interpretations of the latent
+representations and we name itdisentanglement by augmen-
+tation. Based on the interpretable representations, an intu-
+itive graphical user interface is designed for users to better
+direct the music creation process by manipulating the pitch
+contours and rhythmic complexity.
+Author Keywords
+Representation learning, Disentanglement, Music genera-
+tion, Controlled generation
+1. INTRODUCTION
+Representation learning has become an essential tool to
+gain an in-depth view of the data. Bengio [1] pointed out
+that good data representations “make it easier to extract
+useful information when building classiﬁers or other pre-
+dictor”. We have also seen that representation learning
+dramatically boosted the eﬀectiveness of generative mod-
+els for visual arts and music style transfer [4, 2]. In par-
+ticular, the general encoder-decoder architecture of Vari-
+ational Autoencoders (VAEs) [9] (and in the same sense,
+the generator-discriminator architecture of Generative Ad-
+versial Network [5]) provides a way to generate data by
+sampling from the distribution of the latent representation,
+rather than directly sampling from the data distribution
+or generating one token or pixel at one time. More re-
+cently, the pioneer work of MusicVAE [10] incorporated
+sequence modeling with VAEs by building both the en-
+coder and decoder with Long Short-Term Memory networks
+(LSTMs) [8]. However, since the learned latent representa-
+tions lack semantic interpretations, the generation process is
+still quite diﬃcult to control. From a practical standpoint,
+it would be helpful if users could manipulate meaningful
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+music features via latent representations during the music
+creation process in a similarly way of tuning the radio with
+turning knobs, in order to test diﬀerent composition ideas
+eﬃciently.
+We aim to gain a better semantic interpretation of the
+learned latent representations by disentanglement, i.e., to
+inspect which part (dimensions) of the representations con-
+nects with which features of music composition, while pro-
+viding an intuitive interface to control the disentangled fea-
+tures. In this paper, we adopt the MusicVAE model [10] and
+focus on disentangling and interacting with pitch contour
+and rhythm representations of symbolic melodies. We pro-
+pose a new method named disentanglement by augmenta-
+tion and conduct the experiment in two ways: one way only
+transpose the pitch contour, and the other way only split the
+note duration, both gradually. We discover that encoded
+latent representations change approximately linearly along
+with the changing of pitch contour and rhythm. Moreover,
+only a small portion of dimensions changes signiﬁcantly
+comparing to the entire large space. Among them, almost
+no dimension contributes to both pitch contour changes and
+rhythm changes. Therefore, pitch contour and rhythm are
+considered to be disentangled. By ﬁxing one of these sets
+of dimensions and releasing the other one, we can make the
+original music transformed to new music in a desired way.
+Meanwhile, we provide an intuitive interface for users to cre-
+ate music via directly interacting with or interpolating the
+signiﬁcant dimensions of pitch contour and rhythm repre-
+sentations. Available at: https://github.com/cdyrhjohn/
+representation_demo
+In the rest of the paper, Section 2 gives a background
+knowledge about the VAEs and MusicVAE models, Section
+3 discusses how to inspect the latent space, Section 4 in-
+troduces the interface we design for music composition, and
+the last section summaries our study and discusses possible
+future work.
+2. BACKGROUND
+Our study is built on VAEs [9]. In this section, we review
+how VAEs work and how to adjust the model architecture
+to deal with the representation learning of symbolic music
+sequences.
+2.1 Variational Autoencoder
+The VAE [9] is a classical generative model that can learn
+a low-dimensional latent vector z from a high-dimensional
+data x. The latent vector z can be used to generate new
+data or to reconstruct the original data. The prior distri-
+bution of z is p(z). Therefore, the generated data x need
+to satisfy the distribution x ∼p(x|z). The encoder in the
+VAE uses a distribution q(z|x) to approximate p(z|x) and
+the decoder parameterizes the distribution p(x|z). The ob-
+jective is to minimize the KL divergence between q(z|x)
+307
+and p(z) by maximizing the evidence lower bound:
+E[log p(x|z)] −KL(q(z|x) ||p(z)) ≤log p(x) (1)
+Generally speaking, both encoder and decoder are neural
+networks, and p(z) is parameterized as a diagonal covari-
+ance Gaussian, i.e., z ∼N(µ,σ).
+In our model, after the training period, we take the mean
+of distribution p(z), making z = µ, as the latent represen-
+tation of the input data.
+2.2 Music Variational Autoencoder
+MusicVAE [10] is an application of variational autoencoder
+on music. The format of the input music required by this
+model is in the form of a 2-bar MIDI sequence with a 4/4
+meter. Each 2-bar music clip is represented by a 32 ×130
+matrix, with 32 time steps in the unit of sixteenth note,
+and 130 states on each time step, including 128 onset states
+for each MIDI pitch, a holding state, and a rest state. To
+deal with this time-series data, MusicVAE uses bidirectional
+Long Short-Term Memory networks (LSTMs) [8] recurrent
+neural networks for both encoder and decoder. In this pa-
+per, we use Gated Recurrent Units (GRUs) [3] as a re-
+placement of LSTMs for more eﬃcient training processes.
+The model architecture is shown in Figure 1. The learned
+low-dimensional latent vector z can be seen as a compact
+and continuous latent representation, based on which we
+can smoothly transform from one music clip to another
+one through interpolation or adding certain features via at-
+tribute vector arithmetic [7].
+Note that the original MusicVAE model has a hierarchical
+structure to handle longer sequences, but results on music
+with two bars are not yet convincing. Therefore, we only
+adopt the model to learn short sequences. When dealing
+with longer sequences, we cut them into 2-bar clips, process
+them one by one, then concatenate them together.
+3. METHODS
+Our goal is to allow music composers to manipulate la-
+tent representations of a music melody easily with an eﬀec-
+tive and intuitive interface. Two improvements are needed
+based on MusicVAE [10]. First, we need a more compact
+latent representation. To this end, we shrink the dimension-
+ality of the latent space from 512 to 128. Second, we need to
+disentangle the latent representation in a meaningful way.
+Each disentangled part of the representation should coincide
+with some explicit music concept, such as pitch or rhythm,
+thus human composers can manipulate these music features
+by changing the values on the latent representations while
+knowing the consequences. As an analogy, the sound pro-
+duced by a radio can be controlled by tuning labelled knobs
+on a radio, while each label, such as volume or frequency,
+assigned to the knobs tells users the consequences of tuning
+them. The meaningful disentangled representation makes
+the design of the interface more eﬀective and eﬃcient for
+human interaction and testing creative composition ideas.
+To help the model extract representations more precisely,
+the KL divergence is re-weighted by a value β, which is set
+as 0.1 in our case to help the model focus more on recon-
+struction rather than innovation. We refer readers to [6] for
+more information on β-VAE.
+Figure 1: An illustration of the VAE model to learn music
+representation
+Figure 2: Sorted variance in the 128-dimension vector after
+PCA
+3.1 A More Compact Representation
+We ﬁrst examined the size of the latent space. The di-
+mensionality of the latent space designed by the original
+MusicVAE [10] is too large for an intuitive and controllable
+interface. MusicVAE uses a Euclidean space with 512 di-
+mensions. We train a MusicVAE model on our dataset, of
+which the encoder maps each music clips to a 512-dimension
+vector in the latent space.
+We performed principal components analysis (PCA)[12]
+on latent vectors of music clips across the dataset. As shown
+in ﬁgure 2, we observe that more than 99% of the aggregated
+eigenvalues are covered by the ﬁrst 128 dimensions. Mean-
+while, the sorted variance in ﬁgure 2 indicates that even less
+than 128 dimensions have major variances. To be cautious,
+we select 128 as our latent space size to ensure that the
+model could learn a more complete representation. In the
+308
+following sections, we use a MusicVAE with only 128 latent
+space dimensions pretrained on the dataset.
+3.2 Disentanglement by Augmentation
+We propose a new method named disentanglement by aug-
+mentation, which can be considered a special case of analy-
+sis by synthesis[13]. Start from a well-trained MusicVAE,
+of which the training process follows the original Music-
+VAE paper [10], which consists of an ENCODER function
+and a DECODER function. The ENCODER maps a cer-
+tain observed music clip Mi to a latent vector zi, while the
+DECODER maps the latent vector zi back into the original
+music clip Mi.
+Now, consider a data augmentation function F, which
+can directly transform the input music clips. Theoretically,
+for any F, there would be a corresponding function f in the
+latent space, which moves the latent vector of the original
+music clip to the latent vector of the transformed music clip.
+Formally,
+f(ENCODER(Mi)) = ENCODER(F(Mi)) (2)
+For a latent vector zi of music clip Mi, transformation f
+can be in the form of
+f(zi) = zi + ∆f zi. (3)
+Since p(z) satisﬁes a multivariate independent normal dis-
+tribution, an ideal assumption about f is that, given a ﬁxed
+transformation F and its corresponding latent space trans-
+formation f, for all music clips Mi, the diﬀerences between
+latent vectors before and after the transformation, ∆ f zi,
+are non-zero in certain components, while the rest are kept
+zero.
+The assumption is obviously too strong. Instead, we have
+another practical hypothesis that, latent vectors have signif-
+icant changes only on a few dimensions. Given an orthonor-
+mal basis of the latent space, {e1,e2,..., en}, we assume
+that
+⏐⏐∆f zi ·edj
+⏐⏐≥t (4)
+on dimensions {d1,d2,...,d k}, where tis a threshold deter-
+mined manually.
+We further assume that on those dimensions, latent vec-
+tors have signiﬁcant changes on the same direction, either
+positive correlated or negative correlated. Therefore, we can
+use the average of the diﬀerences to select the dimensions
+of signiﬁcant change,
+⏐⏐∆f z ·edj
+⏐⏐≥t ∆f z =
+N∑
+i=1
+∆f zi (5)
+For simplicity, we choose the standard basis as our or-
+thonormal basis of the latent space.
+3.3 Inspecting Pitch Representations
+To inspect which dimensions of the latent space contribute
+the most to pitch information, we deﬁned a set of pitch
+augmentation function Fpitch
+p , which transposes the pitches
+of all notes of a music clip up bypsemitones . (For instance,
+Fpitch
+3 means to transpose the pitches up by a minor third.)
+For eachp, we calculated a set of ∆zp
+i and its average∆f zp.
+In practice, a batch size of 10k is used, and p ranges from
+1 (a half step) to 12 (an octave).
+Figure 3 shows the top ﬁve latent dimensions that change
+most for diﬀerent p, where the twelve lines corresponds to
+the twelve values of p. We see that, for each p, only 2 di-
+mensions of the latent representations change signiﬁcantly,
+while other dimensions almost keep the same. In addition,
+the sets of signiﬁcant dimensions for diﬀerentpoverlap a lot,
+and the top 2 dimensions always remain the same for dif-
+ferent p. This discovery supports our assumption in section
+3.2. We conclude that only a small portion (only two di-
+mensions) of the latent representations contributes to pitch
+variation, and we refer to these two dimensions as pitch
+representations.
+Figure 3: An illustration of only two latent dimensions con-
+tribute the most to pitch variation.
+3.4 Inspecting Rhythm Representations
+To inspect which dimensions of the latent space contribute
+the most to rhythm information, we deﬁne a set of rhythm
+augmentation function Frhythm
+n , which splits each note into
+n equal-length ones with the same pitch. For instance,
+Frhythm
+2 splits a quarter note into two consecutive eighth
+notes. This augmentation cuts the melody but the rough
+pitch trend still remains. For each n, we get a set of ∆ zn
+i
+and its average ∆f zn. In practice, we build a dataset which
+has 16483 2-bar music clips, each is composed of two whole
+notes. For n, we take n= 2, n= 4, ... , n= 16.
+Figure 4 shows the 10 most signiﬁcant dimensions in the
+latent space. Curves with diﬀerent color corresponds to
+diﬀerent values of n. We observe that the inﬂuence of dif-
+ferent n may vary from dimensions to dimensions but the
+most signiﬁcantly changed ones concentrate in only 5 di-
+mensions, while other dimensions almost keep intact. This
+discovery proves our assumption in section 3.2. We con-
+clude that only a small portion of the latent representation
+contributes to rhythm variation, and we refer to these di-
+mensions as rhythm representations.
+Figure 4: An illustration of only ﬁve latent dimensions con-
+tribute the most to rhythm variation
+3.5 Pitch-Rhythm Disentanglement
+In sum, the top 2 dimensions selected in Section 3.3 are
+referred to as the latent pitch representation, and the top
+309
+5 dimensions selected in Section 3.4 are referred to as the
+latent rhythm representation. We observe that there is no
+overlap between these two groups of representations.
+In our following experiments of interactive composition,
+pitch and rhythm are modulated only via their correspond-
+ing latent representations, while keeping other dimensions
+ﬁxed.
+4. CONTROLLED INTERACTION
+Latent space representations encode full information of orig-
+inal music clips, so that modulating latent vectors will re-
+sult in changes of music clips. Based on the pitch-rhythm
+disentanglement achieved in section 3, we can interact with
+the music representation in a human-interpretable and non-
+trivial ways.
+In this section, we use the theme of the “Twelve Varia-
+tions on ‘Ah vous dirai-je, Maman”’ (Twinkle, Twinkle, Lit-
+tle Star) by Mozart to illustrate the process of the human-
+computer interactive composition by controlling the pitch
+and rhythm representations. Figure 5 shows the piano roll
+of this music theme.
+Figure 5: The piano representation of the original sample.
+4.1 Pitch Interaction
+By performing transformation on pitch representation in-
+troduced in section 3.3, we will get the most signiﬁcant di-
+mensions of the latent space for pitch variation. To create
+new music via precisely interacting with the pitch repre-
+sentation of the original music, the interface performs the
+following operations:
+1. cut the original music into consecutive 2-bar clips,
+2. encode the music clips into latent representation vec-
+tors,
+3. for each latent vector, only modulate the pitch repre-
+sentations (the most signiﬁcant dimensions for pitch
+variation),
+4. decode the modiﬁed representations back to new mu-
+sic clips, and
+5. concatenate the new clips to form a new piece of music.
+Figure 6(a) displays the new music theme created via in-
+creasing the values of the 2-dimensional pitch representation
+of the original theme, while ﬁgure 6(b) is another created
+theme by applying the same amount of increment on 2 ran-
+dom dimensions of the latent representation that neither
+belong to pitch nor rhythm representation.
+We can see that the new piece 6(a) signiﬁcantly increases
+the overall pitch registration based on the original sam-
+ple without much modiﬁcation on the rhythm. In com-
+parison, piece 6(b) hardly changes anything of the original
+theme. This diﬀerence indicates that the our pitch disen-
+tanglement is successful. Moreover, piece 6(a) is not merely
+transposing the original pitches but also creating a new
+melody with higher pitches and a slightly diﬀerent pitch
+contour. An audio version of piece 6(a) can be found at
+soundcloud.com/user-705441005/increase-pitch. This
+discovery indicates that the interface successfully helps us
+generate new melodic ideas by controlling the pitch repre-
+sentation.
+(a) An illustration of interactive composition via controlling pitch
+representation.
+(b) An illustration of interactive composition via controlling 2
+random unrelated representation dimensions.
+Figure 6: Interactive composition on pitch.
+4.2 Rhythm Interaction
+To create new music via precisely interacting on the rhythm
+representation of the original music, the interface performs
+almost the same ﬁve steps as shown in section 4.1. The only
+diﬀerence lies in the third step, where the focus now shifts
+to the rhythm representation.
+(a) An illustration of interactive composition via controlling
+rhythm representation.
+(b) An illustration of interactive composition via controlling 5
+random unrelated representation dimensions
+Figure 7: Interactive composition on rhythm.
+Figure 7(a) displays the new music theme created via in-
+creasing the values of the 5-dimensional rhythm represen-
+tation of the original theme, while ﬁgure 7(b) is another
+created theme by applying the same amount of increment
+on 5 random dimensions of the latent representation that
+neither belong to pitch nor rhythm representation.
+310
+We see that the rhythm of new piece 7(a) is signiﬁcantly
+changed. Another observation is that the pitches are not
+exactly the same as before. Instead, the pitches change
+smoothly and follow the original melody trend. This re-
+sult is reasonable because the disentanglement is meant
+to happen at the representation level, not the observation
+level. The smooth transfer also indicates that our model
+has comprehended the intrinsic nonlinear relationship be-
+tween pitch and rhythm and thus merges them in an organic
+way. In comparison, piece 7(b) hardly changes anything of
+the original theme. This diﬀerence indicates that the our
+rhythm disentanglement is successful. Moreover, the algo-
+rithm does not merely cut the notes to produce the new
+piece 7(a). Instead, it creates a new melody that retains
+the original melody contour. The music actually sounds
+like an electronic game version of the original theme, whose
+audio can be found at soundcloud.com/user-705441005/
+increase-note-density. This discovery indicates that the
+interface successfully helps us generate new melodic ideas
+by controlling the rhythm representation.
+4.3 Extra Interaction
+Besides interacting with pitch and rhythm representations,
+which leads to interpretable results, we provide an option
+to modulate the latent dimensions that do not have sig-
+niﬁcant impacts either on pitch or on rhythm. Note that
+non-signiﬁcance is not equivalent to uselessness. They in-
+deed contribute to data reconstruction but just in a man-
+ner which is hard to be interpreted. Figure 8 shows the
+result via increasing the value of the non-signiﬁcant latent
+dimensions. We see that both melody contour and rhythm
+patterns are modiﬁed, but the result is far less musical com-
+pared to ones shown in ﬁgure 7a and ﬁgure 6a. The au-
+dio ﬁle can be found at soundcloud.com/user-705441005/
+rest-dim-modulate.
+Figure 8: An illustration of interactive composition via con-
+trolling non-signiﬁcant representations
+4.4 Two-way Style-transfer Interpolation
+Based on the pitch-rhythm disentanglement, the interface
+also enables a two-way interpolation from one music clip to
+another in a meaningful way associated with music style.
+Figure 9 illustrates a grid view of the 2-way interpolation
+using the SLERP [11] method, where the top-left corner
+is the source and the bottom-right one is the target. The
+pitch interpolation is performed from the top to the bottom,
+the rhythm interpolation is performed from the left the the
+right, and the non-signiﬁcant representations are also inter-
+polated according to the Manhattan distances between a
+certain location to the target and source, respectively.
+Note that the music mainly changes the rhythmic style
+horizontally and mainly changes the pitch style vertically.
+We can see this two-way interpolation as a powerful inter-
+face for composers to discover new music ideas with intuitive
+and precise controls on pitch and rhythm styles.
+Figure 9: An illustration of two-way pitch-rhythm interpo-
+lation
+5. CONCLUSION AND FUTURE WORK
+In this paper, we inspect the latent space learned by a com-
+pressed MusicVAE model, and show that the space can be
+disentangled, with some dimensions corresponding to pitch
+change and some other dimensions corresponding to rhythm
+change. By tweaking values on those selected dimensions,
+we can modulate average pitch and rhythm complexity, or
+interpolate two music clips base on pitch or rhythm sepa-
+rately. We further design a user interface to control mu-
+sic creation by performing these operations. Our method
+still has some limitations. First, it cannot be used to de-
+termine the consequences of more complex operations on
+the latent representation. Second, our inspection is built
+through manual disentanglement. It would be helpful if an
+automatic disentangling model for music is designed and
+this should be a work in the future.
+6. REFERENCES
+[1] Y. Bengio, A. Courville, and P. Vincent.
+Representation learning: A review and new
+perspectives. IEEE transactions on pattern analysis
+and machine intelligence, 35(8):1798–1828, 2013.
+[2] G. Brunner, A. Konrad, Y. Wang, and
+R. Wattenhofer. MIDI-VAE: modeling dynamics and
+instrumentation of music with applications to style
+transfer. CoRR, abs/1809.07600, 2018.
+[3] J. Chung, C. Gulcehre, K. Cho, and Y. Bengio.
+Empirical evaluation of gated recurrent neural
+networks on sequence modeling. arXiv preprint
+arXiv:1412.3555, 2014.
+[4] S. Dai, Z. Zhang, and G. Xia. Music style transfer
+issues: A position paper. CoRR, abs/1803.06841,
+2018.
+[5] I. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu,
+D. Warde-Farley, S. Ozair, A. Courville, and
+Y. Bengio. Generative adversarial nets. In Advances
+in neural information processing systems, pages
+2672–2680, 2014.
+[6] I. Higgins, L. Matthey, A. Pal, C. Burgess, X. Glorot,
+M. Botvinick, S. Mohamed, and A. Lerchner.
+311
+beta-vae: Learning basic visual concepts with a
+constrained variational framework. 2016.
+[7] G. Hinton, O. Vinyals, and J. Dean. Distilling the
+knowledge in a neural network. arXiv preprint
+arXiv:1503.02531, 2015.
+[8] S. Hochreiter and J. Schmidhuber. Long short-term
+memory. Neural computation, 9(8):1735–1780, 1997.
+[9] D. P. Kingma and M. Welling. Auto-encoding
+variational bayes. arXiv preprint arXiv:1312.6114,
+2013.
+[10] A. Roberts, J. Engel, and D. Eck. Hierarchical
+variational autoencoders for music. In NIPS
+Workshop on Machine Learning for Creativity and
+Design, 2017.
+[11] A. Watt and M. Watt. Advanced animation and
+bendering techniques. 1992.
+[12] S. Wold, K. Esbensen, and P. Geladi. Principal
+component analysis. Chemometrics and intelligent
+laboratory systems, 2(1-3):37–52, 1987.
+[13] A. Yuille and D. Kersten. Vision as bayesian
+inference: analysis by synthesis? Trends in cognitive
+sciences, 10(7):301–308, 2006.
+312

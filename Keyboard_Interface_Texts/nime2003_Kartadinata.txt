@@ -1,0 +1,404 @@
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+NIME03-180
+The Gluiph:
+aN u cleus for Integrated Instruments
+Sukandar Kartadinata
+glui
+Hagenauerstr. 6
+10435 Berlin, Germany
+sk@glui.de
+ABSTRACT
+In this paper I present the gluiph, a single-board computer that
+was conceived as a platform for integrated electronic mus ical
+instruments. It aims to provide new instruments as well as
+existing ones with a stronger identity by untethering them
+fromt he often lab-like stage set ups built around general pur-
+pose computers. The key additions to its core are a flexible
+sensor subsystem and multi-channel audio I/O. In contrast to
+other stand-alone approaches it retains a higher degree of
+flexibility by supporting popular music programming lan-
+guages, with Miller Puckette’s pd [1] being the current focus.
+Keywords
+Musical instrument, integration, single-board computer (SBC),
+embedded system, stand-alone system, pd, DSP, sensor, la-
+tency, flexibility, coherency.
+1. H ISTORY
+1.1 Se nsor to MIDI - The SensorLab
+While work on the gluiph in its current form started in
+2001, the original idea goes back to the early 90s at STEIM,
+Amsterdam. At that time their main line of development were
+instruments basedo nt he SensorLab [2]w hich basically is a
+single-board computer that converts sensor signals to MIDI.
+The interesting point was that its CPU was not just used to
+implement a mere data pump but to run an interpreter with an
+event-driven programming language called SPIDER, which was
+just powerful enough to render an additional PC on stage un-
+necessary, instead driving the MIDI gear directly. It was also
+small enough to be clipped on a belt, so the sensor lines could
+be kept short for better noise immunity.
+1.2 Integr ating Sound – The SoundLab
+The early 90s were also the time when Motorola’s 56k DSP
+chip was at its peak, being used in many commercial synthe-
+sizers, samplers, and effect processors as well as academic pro-
+jects like CNMAT’s Reson8 [3], CCRMA’s Frankenstein [4], or
+the extended HMSL [5].
+STEIM was introduced to the 56k in ‘93 by Steven Curtin
+[6] which lead to the idea to expand the SensorLab with such a
+DSP, so that one couldd esign sound patches on a develop-
+ment PC and upload them to a stand-alone box in a similar way
+to the above SensorLab concept, thereby also getting rid of the
+MIDI rack. This project was dubbed the SoundLab, where, after
+Curtin left, I took responsibility for adapting the hardware
+while SPIDER was supposed to evolve to DSPider.
+1.3 NSP – The PowerMac
+However, with ‘94 came the PowerMac and its promise to do
+all sound processing on a general purpose computer. While
+initially not quite up to it one was right to assume that even-
+tually it would, which for STEIM meant to abandon the
+SoundLab project. Since then native signal processing (NSP)
+has slowly become the main choice for most people to develop
+their instruments. Simpler Sensor to MIDI devices were re-
+leased as now theP Cc ouldd ot he eventa sw ella st he sound
+processing.
+1.4 Mod ern DSPs - hardMAX & mtronix
+Still, for many years, embedded system held their advan-
+tages, and so certain advances in DSP development combined
+with on-going problems of PC-based systems lead to the
+hardMAX proposal on the Max/MSP mailing list in ’99, with
+theb asic idea of portingt hiss oftwaret oa ne mbeddedd evice.
+However, this was largely rejected as G3 PowerBooks had be-
+come the center of stage setups, and hardware been declared as
+fetishism.
+Duet ot he high developmentc osts work on theS oundLab
+was stopped at this point, but only until in ’01, during some
+projects for the Berlin company mtronix, a new strategy
+emerged that seemed feasible. There, the access to development
+tools and the shared system requirements allowed the design
+of a new musical instrument platform – the gluiph.
+Before covering this in more detail though, I think it is nec-
+essary to explain the motivation in pursuing all this.
+2. MOTIVATION
+2.1 A DSP-PC C omparison
+Thej ustificationf or buildinge mbeddeds ystems seems to
+have gotten more difficult. Ten years ago one could have come
+up with thef ollowing lists of advantages:l atency/timing,
+processing power, size/weight, reliability. Today, things look
+different.
+Latency and OS-rela ted timing issues have largely been
+solved, provided one makes careful choices about audio inter-
+face and operating system, and maintains a certain amount of
+“hygiene” on the system. The MIDI bottleneck can still be a
+problem though, but newer sensor hardware has been r eleased
+that communicates thru better interfaces (USB, OSC over
+Ethernet [7][8]), which should at least solve bandwidth prob-
+lems. Only if zero-latency is required like in digital mixing
+environments, DSPs can hold their ground.
+Forp rocessing power things have changed dramatically. At
+a time when PCs were s till confined to non-realtime work, a
+56k could easily shoulder reverb algorithms or many voices of
+sample playback. Now, CPUs with up to 3GHz make it possible
+to run complex instruments or complete studio setups on a
+standard PC. DSP-based systems have to use a (massive) paral-
+lelprocessing approach to defend theirp erformance edge (e.g.
+Kyma [9], Scope [10]).
+But then those devices are hardly smaller than a PC or even
+require an add itional one for control purposes. At the same
+time laptops have replaced the desktops and their big moni-
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+NIME03-181
+tors, so touring the clubs got even easier than with the then
+ubiquitous 19” rack. Only if even smaller systems are required,
+DSPs have an edge.
+The reliability issue is deb atable of course. After all we are
+dealing with complex systems in both cases, so there is always
+room for unexpected behaviour. And in fact, digital mixers, for
+one example, do crash at times.S till a point can be made that
+the additional complexity of a full-fledged operating system,
+that for the most part was not designed with musicians in
+mind, increases the likelihood of prob lems. At least I hear far
+less about catastrophe scenarios involving hardware equip-
+mentt hanw ith PCs. Concerning hardware reliability, embed-
+ded systems can be designe dt op rovide better stability, e.g.
+sturdier connectors where you don’t break the motherboard
+when someone yanks on the cable.
+Still, the bottom line seems to be that the advantages of DSP
+based systems have become somewhat marginal or confined to
+niche applications. So what is really left to justify the by no
+means small development effort invested into the gluiph pro-
+ject? The answer lies in the possibility of integration.
+2.2 Wh at defines an instrument?
+Iw ould liket os tartt hisd iscussion with ap icture of a typi-
+cal stage setup.
+Figure 1.T wo laptops, two audio interfaces, a master key-
+board, two fader boxes, two MIDI interfaces, a mixer, 8
+power supplies, 20+ cables
+So is this what I want to call “my instrument”? Some might
+ask why not, but to me it looks more like an experiment from a
+laboratory. While there is sure nothing to say against being
+experimental in creating and performing one’s music, it is the
+goal of the gluiph project to derive at more mature instruments
+with as tronger identity. Integrating the defining com ponents
+into a single physical entity is an important step in this direc-
+tion, and not just am attero f aestheticsa nd easieri nstallation
+(although those are by no means to be underestimated).
+Flexibility, the key advantage of PCs, is a powerful concept
+for exploring the vast possibilities of today’s sound offerings.
+However, if a musician eventually wants to master his instru-
+ment, there comes a point when a decision has to be made
+about consolidating the existing setup, rather than getting
+lost in an ever-shifting environment. This reasoning follows
+the notion that reduction is an important phase in defining
+one’s means of expression. And that power has to be traded
+with nuance.
+     Of course, even av iolin needs a bow, and an electric gu itar
+its amplifier and loudspeaker. So not everything can and
+should be integrated. However, there are designs where the
+further integration of speakers can be advantageous (e.g. Nic
+Collins’ trombone [11]). In any case this exemplifies how the
+loudspeaker marks one of the key differences betweenelectric
+anda coustic instruments,f or which the “interface”, the “proc-
+essing”,a nd the“ speaker”a re all intrinsicly embedded within
+their physical structures. To achieve such a degree of coher-
+ency for electronic instruments is one of the main goals of the
+gluiph project.
+2.3 Related d evelopments
+Before describing the glu iph’s technology af ew parallel
+development efforts are discussed that in one way or the other
+are related to its approach. Concerning the main concept of
+having a stand-alone music computer that receives its pro-
+gramming from a host PC, there are quite a number of commer-
+cial devices available:
+Clavia’s Nord Micro Modular [ 12] also shares t he gl uiph’s
+size, however its sound generation is limited to virtual analog,
+i.e. mostly subtractive synthesis. More flexible are Cream-
+ware’s Noah [13] and Manifold’s Plugzilla [14] with their
+broader range of available DSP modules, where the latter r elies
+on VST plugins. Both are 19” rack modules though, so they are
+hardly smaller than a laptop. Another device of that format is
+Sound-Art’s Chameleon [15], however it requires 3rd-party
+developers to write modules in DSP assembler. The same ap-
+plies to the Death Synth by Noah T. Vawter [16] which again is
+smaller and was designed with PDA control in mind.
+However, none of the a bove aims at integr ation but expects
+outside control thru MIDI, with all its limitations.
+Others have suggested that, after the laptop, the PDA itself
+will be the next device to reach performance levels that will
+allow sound processing. However, currently the key problem is
+their missing floating point support which makes it difficult
+to run existing music applications.Wether this will change in
+the near future is rather unclear. The same holds true for the
+majority of commercially available Linux-SBCs.
+3. TECHNOLOGY
+3.1 Ha rdware
+As mentioned in the introduction the idea to pursue the
+gluiph projectw as renewedw hile workingf or mtronix, as mall
+Berlin company which main ly develops precision measure-
+menti nstruments.T heys erve an industry where PC-based so-
+lutions are out of the question mainly because of r eliability
+issues, operability requirements, and size constraints. Add to
+this the need for a powerful processor and realtime capab ility
+and one gets pretty close to the requirements of a musical in-
+strument.
+The key components of their boards were a Ph ilips TriMedia
+CPU, SDRAM memory, Flash memory, programmable logic,
+PCI interface, and various sensor sections depending on the
+project. One interesting thing about the TriMedia is that it was
+designed as a multi-media processor with set-top boxes in
+mind, so this seems like a strange choice for measurement de-
+vices. For mtronix though it made sense as image analysis is
+one of their main applications, so they could make good use of
+the integrated video co-processing units. Video analysis, of
+course, is also of interest for controlling music software.
+Another important reason for choosing the TriMedia was the
+fact that its core employs av erym odern VLIW implementation
+with multiple execution units that are scheduled at compile
+time to keep the design light-weight yet powerful. As a conse-
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+NIME03-182
+quence assembler programming is no longer feasible due to all
+the complex scheduling decisions to be made. Of course this
+approach requires a capable compiler, and in fact the one pro-
+vided leaves nothing to ask for, while also complying to the
+full C/C++ ANSI standard and packing a well-tuned set of li-
+braries.
+Finally, and this with regards to the gluiph, the TriMedia
+features a 2in/10out-channel a udio interface, so not much was
+missing to attempt a modification of the mtronix design to-
+wards a musical instrument platform. This wasb asically im-
+plemented by adding converters for the audio section and
+choosing a sensor subsystem. In addition the PCI c onnector
+was replaced with a USB port for a more appropriate host con-
+nection.
+Also worth noting is the role of the programmable logic
+chip (CPLD). While many sensors provide an analog signal
+that can simply be connected to the sensor ADCs, others
+transmit digital data thru serial interfaces using a variety of
+protocols and baud rates. The CPLD can easily be adapted to
+thoses on oe xtra micro controllers are required. It can also be
+told to drive displays and relays or include precise timers for
+measuring ultrasound time lags. Towards the TriMedia it con-
+nects thru a high-speed interface that can be operated synchro-
+nously to the audio frame rate. MIDI, of course, is to tally out
+of the game.
+3.2 Software
+The main premise in designing the software concept for an
+embedded music system was to do away with assembler pro-
+gramming. While in the past I had enjoyed tweaking DSPs for
+maximum performance, this was clearly no feasible approach
+any longer, mainly because of the lack of flexibility and the
+maintenance effort required.
+The second decision was to avoid writing yet another
+patcher or even coming up with a whole new music program-
+ming language. Instead the plan was to port existing software,
+not only to reduce the development effort but also to benefit
+from the associated user bases. This, apart from the integrative
+concept, is the main difference between the gluiph and the
+other DSP based solutions mentioned above.
+The third aspect emerged after the hardMAX pr oposal and
+its rejection, which was to rely on open-source software,
+thereby also following the general movement that was starting
+to grow at the time. The firstcandidate here was CSound as it
+could be operated from a command line i na non-realtime
+mode, which facilitated first tes ts for general operability. In
+fact, the port was completed literally in less than a day, and
+displayed performance levels comparable to a G3 PowerMac
+which ran at twice the CPU clock.
+Rather than adaptingC Sound for realtime operation, it was
+then decided to port pd, partially because of CSound’s more
+restrictive license, but mainly for personal taste and because
+Miller Puckette was encouraging the project. The main modifi-
+cations to the source dealt with the MIDI implementation
+which was replaced with a direct link to the sensor subsys tem.
+Other (minor) changes included glue code to the audio drivers
+aswell as to thef ile system.F inally some performance optimi-
+zations were necessary, e.g. in handling t he double precision
+arithmetic required by pd.
+However, no special sensor-related external objects were
+written, rather the sensor signals are relayed to pd thru its
+standard send/receive objects.
+3.3 IMPLEM ENTATION EXAMPLES
+3.3.1 The SKRUB (for Richard Barrett)
+TheS KRUB at firstg lance might not be them osts pectacular
+sensor instrument, as it is “just a keyboard”. However, it illus-
+trates the effect of integration that can be achieved with the
+gluiph as it basically boasts the same functionality as the
+setup shown in Figure 1. There the PowerBooks run Max/MSP
+resp. LiSa patches that are triggered from a MIDI master key-
+board and further controlled by two fader boxes as well as
+some foot pedals.
+     For the SKRUB the fader boxes were replaced with a row of
+trackpads, that have the advantage to be within easy reach from
+any position on the keyboard. They also add two dimensions
+of control – sideway movement and pressure (actually cover-
+age).
+Thek eyst hemselves differ fromo rdinary onesb ys upply-
+ing continuous vertical position information for every key,
+extending the “trigger with velocity and aftertouch” scheme of
+standard keyboards. Thus a key can be used to e.g. scrub along
+as a m p le. Or a set of keys to knead thru a graphic equalizer.
+For both sensor systems the CPLD proved very helpful. For
+the trackpads a 9-channel PS/2 i nterface was implemented,
+while the linear position sensing for the keyboard required a
+61-channel frequencyc ounter to measure the frequency devia-
+tion of the inductive sensor circuits. All key pos itions are
+sampled at 345Hz (fs/128) while trackpad coordinates are
+measured at 115Hz (fs/384, limited by PS/2 speeds).
+The SKRUB also includes a 4-channel audio output for
+which the PowerBook setup requires external interfaces. Fi-
+nally reverb was integrated,although not as software within
+the gluiph but thru an additional chip.
+The control interface was k ept at a minimu m, pr oviding
+only one LED pert rackpad, its brightness resp.c olor reflecting
+the current levels of the parameters it controls. An additional
+button is used to switch to patch/bank select mode, however
+no extra number keys are used for selection, rather the key-
+board keys take over this function.
+3.3.2 A meta trumpet for Rajesh Mehta
+MicUST
+USR, gyros, preamp
+gluiph
+buttons
+display
+This trumpeti sa n acoustic/electronic hybrid instrument. It
+is thef irst gluiph-basedd esigna nd only employs as mall
+number of sensors. The center box contains a 2-D gyro sensor
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+NIME03-183
+that is used to measure yaw and pitch. The yellow leather
+sleeve around the horn houses a small display and a set of
+simple touch buttons that select different operating modes.
+The trumpet also stands out thru its trombone-like slide that
+allows a pitch change of a minor third. This exten sion is meas-
+ured with an ultra-sound system.
+An importanta spectf or Mehtaw as wireless operation so he
+would be free to move around on the stage. With the gluiph
+anda ni ntegrated RF unit, he now doesn’t even need a “tech
+table” but can transmit directly to the house system. However,
+the need for a battery with its considerable weight didn’t allow
+the gluiph to be mounted right next to the trumpet, so an extra
+belt-mounted box became necessary. On the other hand this
+will make it easier to handle his other trumpets that we plan to
+equip with sensors.
+3.3.3 Other d evelopments
+Currently under construction is a virtual drum that will
+highlight the possibility for further integration by incorporat-
+ing the loudspeaker. Its design is based on a subwoofer that
+has been covered with different materials (leather, velvet, foam
+pads)t o achievev arying deceleration behaviour when h itting
+it with the accelerometer equipped gloves. The latter also carry
+small speakers for the higher frequency ranges. This also adds
+an additional spatial aspect to the instrument apart from the
+position sensors.
+Finally, a DJ mixer is currently being modified to allow for
+spatial crossfades across a multi-channel output. Other in-
+struments are in the planning phase.
+4. TH E FUTURE
+So where will the gluiph project go from here? While the
+production of the mainboard seems to be in safe hands with
+mtronix, the first two projects showed that the amount of cus-
+tomization required is the main factor in determining the
+amount of time and money involved in designing a gluiph
+based instrument. With the current one-man workshop situa-
+tion it is getting increasingly difficult to pursue this.
+Therefore it would be desirable to establish an environment
+where an institution could cover the custom development as
+well as provide logistic support. Efforts to create such a p lace
+in Berlin have proven difficult in the past but carry on.
+As far as technology is concerned, the gluiph motherboard
+will be updated on a regular basis following mtronix’ pr oduct
+cycle. A new board with a faster CPU and expanded I/O possi-
+bilities is due out for the end of the year. On the software side
+a port of the recently open-sourced SuperCollider is under
+consideration.
+5. ACKNOWLEDGMENTS
+My thanks to Miller Puckette for h is initial encourag ement
+and developing pd in general. I’d also like to acknowledge the
+commitment of mtronix as well as the patience of my first us-
+ers.
+6. REFE RENCES
+[1] Puckette, M. "Pure Data." Proceedings of the ICMC, 1996.
+[2] http://www.steim.org/steim/sensor.html
+[3] J.-B. Barriere, P.-F. Baisnee, A. Freed, and M.-D. Baudot "A
+Digital Signal Multiprocessor and its Musical Applica-
+tion," Proceedings of the ICMC, 1989.
+[4] Putnam, W. & Stilson, T. "Frankenstein: A low cost multi-
+DSP compute engine for the music kit ".P r o c eedings of
+the ICMC, 1996
+[5] Burk, P. "The Integration of Real Time Synthesis into
+HMSL", Proceedings of the ICMC, 1991.
+[6] Curtin, S. "The SoundLab: a wearable computer music
+instrument", Proceedings of the ICMC, 1994
+[7] Avizienis, R., A. Freed, T. Suzuki, and D. Wessel "Scalable
+Connectivity Processor for Computer Music Performance
+Systems ".P roceedings of the ICMC, 2000.
+[8] http://www.la-kitchen.fr/hardw/kroonde.html
+[9] Hebel, K. and C. Scaletti. "The Software Architecture of the
+Kyma System". Proceedings of the ICMC, 1993.
+[10] http://www.creamware.de/en/Products/SFP/default.asp
+[11] Nicolas Collins, "The Evolution of Trombone-Propelled
+Electronics," Leonardo Music Journal, Vol. 1, 1991.
+[12] http://www.clavia.se/nordmodular/index.htm
+[13] http://www.creamware.de/de/products/Noah/default.asp
+[14] http://www.plugzilla.com/
+[15] http://www.soundart-hot.com/english/index.htm
+[16] http://www.gweep.net/~shifty/death/

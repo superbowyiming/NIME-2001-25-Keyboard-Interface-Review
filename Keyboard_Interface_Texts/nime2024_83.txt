@@ -1,0 +1,581 @@
+The Lorentz Lap Brass: Method for Frugal Integrated
+Sonic/Haptic Interaction
+Adam Schmidt
+University of Michigan
+School of Music, Theatre & Dance
+Ann Arbor, MI 48109
+schmia@umich.edu
+Michael Gurevich
+University of Michigan
+School of Music, Theatre & Dance
+Ann Arbor, MI 48109
+mdgurev@umich.edu
+ABSTRACT
+This paper presents an affordable and accessible method for
+integrated sonic/haptic interaction via a low-cost setup uti-
+lizing Lorentz Force Actuation – a form of electromagnetic
+actuation – and exemplified by the The Lorentz Lap Brass,
+a new electromagnetically-actuated musical instrument and
+interface (EMAII). This style of actuation is uncommon
+in NIMEs, though it presents rich opportunity for cost-
+effective tactile feedback, infinite sustain, and feedback con-
+trol. In an effort to encourage open-source knowledge shar-
+ing, replication, and adoption of this novel technique, we
+describe the underlying concepts, designs, and techniques
+for this method and distribute schematics, CAD, and code
+used in the setup. Results of a preliminary user study are
+discussed and offer perspectives and avenues for improving,
+extending, or iterating on the current system.
+Author Keywords
+actuated instrument, electromagnetic actuation, acoustic
+synthesis, instrument design, haptics, feedback
+CCS Concepts
+•Human-centered computing → Interaction design process
+and methods;•Applied computing→Sound and music com-
+puting; •Computer systems organization→ Sensors and ac-
+tuators;
+1. INTRODUCTION
+Haptic feedback has been increasingly understood to be vi-
+tal to instrument learning and playing[25]. Commercially
+available haptic prototyping platforms such as Phantom 1
+or Omega2 products are typically expensive and complex,
+while more accessible toolchains utilizing affordable com-
+ponents such as vibrotactile haptic motors facilitate haptic
+1https://www.3dsystems.com/haptics-devices/
+3d-systems-phantom-premium
+2https://www.forcedimension.com/products/omega
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’24, 4–6 September, Utrecht, The Netherlands.
+interactions that are independent and/or causally separate
+from acoustic systems.
+The Lorentz Lap Brass was born from a series of experi-
+ments in attempt to electromagnetically actuate the strings
+of a harpsichord. After successfully sustaining vibrations in
+brass strings via optical feedback and Lorentz Force Actua-
+tion, we felt there was unexplored potential in electromag-
+netically actuating brass strings in a new haptic contexts.
+Though the final result of this exploration was a new mu-
+sical instrument, the design process was experimental and
+exploratory in nature and only two goals were explicitly
+stated upon beginning the process of developing the new
+interface:
+1. Utilize the authors’ established toolchain for Lorentz
+Force Actuation of brass strings for simultaneous sound
+generation and tactile feedback and
+2. Use the displacement from a user’s pressing or pulling
+of interface strings as control signals for sonic and hap-
+tic feedback
+1.1 Related Work
+1.1.1 Infinite Sustain/Actuation
+There is extensive literature on exciting and sustaining steel
+strings, metallic bars, and other idiophones by means of
+acoustic and/or electromagnetic feedback [4, 26, 10, 17].
+Most electromagnetically actuated instruments/interfaces
+(EMAIIs) utilize electromagnetic coils to induce vibrations
+into magnetized steel or directly into magnets attached to
+an acoustically resonant body [6]. Some instruments uti-
+lize dynamic-coil speakers with controlled feedback from
+microphones or electromagnetic pickups such as the Hall-
+dorophone [31], the Feedback Cello [7], and the Feedback-
+Actuated Augmented Bass [19]. Actuated instruments might
+also utilize tactile transducers marketed as “bass shakers”
+typically used for gaming or home theatre setups. This style
+of transducer is essentially a cone-less speaker and will at-
+tempt to drive whatever rigid material or surface you mount
+it to. The Feedback Lap Steel by Jiffer Harriman [9] and the
+Overtone Fiddle by Dan Overholt [24] are such instruments.
+Instruments that employ electromagnetic or acoustic feed-
+back control are most frequently augmentations of existing
+musical instruments. As Schmidt has observed, examples of
+instruments developed with electromagnetic actuators from
+their genesis are far less common and present a rich oppor-
+tunity for exploration [28].
+1.1.2 Optical Pickups
+Piezoelectric and electromagnetic pickups are probably the
+most common forms of transducer for capturing the move-
+ment of a vibrating string. Electromagnetic pickups are
+widely used in electric guitars, tone wheel organs, and Rhodes
+pianos, while piezoelectric pickups embedded within the
+bodies of instruments such as acoustic guitars or violins
+are used for amplification. Optical pickups emerged as an
+alternative technology in the early 2000s. Marketed for hav-
+ing the most“transparent”tone possible, this style of pickup
+commonly uses infrared LEDs paired with photo transistors.
+The ¯ oPIK3 and Lightwave pickup4 are two commercially
+available optical pickup systems.
+In previous attempts to sustain vibrations in harpsichord
+strings, which are traditionally made of brass, we utilized
+custom-made optical pickups to act as the sensor for a con-
+trolled feedback loop. Though electromagnetic pickups are
+perhaps more readily available or typical, brass strings are
+non-ferrous and therefore do not induce any signals in elec-
+tromagnetic pickups, which rely on the magnetization of a
+ferrous string such as stainless steel.
+1.1.3 Haptic Feedback
+The tactile force feedback experienced by musicians when
+playing acoustic and electroacoustic instruments is consid-
+ered an important factor in facilitating learning and playa-
+bility. There is a growing body of research that addresses
+the typical unidirectional communication from performer
+to DMI by introducing force feedback through haptic ac-
+tuators, and researchers now generally agree that haptic
+feedback increases the intimacies between musician and in-
+strument and can even make them easier to play [25, 30,
+22, 3]. Research by Luciani et al. demonstrated compelling
+results from using audio signals to drive the force feedback
+of a cello-like haptic simulation [14].
+There are a number of NIMEs that have utilized off-the-
+shelf controllers such as the NovInt Falcon [12, 21]. Off-the-
+shelf haptic solutions can be expensive and require compli-
+cated programming, though there have been numerous ef-
+forts to make low-cost, accessible, DIY solutions [29, 1, 20]
+and create toolchains for implementation [5, 13]. A number
+of these devices have been used for navigating digital syn-
+thesis models [29, 12, 2, 27]. The system presented below
+affords simple, audio-driven haptic feedback from any audio
+source.
+2. SYSTEM OVERVIEW
+In this section, the mechanical, electronic, and software de-
+sign involved in the Lorentz Lap Brass is described. This
+EMAII was developed in response to the previously stated
+exploratory goals. The current design consists of two brass
+strings tensioned and tuned with harpsichord tuning pegs.
+Optical sensors placed near the bridges of each string sense
+the displacement of each string as the player presses or
+pulls them. An optical pickup senses the vibrations of one
+string while the other string is used to control the excita-
+tion signals sent into both strings (Figure 1). Schematics,
+CAD, and code for this system is distributed in the following
+repository: https://github.com/aschmidt99/LorentzLapBrass.
+2.1 Lorentz Force Actuation
+The cumulative force felt by a charged particle exposed to
+electric and magnetic fields is known as the Lorentz Force.
+A special case of the Lorentz Force, sometimes referred to
+as the Laplace Force, describes the magnetic force felt by a
+3https://www.light4sound.com/
+4https://www.willcoxguitars.com/
+lightwave-optical-pickup-system/
+multitude of moving charges (cumulatively an electric cur-
+rent) in a wire exposed to a magnetic field.
+2.1.1 Electronics
+To generate vibrations in the strings, audio signals are sent
+to a 5-Watt audio amplifier module5 based on the PAM8406
+IC 6 typically used to power small 4Ω or 8Ω speakers. Rather
+than connect to speakers, the output terminals of the am-
+plifier are connected to each end of the string, passing an al-
+ternating current through the string. The current-carrying
+strings generate modest magnetic fields that interact with
+strong magnetic fields from permanent neodymium magnets
+located directly below the strings. To the authors’ knowl-
+edge, this style of actuation has yet to be utilized in any
+commercially-available musical instruments, though it was
+outlined and directly inspired by Andrew McPherson’s 2012
+NIME paper about techniques for electromagnetic actuation
+[18], hinted at by inventor Paul Vo’s Moog Guitar patent
+[11], and notably used by Alvin Lucier in his performances
+of Music On A Long Thin Wire[15].
+The PAM8406 chip supports loads down to 2Ω, and fea-
+tures short circuit protection preventing the outputs from
+activating if a load less than 2Ω is detected. The brass
+strings are highly conductive and measure much less than
+1Ω, so 10 Watt 2Ω Power Resistors are placed in series with
+each string to keep the board out of short circuit protection
+mode.
+2.1.2 Magnets
+The system uses N52 neodymium magnets to create the
+necessary magnetic field for actuation. The strength of the
+induced vibration is proportional to the cumulative strength
+of the magnetic field, and although the presence of just one
+or two magnets is sufficient to induce and feel vibrations, a
+higher density of magnets placed along the string evokes a
+stronger response.
+2.2 Audio Hardware
+The vibration of the sound-generating string is picked up
+with a custom optical pickup made using a ITR9608 photo-
+electric switch. Dave Corsie’s optical pickup blog 7 outlined
+a schematic for creating optical pickups for upright bass.
+Modifications were made to Corsie’s circuit, although the
+working principle is the same: the vibrating string varies the
+base current of a phototransistor by occluding an infrared
+LED directed at the detector. This, in turn, modulates
+the current flow from the collector to emitter. The voltage
+across a fixed resistor in series with the emitter then varies
+proportionally. When placed in an optimal position, this
+voltage is directly analogous to the position of the string
+and can be treated as an audio signal. It is amplified and
+buffered by a preamp circuit which is then connected to an
+audio interface with a standard 1/4” guitar cable.
+2.3 String Displacement Sensing
+ITR20403 Optical sensors similar to the above ITR9608 op-
+tical sensor are mounted in the bridges of each string. Each
+string has two custom 3D-printer bridge mechanisms that
+allow for precise placement of the string within the sensor’s
+field of operation. An adjustment screw can fine-tune the
+height and length of the string, while a V-wheel adjusts the
+5From Droking.com or Amazon.com
+6https://www.diodes.com/part/view/PAM8406/
+7https://www.davecorsie.com/optical-pickup-blog
+Figure 1: Full System Block Diagram
+position the string within the optical sensor gap (Figure 2).
+Once again, a voltage divider is created between the sensor’s
+photo sensitive resistor and a predetermined resistor value.
+A Teensy 4.0 reads the outputs of each of the four voltage
+divider circuits. The values are measured and reported to
+Max/MSP every 10 milliseconds via a serial port.
+2.4 Digital Signal Processing
+The audio interface is connected to a laptop utilizing Max/MSP
+for audio analysis and generation, which will be described
+in detail with each of the interaction modes.
+3. PERFORMANCE INTERFACE
+The Lorentz Lap Brass has two brass strings stretched across
+custom 3D printed roller bridges. Each string can be pressed
+or pulled with the player’s hands or played with a brass or
+glass guitar slide. One string is the designated “sound gen-
+erating” string, which has an optical pickup located at the
+left end of the string. The string further from the player is
+the “expression” or “control” string, which also incorporated
+haptic feedback. The form of the instrument is reminiscent
+of a lap steel guitar and can be played similarly (Figure 3).
+3.1 Interaction Modes
+O’Modhrain’s research in utilizing haptic feedback for a
+theremin-style musical interaction inspired haptic approaches
+to the design of the instrument’s interaction [22]. We de-
+vised 4 modes of interaction that were explored in the user
+study described below. In most modes, the interaction
+evokes that of a theremin, with one hand controlling the ter-
+mination point (and thus pitch) of the “sound-generating”
+string while the other hand contributes to the amplitude
+and timing of the signal injected into the string, which
+more or less acts as a volume control. In most performance
+modes, the expression string controls the amplitude of the
+input signal or the amount of feedback injected into the
+strings.
+3.1.1 Percussive actuation mode
+In this mode, when the user presses or pulls the expression
+string (the further string) beyond a threshold, an 808-style
+percussive signal is sent into both strings. The user may fret
+the sound-generating string (the closer string) with their
+hand or a guitar slide to achieve a note with a percussive
+attack.
+3.1.2 Noisy actuation mode
+In this mode, the expression string simply controls the am-
+plitude of pink noise being injected into the string, exciting
+the string at its open or fretted frequency.
+3.1.3 Sustain mode
+The Sigmund external library 8 for Max/MSP is utilized
+to track the pitch of the incoming signal from the sound
+generating string. The estimated pitch value controls an
+oscillator signal that is sent back into the string, achieving
+an infinite sustain. The amount of feedback is controlled by
+depth of press on the expression string.
+3.1.4 Harmonic Scanning mode
+An extension of the Oscillator sustain mode, harmonic scan-
+ning mode adds a level of control over of the harmonics
+present in the system. The fundamental frequency con-
+tinues to be sustained via an injected pitch-matched sine
+wave oscillator, but now several harmonics are calculated
+and injected. The gain of each harmonic is controlled by
+the displacement of the left side of the expression string,
+while the overall gain of the feedback remains controlled by
+the right side.
+8https://github.com/v7b1/sigmund_64bit-version
+Figure 2: 3D Printed Adjustable Bridge and Optical Pickup
+Figure 3: The Lorentz Lap Brass
+4. USER STUDY
+4.1 Methodology
+The Lorentz Lap Brass is part of a larger project exam-
+ining ways that instrument design practice can reside in
+communities embodying diverse cultural values. Informed
+by Marquez-Borbon’s work on collaborative learning and
+communities of practice [16], as well as a wealth of research
+stemming from the concept of design probes [8], we there-
+fore sought to engage peers in the design process, using the
+initial iteration of the instrument as a basis. Rather than
+evaluation in the traditional sense [23], the goals are: 1) to
+gain experiential impressions of the interaction modes, with
+particular focus on the haptic/sonic integration; and 2) to
+engage peers in open-ended ideation on future developments
+of the instrument or applications of these techniques.
+4.1.1 Participants
+The 5 participants all self-identified as musicians, ranging
+from 12 to 20 years of experience with playing one or more
+musical instruments. All participants had at least 5 years
+of experience working with music technology. All partici-
+pants considered themselves familiar with Digital Musical
+Instruments or Alternative Musical Interfaces, and 3 of 5
+participants expressed familiarity with the New Interfaces
+for Musical Expression (NIME) Community.
+4.1.2 Protocol
+Participants were presented four modes of interaction or-
+der of increasing complexity: percussive audio playback
+mode, noisy sustain mode, regular sustain mode, and har-
+monic scanning mode. Participants were encouraged to
+think aloud throughout the process, vocalizing what they
+liked and disliked, found interesting or off-putting, or any
+other stream-of-consciousness thoughts. Limited instruc-
+tions were offered upon initiation of each mode to encour-
+age exploration of the system, though the facilitator demon-
+strated or described additional possible interaction methods
+upon request or if users appeared stuck or confused. After
+experiencing the four modes, participants were asked follow-
+up questions to encourage deeper discussion.
+4.2 Feedback and Discussion
+Participants were asked to rank the modes from most to
+least favorite and provide rationale for their ranking. Though
+several users were initially delighted by the feeling of percus-
+sive 808-style signals, most participants ranked this among
+their least favorite modes. Multiple participants noted that
+a hammer-on with their a finger was more effective at ex-
+citing the string than the percussive actuation signal. The
+noisy actuation mode was also commonly ranked lower, with
+most users noting how the noisy cross-talk between the ac-
+tuation signal and the speaker was distracting. The regular
+sustainer mode consistently ranked more favorable amongst
+users and was frequently compared to eBows for its slow at-
+tack and timbre. Harmonic scanning mode was most divi-
+sive, ranking high for some users and low for others. Some
+participants found the unpredictability and instability of
+the re-synthesis algorithm in this mode sonically interest-
+ing while others noted frustration with the lack of precise
+control.
+Common themes emerged when probing participants’ rank-
+ings and answers to follow-up questions. Multiple users
+noted how two identical strings possessing completely dif-
+ferent functions was not intuitive and subverted expecta-
+tions. This was most noticeable in the percussive actua-
+tion mode, where pressing one string to create sound in
+the other was considered strange. Some participants sug-
+gested that the discrete action of triggering a sound was
+probably a better fit for discrete interactions such as but-
+ton presses and that their prior experience with stringed
+instruments prompted them to anticipate plucking and fret-
+ting interactions instead. The theme of prior musical prac-
+tice shaping expectations persisted throughout the study,
+and we speculate established practises similarly informed
+the responses to our open-ended prompts to imagine differ-
+ent ways to remix the underlying technology in new ideas
+for instruments and/or interfaces. 4 out of the 5 partici-
+pants are proficient stringed-instrument players, so it was
+not surprising that many noted the desire to have multiple
+sound-generating strings to play harmonies and chords. One
+participant’s background in modular synthesizers likely in-
+fluenced their idea to add a patch bay to excite and control
+dozens of strings with any audio signals a user wishes rather
+than ones predetermined by a designer. Most participants
+also expressed interest in scaling different aspects of the sys-
+tem, imagining larger or smaller string lengths/thicknesses
+or reorientation/relocation of the strings.
+Many remarks were made about the multi-modal sensory
+experience, not only commenting on the audible and tactile
+aspects of the system, but also the visual feedback from the
+Max patch and the string itself. Users enjoyed seeing the
+string’s vibration, nodes, and anti-nodes, suggesting this
+quality was perhaps as important to them as the tactile
+feedback itself.
+4.3 Limitations
+The system presented to participants contained finicky tech-
+nology elements that compromised some aspects of func-
+tionality during user studies, but the authors were ulti-
+mately interested in using this setup to facilitate discus-
+sion and direction for future creative applications of this
+technology rather than assessing the Lorentz Lap Brass it-
+self. Though technical issues might traditionally need total
+mitigation before attempting a user study, the decision to
+seek user feedback tried to circumnavigate apparent engi-
+neering issues in pursuit of assessing new creative poten-
+tials. Despite the technical challenges, what came out of
+the study has proven stimulating and facilitated discussion
+about how DMI designers can glean insights from present-
+ing in-progress technology before it is very refined. This
+shift from a more typical design paradigm allows artistic
+and creative feedback to drive and influence future engi-
+neering decisions that might otherwise be approached on
+exclusively technical terms.
+5. FUTURE WORK
+5.1 Electronic Crosstalk
+The current system has noticeable electronic cross-talk be-
+tween the optical pickup circuit and the signal present on
+the brass strings that must be addressed. Follow-up versions
+of this system should take additional care to in electromag-
+netic shielding.
+5.2 Optical Sensing Improvements
+The current sensors’ range and placement only allowed for
+a general displacement signal – the system does not know
+whether the strings are pushed down or pulled up. Look-
+ing into more thoughtful sensor placement or sensors with
+a larger range could allow for disambiguation between more
+gestures, and additional signals could be used for more com-
+plex and nuanced control over the system.
+5.3 Participant-described instruments
+The user study was useful in establishing longer-term col-
+laborations centered around composers co-defining and cre-
+ating new interfaces with music technologists. Several of
+new instruments/interfaces that were described by partici-
+pants will be pursued as an outcome of this project.
+6. CONCLUSION
+The final result of this exploratory research was a new method
+for frugal integrated haptic/sonic interaction exemplified by
+the Lorentz Lap Brass. The design process and user study
+identified new potentials and directions for utilizing Lorentz
+force actuation in musical interactions. Although the form
+was reminiscent of familiar instruments such as lap steel
+guitars, the use of additional sensing proved a worthy en-
+deavor and revealed new methods for inventing new, haptic-
+feedback driven electromagnetically actuated instruments -
+an emerging area of inquiry the authors finds to be under-
+explored yet ripe with potential.
+7. ETHICAL STANDARDS
+This research was conducted in accordance with the NIME
+Principles & Code of Practice on Ethical Research, and in
+compliance with the standards and practices of the Uni-
+versity of Michigan. All participants were volunteers and
+granted informed consent. The author states no conflict of
+interest.
+8. REFERENCES
+[1] E. Berdahl and D. Huber. The haptic hand. In
+E. Berdahl and J. Allison, editors, Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 303–306, Baton Rouge,
+Louisiana, USA, May 2015. Louisiana State
+University.
+[2] E. Berdahl, G. Niemeyer, and J. O. Smith. Using
+haptic devices to interface directly with digital
+waveguide-based musical instruments. In Proceedings
+of the International Conference on New Interfaces for
+Musical Expression, pages 183–186, Pittsburgh, PA,
+United States, 2009.
+[3] E. Berdahl, G. Niemeyer, and J. O. Smith. Using
+haptics to assist performers in making gestures to a
+musical instrument. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 177–182, Pittsburgh, PA,
+United States, 2009.
+[4] E. Berdahl, J. O. Smith III, and A. Freed. Active
+damping of a vibrating string. In 6th International
+Symposium on Active Noise and Vibration Control,
+Adelaide, Australia, 2006.
+[5] E. Berdahl, H.-C. Steiner, and C. Oldham. Practical
+hardware and algorithms for creating haptic musical
+instruments. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 61–66, Genoa, Italy, 2008.
+[6] N. C. Britt, J. Snyder, and A. McPherson. The
+emvibe: An electromagnetically actuated vibraphone.
+In Proceedings of the International Conference on
+New Interfaces for Musical Expression, Ann Arbor,
+Michigan, 2012. University of Michigan.
+[7] A. Eldridge and C. Kiefer. Self-resonating feedback
+cello: Interfacing gestural and generative processes in
+improvised performance. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 25–29, Copenhagen,
+Denmark, 2017.
+[8] B. Gaver, T. Dunne, and E. Pacenti. Cultural probes.
+interactions, 6(1):21–29, 1999.
+[9] J. Harriman. Feedback Lapsteel : Exploring Tactile
+Transducers As String Actuators. In Proceedings of
+the International Conference on New Interfaces for
+Musical Expression, pages 178–179. Zenodo, Feb.
+2018.
+[10] G. S. Heet. String instrument vibration initiator and
+sustainer, Feb. 1978. United States Patent No.
+US4075921A.
+[11] P. Ierymenko. Unitary transducer control system, Apr
+2001. United States Patent No. US6216059B1.
+[12] G. Isaac, L. Hayes, and T. Ingalls. Cross-modal
+terrains: Navigating sonic space through haptic
+feedback. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 38–41, Copenhagen, Denmark, 2017. Aalborg
+University Copenhagen.
+[13] M. S. Kirkegaard, M. Bredholt, C. Frisson, and
+M. Wanderley. Torquetuner: A self contained module
+for designing rotary haptic force feedback for digital
+musical instruments. In R. Michon and F. Schroeder,
+editors, Proceedings of the International Conference
+on New Interfaces for Musical Expression, pages
+273–278, Birmingham, UK, July 2020. Birmingham
+City University.
+[14] A. Luciani, J.-L. Florens, D. Courouss´ e, and
+C. Cadoz. Ergotic Sounds: A New Way to Improve
+Playability, Believability and Presence of Digital
+Musical Instruments. In A. L. Claude Cadoz, editor,
+ENACTIVE / 07 - International Conference on
+Enactive Interfaces, pages 373–376, Grenoble, France,
+Nov. 2007. ACROE. Enaction in Arts Papers.
+[15] A. Lucier. Music on a long thin wire. vinyl, 1980.
+[16] A. Marquez-Borbon. Collaborative Learning with
+Interactive Music Systems. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 581–586, Birmingham, UK,
+June 2020.
+[17] A. McPherson. The magnetic resonator piano:
+Electronic augmentation of an acoustic grand piano.
+Journal of New Music Research, 39(3):189–202, 2010.
+[18] A. McPherson. Techniques and circuits for
+electromagnetic instrument actuation. In Proceedings
+of the International Conference on New Interfaces for
+Musical Expression, Ann Arbor, Michigan, 2012.
+University of Michigan.
+[19] A. P. Melbye and H. Ulfarsson. The
+feedback-actuated augmented bass (faab). In
+J. Wright and J. Feng, editors, Music Proceedings of
+the International Conference on New Interfaces for
+Musical Expression, pages 24–25, Birmingham, UK,
+July 2020. Royal Birmingham Conservatoire.
+[20] M. Montag, S. Sullivan, S. Dickey, and C. Leider. A
+low-cost, low-latency multi-touch table with haptic
+feedback for musical applications. In Proceedings of
+the International Conference on New Interfaces for
+Musical Expression, pages 8–13, Oslo, Norway, 2011.
+[21] T. Mudd. Feeling for sound: Mapping sonic data to
+haptic perceptions. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 369–372, Daejeon, Republic of Korea, May
+2013. Graduate School of Culture Technology, KAIST.
+[22] S. O’Modhrain. Playing by feel: Incorporating haptic
+feedback into computer-based musical instruments.
+PhD thesis, Stanford University, 2000.
+[23] S. O’Modhrain. A Framework for the Evaluation of
+Digital Musical Instruments. Computer Music
+Journal, 35(1), 2011.
+[24] D. Overholt. The overtone fiddle: an actuated
+acoustic instrument. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 30–33, Oslo, Norway, 2011.
+[25] S. Papetti and C. Saitis, editors. Musical haptics.
+Springer Open, 2018.
+[26] M. Pi˜ neyro. Electric slide organistrum. InProceedings
+of the International Conference on New Interfaces for
+Musical Expression, Ann Arbor, Michigan, 2012.
+University of Michigan.
+[27] J. Regimbal and M. M. Wanderley. Interpolating
+audio and haptic control spaces. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, Shanghai, China, June 2021.
+[28] A. G. Schmidt and M. Gurevich. The
+hummellaphone: An electromagnetically actuated
+instrument and open-source toolkit. In M. Ortiz and
+A. Marquez-Borbon, editors, Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 594–599, Mexico City,
+Mexico, May 2023.
+[29] B. Verplank, M. Gurevich, and M. Mathews. The
+plank: Designing a simple haptic controller. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 177–180,
+Dublin, Ireland, 2002.
+[30] Y. Zhang, Y. Li, D. Chin, and G. Xia. Adaptive
+multimodal music learning via interactive haptic
+instrument. In M. Queiroz and A. X. Sed´ o, editors,
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 140–145,
+Porto Alegre, Brazil, June 2019. UFRGS.
+[31] H. ´Ulfarsson. The halldorophone: The ongoing
+innovation of a cello-like drone instrument. In T. M.
+Luke Dahl, Douglas Bowman, editor, Proceedings of
+the International Conference on New Interfaces for
+Musical Expression, pages 269–274, Blacksburg,
+Virginia, USA, June 2018. Virginia Tech.

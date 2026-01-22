@@ -1,0 +1,683 @@
+A Component-Based Approach for Modeling
+Plucked-Guitar Excitation Signals
+Raymond V. Migneco
+Music and Entertainment Technology
+Laboratory (MET -lab)
+Dept. of Electrical and Computer Engineering
+Drexel University Philadelphia, PA 19104, USA
+rmigneco@drexel.edu
+Y oungmoo E. Kim
+Music and Entertainment Technology
+Laboratory (MET -lab)
+Dept. of Electrical and Computer Engineering
+Drexel University Philadelphia, PA 19104, USA
+ykim@drexel.edu
+ABSTRACT
+Platforms for mobile computing and gesture recognition
+provide enticing interfaces for creative expression on virtual
+musical instruments. However, sound synthesis on these
+systems is often limited to sample-based synthesizers, which
+limits their expressive capabilities. Source-ﬁlter models are
+adept for such interfaces since they provide ﬂexible, algo-
+rithmic sound synthesis, especially in the case of the guitar.
+In this paper, we present a data-driven approach for mod-
+eling guitar excitation signals using principal components
+derived from a corpus of excitation signals. Using these
+components as features, we apply nonlinear principal com-
+ponents analysis to derive a feature space that describes
+the expressive attributes characteristic to our corpus. Fi-
+nally, we propose using the reduced dimensionality space as
+a control interface for an expressive guitar synthesizer.
+Keywords
+Source-ﬁlter models, musical instrument synthesis, PCA,
+touch musical interfaces
+1. INTRODUCTION
+In recent years, advances in computing have rendered mo-
+bile devices and gesture recognition systems cogent plat-
+forms for music performance and creation. Devices such
+as the iPad and Kinect enable touch- and/or gesture-based
+interaction to enable entirely new ways of interacting with
+music. Despite these advances, the software on these sys-
+tems still relies heavily on sample-based synthesizers, which
+limits the expressive control available to the user. Source-
+ﬁlter models are capable of simulating the physical char-
+acteristics of plucked-string instruments, including the res-
+onant string behavior. Unlike sample-based synthesizers,
+these models can generate a wide range of musical timbres
+in response to diﬀerent excitation signals. However, it is
+unclear how exactly the source signals should be modeled
+to capture the nuances of particular playing styles.
+In this paper, we explore the analysis and synthesis of
+plucked-guitar tones via component analysis of residual sig-
+nals extracted from recorded performance for the applica-
+tion of expressive guitar synthesis. The rest of this paper
+is as follows: In Section 2 we brieﬂy overview physically
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’12,May 21 – 23, 2012, University of Michigan, Ann Arbor.
+Copyright remains with the author(s).
+Hl (z) HF (z) z-DI
+p(n)
+y(n)
+S(z)
++
+z-βD
+−
++
++
+C(z)
++
++
+Figure 1: Source-ﬁlter model for plucked-guitar
+synthesis. C(z) simulates the eﬀect of the player’s
+plucking position. S(z) models the string’s pitch and
+decay characteristics.
+inspired modeling of plucked-guitar tones along with ex-
+isting methods for modeling excitation signals. Section 3
+describes our data set and how the excitation signals are
+extracted from recorded performance. In Section 4 we ob-
+tain a feature representation of our signals using principal
+components analysis and apply non-linear components anal-
+ysis to these features for dimensionality reduction in Section
+5. Finally, in Section 6 we demonstrate an interface for ex-
+pressive guitar synthesis using the reduced dimensionality
+space.
+2. BACKGROUND
+Modeling and synthesis of plucked-guitar tones is often
+based on digital waveguide (DWG) modeling principles,
+which aim to digitally implement the d’Alembert solution
+for traveling waves on a lossy string [18]. The DWG simu-
+lates the left- and right-traveling waves occuring after the
+string is displaced by spatially sampling their time-varying
+amplitudes along the string’s length. It was later shown
+that the DWG model could be reduced to a source-ﬁlter
+interaction as shown in Figure 1 [7]. The lower block, S(z),
+of Figure 1 is referred to as the single delay-loop (SDL) and
+consolidates the DWG model into a single delay line zDI
+in cascade with a string decay ﬁlter Hl(z) and a fractional
+delay ﬁlter HF (z). These ﬁlters are calibrated such that the
+total delay, D, in the SDL satisﬁes D = fs
+f0
+where fs and
+f0 are the sampling frequency and fundamental frequency
+of the tone, respectively. The upper block, C(z), is a feed-
+forward comb-ﬁlter that incorporates the eﬀect of the per-
+former’s plucking point position along the string. Since the
+SDL lacks the bi-directional characteristics of the DWG,
+C(z) simulates the boundary conditions when a traveling
+wave encounters a rigid termination. The delay in C(z)
+is determined by the product βD where β is a fraction in
+the range (0,1) corresponding to the relative plucking point
+location on the string.
+There are several approaches used in the literature for de-
+termining the excitation signal for the model shown in Fig-
+ure 1. One method includes applying non-linear processing
+to spectrally ﬂatten the recorded tone and using the result-
+ing signal as the source while preserving the signal’s phase
+information [10, 12]. Another technique involves inverse
+ﬁltering a recorded guitar tone with a properly calibrated
+string-model [6, 9]. When inverse ﬁltering is used, the string
+model cancels out the tone’s harmonic components related
+to the fundamental frequency leaving behind a residual that
+contains the excitation in the ﬁrst few milliseconds. In [11],
+these residuals are processed with “pluck-shaping” ﬁlters to
+simulate the performer’s articulation dynamics and comb
+ﬁlters to model the reﬂection.
+By employing the waveguide principles for plucked-string
+synthesis, Karjalainen et al. developed a Virtual Air Gui-
+tar interface for expressive performance [5]. The system
+utilized sensors worn on the performer’s hands in order to
+determine speciﬁc playing gestures such as plucking, strum-
+ming, vibrato and pitch. However, the signals used to ex-
+cite the ﬁlter model are limited to stored residual signals
+obtained by inverse ﬁltering recorded guitar performance.
+More recently, the open source community has employed
+gesture tracking technology used in the Microsoft Kinect to
+develop a controller-free air guitar interface [14]. While this
+system relies on sample-based and not algorithmic sound
+synthesis, it provides a compelling interface for capturing
+the performer’s expression.
+Recently, a variety of virtual guitar applications have
+been developed for the iPad and integrate some degree of
+expressive control over the resulting sound. Among these
+are iPad’s implementation of Garageband, which uses ac-
+celerometer data in response to the user’s tapping strength
+to trigger an appropriate sample for the synthesizer [2].
+Similarly, the OMGuitar enables single note or chorded
+performance and triggers chord samples based on the how
+quickly the user “strums” the interface [1]. In both cases,
+sound synthesis is based on samples of recorded guitars.
+3. DATA COLLECTION
+Our data corpus consists of recordings produced using an
+Epiphone Les Paul guitar equipped with a Fishman Power-
+bridge pickup. This pickup is a modiﬁed bridge with piezo-
+electric sensors installed in the saddles for each string. In
+contrast to magnetic pickups, the piezo pickup responds to
+pressure changes caused by string vibration at the bridge.
+These pickups provide a wide frequency response, which
+is desirable for modeling the noise-like characteristics of the
+performer’s articulation. Furthermore, these pickups do not
+include the low-pass characteristics incurred from magnetic
+pickups and are relatively free of the resonant eﬀects from
+the guitar body. Finally, recordings obtained through the
+bridge-mounted piezo pickup can be analyzed to determine
+the guitarist’s plucking position along the string since the
+output is always measured at the bridge.
+The data set of plucked-guitar recordings was produced
+by varying the articulation to produce diﬀerent notes using
+various positions on the fretboard including “open” strings.
+At each fret position, the guitarist performed a speciﬁc ar-
+ticulation several times for consistency using either the pick
+or his ﬁnger to excite the string. The neighboring strings
+are muted so that only the excited string is recorded by the
+pickup. Articulations are identiﬁed by their dynamic level,
+which consisted of piano (soft), mezzo-forte (medium-loud)
+and forte (loud). All six strings were used including the ﬁrst
+0 2 4 6 8 10−1
+−0.5
+0
+0.5
+1
+Time (msec)
+Amplitude
+(a)
+0 2 4 6 8 10
+−1.5
+−1
+−0.5
+0
+Time (msec)
+Amplitude
+(b)
+Figure 2: Plucking point compensation for a resid-
+ual signal obtained from plucking a guitar string
+8.4 cm from the bridge (open E, f0 = 331 Hz). (a)
+Without and (b) with equalization
+.
+ﬁve fretting positions to yield approximately 1000 record-
+ings. The output of the pick-up was fed to a M-Audio Fast
+Track Pro USB interface, which recorded the audio directly
+to a Macintosh computer running Audacity. Samples were
+recorded at 44.1 kHz at a 16-bit depth.
+3.1 Residual Extraction
+We obtain residual excitation signals from our data by in-
+verse ﬁltering the recorded tone with a properly calibrated
+SDL model. The techniques proposed in [6, 9, 20] were used
+to calibrate the SDL parameters. However, the residual ob-
+tained by inverse ﬁltering contains a bias from the comb-
+ﬁlter eﬀect resulting from the guitarist’s plucking position
+along the string. In the frequency domain, this residual
+will contain deep notches at the harmonics related to the
+plucking position. Since the plucking point position typi-
+cally varies in real performance and in our data set, it must
+be compensated for to standardize the analysis. We em-
+ploy a technique proposed by Penttinen et al. developed to
+estimate the relative plucking position on guitars equipped
+with bridge-mounted pickups [15]. The relative plucking
+position is used to calibrate the comb ﬁlter C(z) in Figure
+1 to remove the deep spectral notches.
+The total inverse ﬁltering operation of the recorded signal
+is then expressed as
+P(z) = Y(z)
+C(z)S(z). (1)
+Figure 2 shows a residual excitation signals before and after
+the comb ﬁlter eﬀect is removed. Besides standardizing the
+analysis, removing the comb-ﬁlter eﬀect allows the relative
+plucking point position to remain a free parameter for re-
+synthesis. It should be noted that, in the compensated case,
+the excitation pulse approaches an ideal impulse. This is
+related to the piezoelectric sensor responding to acceleration
+rather than displacement, which is the wave variable most
+often used in DWG models [18].
+4. PCA FEATURES
+In previous work, we demonstrated the application of prin-
+cipal components analysis (PCA) to a corpus of excitation
+signals in order to derive a codebook of basis vectors that
+can synthesize a multitude of excitation signals [13]. Here
+we brieﬂy overview the application of PCA to the data and
+discuss how it is used to derive a feature-based representa-
+tion of the signals in the corpus.
+4.1 Principal Components Analysis
+Since the pulse widths are dependent to some degree on the
+fundamental frequency of the string, we ﬁrst normalize all
+the pulses to a common period. The signals are then aligned
+in the time domain so that the primary peak of the pulses
+overlap as shown in Figure 3. Using the aligned signals, a
+data matrix is constructed
+P =
+
+
+| | |
+p1 p2 ... pN
+| | |
+
+
+T
+(2)
+where each p is a M-length column vector representing an
+excitation pulse. The principal components of P are a set
+of basis vectors and scores (weights) that can reconstruct
+the data:
+P −u = WVT . (3)
+In Equation 3, u is the mean of P, V contains the basis vec-
+tors of P along its columns and W contains the scores (or
+weightings) to reconstruct each excitation pulse. Several
+techniques can be used to compute the principal compo-
+nents of P, including the well-known covariance method [3,
+4].
+Figure 3(c) plots the ﬁrst few principal components along
+with the mean of our data set. The mean vector captures
+the general impulsive shape of the data, while the compo-
+nents shown serve to widen or narrow the pulse depending
+on the sign of the associated score value. This relates to the
+physicality of the string’s shape during its initial displace-
+ment and ﬁnger articulations tend to produce an excitation
+pulse with greater width than articulations made with a
+pick. Additional principal components not shown in Figure
+3(c) contribute the noise-like characteristics inherent to the
+string articulation. The number of basis vectors obtained
+via PCA is equivalent to the number of variables used to
+model the data. In this case, 570 vectors comprise V, how-
+ever, in [13] we show that using a subset of the basis vectors
+is suﬃcient for re-generating the pulse with good accuracy.
+4.2 Feature Representation
+We obtain a feature representation of the excitation signals
+using the principal components extracted from the data set.
+By projecting the mean-centered data onto the basis vec-
+tors, the principal component scores may be computed as
+W = (P −u)V. (4)
+Equation 4 deﬁnes an orthogonal linear transformation of
+the data into a new coordinate system deﬁned by the basis
+vectors. The scores indicate how much each basis function
+is weighted when reconstructing the signal. Figure 4 dis-
+plays the projection of the data onto the ﬁrst two principal
+components since this pair of components explains the most
+variance in the data. We observe that the ﬁrst principal
+axis relates to the articulation type (i.e. ﬁnger and pick)
+and strength (e.g. forte, piano). However, due to the non-
+linear distribution of the data along these axes, it is unclear
+how these and additional components exactly relate to the
+properties of the excitation pulses.
+0 2 4 6 8 10
+Time (msec)
+ 
+ 
+forte
+mezzo−forte
+piano
+(a)
+0 2 4 6 8 10
+Time (msec)
+ 
+ 
+forte
+mezzo−forte
+piano
+(b)
+0 2 4 6 8 10
+Time (msec)
+ 
+ 
+Mean
+PC 1
+PC 2
+PC 3
+(c)
+Figure 3: Example pulses related to articulations
+produced using (a) pick and (b) ﬁnger to excite the
+string. Principal components extracted from the
+data are shown in (c) and are oﬀset to highlight
+their relationship to the pulses in (a) and (b).
+5. NONLINEAR PRINCIPAL COMPO-
+NENTS ANALYSIS
+While the linear PCA technique presented in the previous
+section provides insight on the underlying basis functions
+comprising our data set, it is unclear how the high dimen-
+sional component space relates to the expressive attributes
+of our data. As shown in Figure 4, there is an underlying
+nonlinear distribution of the data along the principal axes.
+In this section, we apply nonlinear principal components
+analysis (NLPCA) to the scores extracted from linear PCA
+to derive a lower dimensional representation of the data.
+5.1 Background
+There are many techniques available in the literature for
+nonlinear dimensionality reduction, or manifold-learning,
+for the purposes of discovering the structure of high di-
+mensional, nonlinear data. Such techniques include locally
+linear embedding (LLE) [16] and Isomap [19]. While LLE
+and Isomap are useful for data reduction and visualization
+tasks, their application does not provide an explicit map-
+ping function to project the reduced dimensionality data
+back into the high dimensional space.
+For the purpose of developing an expressive control in-
+terface, re-mapping the data back into the original space
+is essential since we wish to use our linear basis vectors to
+reconstruct the excitation pulses. To satisfy this require-
+ment, we employ NLPCA via autoassociative neural net-
+works (ANN) to achieve dimensionality reduction with ex-
+plicit re-mapping functions.
+The standard architecture for an ANN is shown in Figure
+5 and consists of 5 layers [8]. The input and mapping layers
+can be viewed as the “extraction” function since it projects
+the input layers into a lower dimensional space as speci-
+ﬁed in the bottleneck layer. The de-mapping and output
+layers comprise the “generation” function, which projects
+the data back into its original dimensionality. Using Figure
+5 as an example, the ANN can be speciﬁed as a 3-4-1-4-
+3 network to indicate the number of nodes at each layer.
+The nodes in the mapping and de-mapping functions con-
+tain sigmoidal functions and are essential for compressing
+and decompressing the range of the data to and from the
+bottle neck layer. Since the desired values at the bottle-
+neck layer are unknown, direct supervised training cannot
+be used to learn the mapping and de-mapping functions.
+Rather, the combined network is learned using back propa-
+gation algorithms to minimize a squared error criterion such
+that E = 1
+2 ∥w −ˆw∥[8]. From a practical standpoint, this
+yields a set of transformation matrices to compress ( T1,T2)
+and decompress (T3,T4) the dimensionality of the data.
+5.2 Application to Guitar Data
+To uncover the nonlinear structure of the guitar features
+extracted in Section 4.2, we employed the NLPCA MAT-
+LAB Toolbox to extract our ANN [17]. Empirically, we
+found that using 25 scores at the input layer was suﬃcient in
+terms of adequately describing the data set and expediting
+the ANN training. As discussed in [13], 25 basis functions
+explain > 95% of the variance in the data set and leads
+to good re-synthesis. At the bottleneck layer of the ANN,
+−6 −4 −2 0 2 4−2
+−1
+0
+1
+2
+3
+4
+1st Principal Component
+2nd Principal Component
+ 
+ 
+pick, forte
+pick, mezzo−forte
+pick, piano
+finger, forte
+finger, mezzo−forte
+finger, piano
+Figure 4: Projection of guitar excitation signals
+along the ﬁrst two principal axes.
+σ
+σ
+σ
+σ
+σ
+σ
+σ
+σ
+*
+z 1
+Input 
+Layer
+Mapping 
+Layer
+Bottleneck 
+Layer
+De-Mapping 
+Layer
+Output 
+Layer
+w 1
+w 2
+w 3
+ˆw 2
+ˆw 3
+ˆw 1
+T 1 T 2 T 3 T 4
+Figure 5: Example autoassociative neural network
+with 3-4-1-4-3 architecture.
+we chose two nodes in order to have multiple degrees of
+freedom which could be used to synthesize excitation pulses
+in an expressive interface. These design criteria yielded a
+25-6-2-6-25 ANN architecture.
+Figure 6 shows the projection of the data into the reduced
+dimensionality coordinate space deﬁned by the bottleneck
+layer of the ANN. Unlike the linear projection shown in
+Figure 4, the data in the reduced space is clearly clustered
+around the z1 and z2 axes. Selected excitation pulses are
+also shown, which were synthesized by sampling this coor-
+dinate space, projecting back into the linear principal com-
+ponent domain using the transformation matrices ( T3,T4)
+from the ANN and using the resulting scores to reconstruct
+the pulse with linear component vectors.
+The nonlinear component deﬁned by the z1 axis describes
+the articulation type where points sampled in the space
+z1 < 0 pertain to ﬁnger articulations and points sampled
+for z1 > 0 pertain to pick articulations. The ﬁnger artic-
+ulations feature a wider excitation pulse in contrast to the
+pick, where the pulse is generally more narrow and impul-
+sive. In both articulation spaces, moving from left to right
+increases the relative dynamics. The second nonlinear com-
+ponent deﬁned by the z2 axis relates to the contact time
+of the articulation. As z2 is increased, the excitation pulse
+grows wider for both articulation types.
+6. INTERFACE
+We demonstrate the practical application of this research
+in a touch-based iPad interface shown in Figure 7. This
+interface acts as a “tabletop” guitar, where the performer
+uses one hand to provide the articulation and the other to
+key in the desired pitch(es). The articulation is applied
+to the large, gradient square in Figure 7, which is a map-
+ping of the reduced dimensionality space shown in Figure 6.
+Moving up along the vertical axis of the articulation space
+increases the dynamics of the articulation ( piano to forte)
+and moving right to left on the horizontal axis increases
+the contact time. The articulation area is capable of multi-
+touch input so the performer can use multiple ﬁngers within
+the articulation area to give each tone a diﬀerent timbre.
+The colored keys on on the left-side of Figure 7 allow
+the user to produce certain pitches. Adjacent keys on the
+horizontal axis are tuned a half step apart and their color
+indicates that they are part of the same “string” so that
+only the leading key on the string can be played at once.
+Diagonal keys on adjacent strings are tuned to a Major 3rd
+interval while the oﬀ-diagonal keys represent a Minor 3rd
+interval. This arrangement allows the performer to easily
+ﬁnger diﬀerent chord shapes.
+The synthesis engine for the tabletop interface must is ca-
+2 4 6 8 10 12
+−1
+−0.5
+0
+0.5
+Time (msec)
+Amplitude
+2 4 6 8 10 12
+−1
+−0.5
+0
+0.5
+Time (msec)
+Amplitude
+2 4 6 8 10 12
+−1
+−0.5
+0
+0.5
+Time (msec)
+Amplitude
+2 4 6 8 10 12
+−1
+−0.5
+0
+0.5
+Time (msec)
+Amplitude
+2 4 6 8 10 12
+−1
+−0.5
+0
+0.5
+Time (msec)
+Amplitude
+2 4 6 8 10 12
+−1
+−0.5
+0
+0.5
+Time (msec)
+Amplitude
+−1 −0.8 −0.6 −0.4 −0.2 0 0.2 0.4 0.6 0.8 1
+−0.1
+−0.05
+0
+0.05
+0.1
+0.15
+0.2
+0.25
+z1
+z2
+ 
+ 
+pick, forte
+pick, mezzo−forte
+pick, piano
+finger, forte
+finger, mezzo−forte
+finger, piano
+Figure 6: Projection of the guitar data into the reduced dimensionality space deﬁned by the ANN (center).
+Example excitation pulses resulting from sampling this space are also shown.
+pable of computing the excitation signal corresponding to
+the performer’s touch point within the articulation space
+and ﬁltering the resulting excitation signal for multiple
+tones in real-time. The ﬁlter module used for the string
+is implemented with the single delay-loop model shown in
+Figure 1. Though this ﬁlter has a large number of de-
+lay taps, which is dependent on the pitch, only a few of
+these taps have non-zero coeﬃcients, which permits an eﬃ-
+cient implementation of inﬁnite impulse response ﬁltering.
+Currently, the relative plucking position along the string is
+ﬁxed, though this may be a free parameter in future versions
+of the application. The excitation signal can be updated in
+real-time during performance, which is made possible by
+the iPad’s support of hardware-accelerated vector libraries.
+These include the matrix multiplication routines to project
+the low dimensional user input into the high dimensional
+component space. Through our own testing, we found that
+the excitation signal is typically computed in <1 millisec-
+ond, which is more than adequate for real-time performance.
+7. CONCLUSIONS
+We have presented a novel approach for modeling the exci-
+tation signals for plucked-guitar tones using principal com-
+ponents analysis. Our method draws on physically inspired
+modeling techniques to extract the excitation pulses from
+recorded performances pertaining to various articulation
+styles. Using linear principal components analysis, these
+excitation signals are modeled by a set of linear basis vec-
+tors. The associated weights for these basis vectors are then
+used as features to train an autoassociative neural network,
+which provides a nonlinear mapping to a reduced dimen-
+sionality space. By sampling points in the reduced dimen-
+sionality space, we show that a wide range of excitation
+pulses can be synthesized, which correlate to the expres-
+sive attributes of our data corpus, namely articulation type,
+strength and contact time. We have also demonstrated the
+practical application of this research by implementing the
+excitation and plucked-string synthesis into an iPad appli-
+cation, which is capable of real-time guitar synthesis with
+control over the expressive attributes in our data set.
+As demonstrated with the iPad application, this research
+is extremely applicable to virtual instrument technology.
+Beyond touch interfaces, it may be possible to leverage ges-
+Figure 7: Tabletop guitar interface for the compo-
+nents based excitation synthesis. The articulation
+is applied in the gradient rectangle, while the col-
+ored squares allow the performer to key in speciﬁc
+pitches.
+ture recognition, such as the Microsoft Kinect, to trigger
+particular articulations. By freeing the user from the con-
+straints of a physical device, a unique-gesture based synthe-
+sizer could be built for “air-guitar” applications.
+Avenues for further research include the acquisition of
+additional performance data from a variety of guitarists.
+This data collection and subsequent analysis could lead to
+computational models describing the stylings of particular
+performers. These models could be used to “proﬁle” partic-
+ular players and integrate their stylings into virtual music
+interfaces. From a physical modeling standpoint, the guitar
+synthesis model used in our application can be expanded to
+include magnetic pickups and resonant body eﬀects, which
+factor into perceived timbres of real acoustic and electric
+guitars.
+8. ACKNOWLEDGMENTS
+This research was supported by NSF Award IIS-0644151.
+9. REFERENCES
+[1] Amidio. Omguitar advanced guitar synth, Jan. 2012.
+[2] Apple. Garageband, Jan. 2012.
+[3] C. Bishop. Pattern Recognition and Machine
+Learning. Information science and statistics. Springer,
+2006.
+[4] R. O. Duda, P. E. Hart, and D. G. Stork. Pattern
+Classiﬁcation. Wiley, 2 edition, 2001.
+[5] M. Karjalainen, T. Maki-Patola, A. Kanerva,
+A. Huovilainen, and P. Janis. Virtual air guitar. In
+117th Audio Engineering Society Convention . AES,
+Oct. 2004.
+[6] M. Karjalainen, V. Valimaki, and Z. Janosy. Towards
+high-quality sound synthesis of the guitar and string
+instruments. In International Computer Music
+Conference. ICMC, Sept. 1993.
+[7] M. Karjalainen, V. Valimaki, and T. Tolonen.
+Plucked-string models: From the Karplus-Strong
+Algorithm to digital waveguides and beyond.
+Computer Music Journal , 22(3):17–32, Oct. 1998.
+[8] M. A. Kramer. Nonlinear principal component
+analysis using autoassociative neural networks.
+AIChE Journal, 37(2):233–243, 1991.
+[9] J. Laroche and J.-L. Meillier. Multichannel
+excitation/ﬁlter modeling of percussive sounds with
+application to the piano. Speech and Audio Processing,
+IEEE Transactions on, 2(2):329 –344, Apr. 1994.
+[10] N. Laurenti, G. De Poli, and D. Montagner. A
+nonlinear method for stochastic spectrum estimation
+in the modeling of musical sounds. Audio, Speech, and
+Language Processing, IEEE Transactions on,
+15(2):531 –541, Feb. 2007.
+[11] M. Laurson, C. Erkut, V. Valimaki, and
+M. Kuushankare. Methods for modeling realistic
+playing in acoustic guitar synthesis. Computer Music
+Journal, 25(3):38–49, Oct. 2001.
+[12] N. Lee, Z. Duan, and J. O. Smith III. Excitation
+signal extraction for guitar tones. In Proc. of the 2007
+International Computer Music Conference . ICMC,
+2007.
+[13] R. M. Migneco and Y. E. Kim. Excitation modeling
+and synthesis for plucked guitar tones. In Proc. of the
+2011 IEEE Workshop on Applications of Signal
+Processing to Audio and Acoustics, New Paltz, NY,
+Oct. 2011. WASPAA.
+[14] C. O’Shea. Kinect air guitar prototype, Jan. 2012.
+[15] H. Penttinen and V. Valimaki. Time-domain
+approach to estimating the plucking point of guitar
+tones obtained with an under-saddle pickup. Applied
+Acoustics, 65:1207–1220, Dec. 2004.
+[16] S. T. Roweis and L. K. Saul. Nonlinear dimensionality
+reduction by locally linear embedding. Science,
+290(5500):2323–2326, 2000.
+[17] M. Scholz. Nonlinear PCA toolbox for MATLAB,
+2011.
+[18] J. O. Smith. Physical modeling using digital
+waveguides. Computer Music Journal , 16(4):74–91,
+1992.
+[19] J. B. Tenenbaum, V. d. Silva, and J. C. Langford. A
+global geometric framework for nonlinear
+dimensionality reduction. Science,
+290(5500):2319–2323, 2000.
+[20] V. Valimaki, J. Huopaniemi, M. Karjalainen, and
+Z. Janosy. Physical modeling of plucked string
+instruments with application to real-time sound
+synthesis. Journal of the Audio Engineering Society ,
+44(5):331–353, May 1996.

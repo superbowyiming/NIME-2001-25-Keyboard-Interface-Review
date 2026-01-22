@@ -1,0 +1,423 @@
+The KeyWI: An Expressive and Accessible Electronic
+Wind Instrument
+Matthew Caren,a Romain Michon,a,b and Matthew Wrighta
+aCCRMA, Stanford University , USA
+bGRAME-CNCM, Lyon, France
+matt.t.caren@gmail.com
+ABSTRACT
+This paper presents the KeyWI, an electronic wind instru-
+ment based on the melodica that improves upon limitations
+in current systems and is general and powerful enough to
+support a variety of applications. Four opportunities for
+growth are identiﬁed in current electronic wind instrument
+systems, which then are used to focus the development and
+evaluation of the instrument. The KeyWI features a breath
+pressure sensor with a large dynamic range, a keyboard that
+allows for polyphonic pitch selection, and a completely in-
+tegrated construction. Sound synthesis is performed with
+Faustcode compiled to the Bela Mini, which oﬀers low-
+latency audio and a simple yet powerful development work-
+ﬂow. In order to be as accessible and versatile as possible,
+the hardware and software is entirely open-source, and fab-
+rication requires only common maker tools.
+Author Keywords
+electronic wind instruments, breath controller, digital mu-
+sical instruments, development platform
+CCS Concepts
+•Applied computing → Sound and music comput-
+ing; Performing arts; •Hardware → Sensor devices
+and platforms;
+1. INTRODUCTION
+Wind instruments are favored for their ability to create
+a uniquely intimate connection between musician and in-
+strument, transforming the fundamental human gesture of
+breath into a form of creative expression. Their ability to
+capture nuances in a musician’s playing is essential to their
+versatility and expressiveness.
+However, electronic wind instruments have not always
+been able to match the capabilities and characteristics crit-
+ical to acoustic wind instruments. Diﬃculties include re-
+strictions in control that limit the musician’s command of
+an instrument, and restrictions in sound that limit a mu-
+sician’s range of expression. The goal of the KeyWI is to
+create an intuitive and powerful electronic wind instrument
+that eliminates these obstacles; additionally, it aims to be as
+open-source and reproducible as possible, such that it can
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’20, July 21-25, 2020, Royal Birmingham Conservatoire,
+Birmingham City University , Birmingham, United Kingdom.
+be used as a platform for development and be replicated by
+anyone with access to suﬃcient tools.
+Figure 1: A KeyWI (without cover), including a
+Bela Mini, custom PCB, enclosure, and sensors
+The KeyWI’s design is based on the melodica, a handheld
+wind instrument where pitches are selected using a piano-
+style keyboard and dynamics are controlled by blowing into
+a mouthpiece attached to the side of the instrument.
+The use of a keyboard as a pitch controller rather than the
+more common woodwind-key-inspired designs aims to be
+accessible to users who may not have prior experience with
+the specialized ﬁngerings required for wind instruments, as
+well as oﬀering intuitive polyphonic capabilities.
+2. HISTORY AND RELA TED WORK
+Due to acoustic wind instruments’ enduring popularity, there
+is a long history of electronic wind instruments, which have
+constantly been inﬂuenced by the technological capabilities
+and ideas of their times.
+In 1936, inventor Benjamin Miessner ﬁled a patent [7] for
+an “Apparatus for the production of music” that used an
+electromagnetic pickup placed in a clarinet reed to sense
+vibrations; however, there is no record of a functional in-
+strument ever being produced. Later, a 1941 patent for an
+“Electric clarinet” [1] featured a simple on/oﬀ sensor to de-
+tect breath pressure. Yet, it was not until 1967 that the ﬁrst
+electronic instrument to contain a breath pressure sensor,
+the Hohner Electra-Melodica, was produced commercially.
+Little dynamic range and limited choice in timbre, however,
+resulted in low sales. In the 1970s, the ﬁrst widely adopted
+wind controllers, the Lyricon controllers [10], began pro-
+duction. The sturdier and more sensitive breath pressure
+sensor and similarity in construction and control to acous-
+tic wind instruments led to its rise in adoption among wind
+instrument players. The Lyricon outputted control voltage
+that could be used as the input for an analog synthesizer,
+oﬀering a wider range of possible sounds. The populariza-
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+605
+tion of MIDI in the 1980s led to the advent of MIDI wind
+controllers, including the Yamaha WX (roughly based upon
+of the design of the Lyricon controllers) and Akai EWI lines
+of breath controllers. These controllers featured higher-
+resolution breath sensors and could be used with MIDI
+synthesizers and interfaces. For many years, Yamaha also
+manufactured breath sensors such as the BC3 that could
+be used with keyboard synthesizers such as the DX7. To-
+day, the WX and EWI lines of wind controllers continue to
+be the most prominent commercial breath controllers—they
+are similar in design and control to a clarinet or saxophone
+and can be used to control hardware or software synths.
+There are also many non-commercial wind instruments
+and controllers. The Electronic Valve Instrument (EVI)
+[13], invented by Nyle Steiner in 1975, is an early electronic
+wind controller based on the trumpet’s valve system. It was
+later adapted into the Akai EWI mentioned above. Con-
+trollers since have featured improvements and explorations
+in control systems, sensors, application, and construction [2,
+3, 4]. The NIME community has also developed numerous
+electronic wind instruments and controllers. Gary Scavone’s
+Pipe [12] is a general MIDI wind controller that contains a
+variety of sensors in a compact format. The Epipe [5] is
+a wind controller designed after open tonehole instruments
+that is capable of detecting the nuances in pitch control
+oﬀered by such instruments.
+Generally, electronic wind instruments have developed in
+two ways: 1. more accurate, capable, diverse, and reli-
+able sensors and control systems; and 2. greater freedom in
+sound and application. However, modern instruments still
+tend to suﬀer from some of the same issues as previous elec-
+tronic wind instruments, including including restricted dy-
+namic range, transient detection, limitations in sound pro-
+duction, and capacity for control by non-wind instrument
+players.
+The development of the KeyWI focuses on creating a wind
+instrument that reduces limitations in control and that is
+accessible and versatile enough to be used as a platform for
+development.
+3. ANAL YSIS OF CURRENT SYSTEMS
+We compared recordings of an acoustic melodica and var-
+ious modeled counterparts in order to identify the most
+salient limitations in current technology. A sampling of
+various electronic wind instrument and breath controller
+systems were tested (including a variety of control systems
+and both sample-based and physically modeled systems).
+The modeled instrument samples below were generated us-
+ing a Yamaha VL70-m physical modeling synthesizer with
+a BC3 breath controller, and were largely representative of
+the ﬁndings. Four limitations in the modeled systems com-
+pared to the acoustic instrument were identiﬁed.
+3.1 Attacks/T ransients
+Figure 2 compares the spectrograms of representative exam-
+ples of acoustic and modeled melodica attacks. All samples
+were recorded with the same user trying to create as fast of
+an attack as possible, but note the diﬀerence in the attack
+times (time for all overtones to reach within 5 dB of steady
+state):≈ 50 ms for the model versus ≈ 35 ms for acous-
+tic. While attack times did vary between instruments, they
+all had attacks signiﬁcantly longer than that of an acoustic
+melodica.
+3.2 Dynamic Range
+To test dynamic range, the electronic systems and the melod-
+ica were played at ﬁve intensities of breath, ranging from as
+soft as possible to very hard. The limited dynamic ranges of
+Figure 2: Spectrograms of the attacks of acoustic
+(right) and modeled (left) melodica, both played
+with as fast attacks as possible
+the electronic systems were clear: at low breath pressures,
+the output ﬂuctuated erratically with clearly audible “steps”
+in the intensity of the signal, or simply did not register.
+At the two highest breath pressures, there was almost no
+variation in the signal at all. While breath controllers and
+sensors do feature variations of “gain” and “oﬀset” controls,
+even with the gain (i.e., dynamic range) at its maximum,
+the dynamic range is small: the user either needs to blow
+very hard to make any sound, or the sensor quickly maxes
+out.
+Unlike the electronic system, the melodica’s output varies
+signiﬁcantly at every level of breath pressure. Judging by
+these qualitative tests, the acoustic melodica has signiﬁ-
+cantly more dynamic range than the electronic system.
+3.3 V ariance and Expressiveness
+The timbre of an acoustic melodica is so responsive to breath
+pressure that the amplitudes of the overtones of an acoustic
+melodica ﬂuctuate over time, even as a player attempts to
+maintain a constant level of breath pressure. This variation
+is a result of small inconsistencies in breath pressure being
+reﬂected in the ﬁnal result. In comparison, the overtones
+of the modeled systems are almost completely static. This
+responsiveness to varying breath pressures also determines
+the degree to which a user is able to intentionally shape the
+timbre of an instrument.
+3.4 Pitch Control Interfaces
+Many electronic breath controllers, such as the Akai EWI
+and Yamaha WX, feature pitch control systems based on
+acoustic wind instruments such as clarinets or saxophones.
+However, these methods of control are tailored speciﬁcally
+to wind instrument players, and cannot support polyphony
+in any practical way.
+4. THE INSTRUMENT
+We developed the KeyWI guided by several overall objec-
+tives: 1. improving upon the limitations just discussed;
+2. being accessible to as many users as possible; 3. open
+source hardware and software; and 4. modular/adaptable
+such that it can be used in a variety of applications.
+The Bela Mini processing board [6] synthesizes the sound
+with high performance and low latency. The language cho-
+sen to implement the synthesis isFaust (Functional Au-
+dio Stream)[11], 1 a language that targets high-performance
+real-time digital signal processing. Faust on Bela oﬀers 1.6
+ms latency (with default buﬀer sizes), and Faust’s block-
+diagram driven structure and performance make the lan-
+guage a logical choice for an accessible development plat-
+form. Additionally, it has an extensive collection of libraries
+1https://faust.grame.fr
+Note: all links have been veriﬁed as of April 25, 2020
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+606
+that include implementations of numerous oscillators, ﬁl-
+ters, envelope generators, and eﬀects, as well as physical
+models of several wind instruments. TheFaust compiler
+can build directly to C++ Bela programs, which creates a
+very simple workﬂow.
+Figure 3: Block diagram of the KeyWI setup
+The control system is comprised of two main components:
+a MIDI keyboard and a breath pressure sensor. The MIDI
+keyboard used is a MIDIPLUS AKM320,2 which can be
+purchased online for $35 USD. Only the keys, key contacts,
+and main circuit board from the controller are used; custom
+3D-printed hardware replaces the casing, mounts, and other
+electronics. The keyboard sends key and velocity data to
+the main board via USB MIDI. An MPXV4006DP,3 a mi-
+cromachined pressure sensor, measures breath input from 0
+to 0.87 psi with 2.5% accuracy. The sensor is mounted to
+a Modern Device MPXV breakout board,4 which in turn
+mounts to the PCB through a removable header. One pres-
+sure input of the sensor is left unconnected and the other is
+joined to a short vinyl tube that extends just outside of the
+casing. A 3D-printed mouthpiece connects either directly to
+this tube, such that the KeyWI is brought up to the mouth
+to be played, or to a longer vinyl tube, so that it can be
+rested on a table. A small hole in the side of the mouth-
+piece allows air to ﬂow through the mouthpiece without
+compromising the breath pressure measurement. This hole
+also results in an augmented dynamic range: proportion-
+ally less pressure is exerted on the sensor as the user blows
+harder, so it takes signiﬁcantly more pressure to reach the
+sensor’s limit. Furthermore, the sensor is capable of sensing
+both positive and negative pressure diﬀerentials, so diﬀerent
+behaviors could be mapped to the “draws” and the “blows,”
+allowing for the possibility of harmonica-like controls.
+Figure 4: PCB mounted to the Bela Mini cape
+A custom-printed circuit board serves as the central hub
+for all connections going in and out of the Bela Mini. It
+mounts to the top of the Bela cape through headers soldered
+to the board, some of which function as electrical connec-
+tions to the Bela as well as structural support. The pres-
+sure sensor, output jack, and other components all mount
+to the PCB. The two potentiometers connect directly to the
+2http://www.midiplus.com/html/akm320.html
+3https://www.nxp.com/part/MPXV4006DP
+4https://moderndevice.com/product/
+pressure-sensor-mpxv
+Bela, where they control oﬀset (pressure required to make
+a sound) and sensitivity (pressure needed to reach maxi-
+mum), while an LED provides visual feedback when breath
+input is detected. The entire setup is powered by batter-
+ies located in the right side of the KeyWI. The enclosure
+is comprised of nine laser-cut layers of birch plywood fas-
+tened together with four bolts, and the keyboard supports
+and main circuit board mount to the bottom layer of the
+enclosure.
+To be as accessible to as many users as possible, the
+KeyWI is entirely open source: project ﬁles, 5 Bela software
+and hardware, and the Faust compiler are all open source.
+It can be assembled with only access to basic maker tools,
+common supplies, and Internet.
+5. RESUL TS
+We evaluate the KeyWI in comparison to an acoustic melod-
+ica, according to the four limitations of previous breath con-
+troller systems identiﬁed in Section 2.
+5.1 Attacks/T ransients
+Figure 5: Spectrogram of KeyWI melodica attack
+The MPX breath pressure sensor exhibits very good re-
+sponse to quick changes in pressure. As seen in Figure 5—
+captured using a sharp, “tongued” start to each note—the
+initial attack of the KeyWI melodica (about 25 ms) is much
+shorter than that of the modeled system tested in Section
+3 (about 50 ms).
+5.2 Dynamic Range
+The test of ﬁve varying breath pressures executed in Sec-
+tion 3.2 was also conducted with the KeyWI melodica. The
+KeyWI melodica clearly exhibited responsiveness to each
+level of breath pressure—with the sensor output scaled be-
+tween -1 and 1 (0 = no pressure, positive values = blowing,
+negative values = sucking), the pressure sensor returned
+values of 0.14 at the softest level of blowing and blowing as
+hard as possible returned a value of 0.91. The sensor also re-
+sponded smoothly to low pressures, not exhibiting the step-
+ping and unpredictable behavior of other tested systems.
+Whereas some electronic wind instrument systems are lim-
+ited by their smaller dynamic range, the KeyWI’s extended
+capabilities oﬀer a greater freedom of expression to a user.
+5.3 V ariance/Expressiveness
+Figure 6 displays KeyWI melodica notes for a synthesized
+input (60% pressure with 20% amplitude modulation via
+a 2 Hz sine wave), and with a user attempting to main-
+tain a constant level of pressure. Note how the synthesized
+modulation results in the modulation of the amplitudes of
+overtones and the overall signal. With the human input,
+5https://github.com/matthewcaren/keyWI
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+607
+Figure 6: Spectrograms of KeyWI note with syn-
+thesized (left) and user (right) pressure input
+the sensitivity of the pressure sensor results in natural vari-
+ance in the pressure input, which is then reﬂected in a sim-
+ilar manner in the resulting audio (note the variance in the
+higher overtones and a slight dip in overall volume at about
+2.5s). Some electronic systems attempt to add variance by
+introducing randomness to the sound synthesis algorithm.
+While this approach may be eﬀective on some level, it de-
+creases the musician’s level of control over the instrument,
+and does not solve the underlying problem: the lack of sen-
+sitivity and precise control over the intricacies of the in-
+strument. Since this type of precise control is what attracts
+many players to wind instruments, it seems counterproduc-
+tive to mimic this expressiveness rather than giving control
+to the user themselves.
+5.4 Pitch Control Interfaces
+A piano keyboard was chosen as the basis of the control
+system due to its versatility and universality as a pitch con-
+troller. Using a keyboard rather than a design similar to
+a wind instrument allows for intuitive polyphonic control.
+Additionally, it makes the KeyWI accessible to a wider au-
+dience, as the number of keyboard players worldwide sig-
+niﬁcantly outnumbers the number of woodwind players (in
+2018, 1.4 million acoustic and electric pianos and keyboard
+systems were sold in the US compared to 350 thousand wind
+instruments [9]). This large community of keyboard players
+creates a “pluggable community” (as explained by Morreale
+et al. [8]), from which users can transfer their existing skill
+set of playing a keyboard to the KeyWI.
+5.5 Development W orkﬂow
+Also central to the design of the KeyWI as a platform is
+its workﬂow and ease of development. TheFaust compiler
+can build directly to a Bela C++ architecture, and the re-
+sulting ﬁle is simply imported onto the Bela Mini. Using
+the onlineFaust editor6 and browser-based Bela IDE, this
+entire process can be executed in less than a minute, us-
+ing exclusively GUI-based systems, without any setup or
+installations. This creates an accessible and eﬃcient work-
+ﬂow that also allows for quick iteration of ideas.
+The sound synthesis for the KeyWI melodica is based on
+the symmetrical clipping of a sine wave in order to create
+the odd harmonics characteristic of the vibration of free
+reeds in a melodica. When a multiple of the un-clipped sine
+wave is subtracted from the clipped signal in order to par-
+tially remove the fundamental frequency, the result closely
+models the sound produced by a melodica. The severity of
+the clipping varies directly with breath pressure to appro-
+priately model the change in timbre caused by changes in
+breath pressure. Using this synthesis algorithm, the entire
+program (including data collection, melodica tone synthe-
+sis, transient envelope generation, breath noise synthesis,
+and mixing) requires just 25 lines ofFaust code.
+6https://faust.grame.fr/editor
+6. CONCLUSION
+The KeyWI aims to improve upon several limitations in
+current systems and provide an accessible platform for more
+expressive, realistic, and musical instruments. It combines
+the power and versatility ofFaust and the Bela Mini, a
+control system based on a piano keyboard rather than a
+wind instrument, and a custom PCB and enclosure for a
+fully integrated, digitally manufactured design.
+Though a wind instrument, the KeyWI can be used as a
+development platform for a wide variety of digital musical
+instruments; the PCB provides a simpliﬁed interface for the
+Bela Mini that includes USB pins, audio out, various inputs
+including a breath sensor, and an external power button.
+There are several possible additions that could expand its
+capabilities. Adding a microphone would allow for an even
+greater range of expression, including extended techniques
+such as singing and playing simultaneously, or speaking syl-
+lables into the instrument. A method of providing haptic
+feedback could also be implemented, which could be used to
+simulate the vibrations experienced when playing an acous-
+tic wind instrument.
+7. REFERENCES
+[1] L. F. J. Arnold. Electrical clarinet, November 10
+1942. US Patent 2,301,184.
+[2] G. T. Beauregard. Rethinking the design of wind
+controllers. PhD thesis, Dartmouth College, 1991.
+[3] P. R. Cook. A meta-wind-instrument physical model,
+and a meta-controller for real-time performance
+control. InProceedings of the international computer
+music conference, pages 273–273. International
+Computer Music Association, 1992.
+[4] T. Henriques. META-EVI innovative performance
+paths with a wind controller. In Proceedings of the
+2004 conference on New Interfaces for Musical
+Expression, pages 307–310, 2008.
+[5] S. Hughes, C. Cannon, and S. ´O. Modhr´ ain. Epipe: A
+novel electronic woodwind controller. In Proceedings
+of the 2004 conference on New Interfaces for Musical
+Expression, pages 199–200, 2004.
+[6] A. McPherson and V. Zappi. An environment for
+submillisecond-latency audio and sensor processing on
+BeagleBone Black. InAudio Engineering Society
+Convention 138, May 2015.
+[7] B. F. Miessner. Apparatus for the production of
+music, November 29 1936. US Patent 2,138,500.
+[8] F. Morreale, G. Moro, A. Chamberlain, S. Benford,
+and A. P. McPherson. Building a maker community
+around an open hardware platform. InProceedings of
+the 2017 CHI Conference on Human Factors in
+Computing Systems, Denver, Colorado, USA, 2017.
+[9] Music Trades. Music industry census. Music Trades,
+pages 88–94, April 2019.
+[10] R. Noble and W. Bernardi. Electronic musical
+instrument, October 23 1973. US Patent 3,767,833.
+[11] Y. Orlarey, D. Fober, and S. Letz. An Algebra for
+block diagram languages. In International Computer
+Music Conference (ICMA), pages 542–547,
+Gothenburg, Sweden, 2002.
+[12] G. P. Scavone. The Pipe: explorations with breath
+control. In Proceedings of the 2003 conference on New
+Interfaces for Musical Expression, pages 15–18, 2003.
+[13] N. A. Steiner. The electronic valve instrument (EVI),
+an electronic musical wind controller for playing
+synthesizers.The Journal of the Acoustical Society of
+America, 115(5):2451–2451, 2004.
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+608

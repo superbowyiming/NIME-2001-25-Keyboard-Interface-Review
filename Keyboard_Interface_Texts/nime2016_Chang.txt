@@ -1,0 +1,628 @@
+Electromagnetically Actuated Acoustic Amplitude
+Modulation Synthesis
+Herbert H.C. Chang
+Dartmouth College
+Bregman Media Labs
+Hanover, NH 03755
+H.Herbert.Chang.18@dartmouth.edu
+Spencer Topel
+Dartmouth College
+Bregman Media Labs
+Hanover, NH 03755
+topel@dartmouth.edu
+ABSTRACT
+This paper discusses a new approach to acoustic amplitude
+modulation. Building on prior work with electromagnetic
+augmentation of acoustic instruments, we begin with a the-
+ory of operation model to describe the mechanical forces
+necessary to produce acoustic amplitude modulation syn-
+thesis. We then propose an implementation of our model as
+an instrumental prototype. The results illustrate that our
+acoustic amplitude modulation system produces control-
+lable sideband components, and that synthesis generated
+from our corresponding numerical dynamic system model
+closely approximates the acoustic result of the physical sys-
+tem.
+Author Keywords
+acoustic synthesis, acoustic signal modulation, intermodu-
+lation, acoustic sound module, augmented instrument, elec-
+tromagnetism, harmonic oscillators
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing, H.5.2 [Information Interfaces and Pre-
+sentation] User Interfaces—Haptic I/O, I.2.9 [Artiﬁcial In-
+telligence] Robotics—Propelling mechanisms.
+1. INTRODUCTION
+Recent expansion of electromagnetically (EM) augmented
+instruments illustrates a growing interest in acoustic synthe-
+sis. These approaches access new properties of an acoustic
+instrument through EM excitation, and are capable of gen-
+erating sonic results strongly resembling electronic sound
+synthesis.
+A particularly challenging aspect of augmented EM in-
+strument design is the description and evaluation of under-
+lying system dynamics. Many augmented acoustic instru-
+ments demonstrate complex sonic behaviors without mod-
+iﬁcations [6, 10]. Complexity arises from interactions be-
+tween acoustic instruments and EM augmentations. Non-
+linearities within these systems, including signal modula-
+tion, are even more diﬃcult to account for and still more
+challenging to control [19, 20].
+Our investigation focuses on acoustic amplitude modula-
+tion (AAM) of driven harmonic oscillators. The aim is to
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’16,July 11-15, 2016, Grifﬁth University, Brisbane, Australia.
+.
+use a dynamic model approach to AAM and present an EM
+augmented harmonic oscillator capable of producing acous-
+tic amplitude modulation.
+2. PRIOR WORK
+We adopt the deﬁnition of acoustic synthesis as a ”sound-
+generating process in which synthesis is carried out in acous-
+tical terms: frequency, spectrum, waveform, amplitude, mod-
+ulation, and so on.” [5]. Early systems exhibiting acoustic
+synthesis include the Helmholtz synthesizer [18], and later
+the Rhodes Piano ”tone-bar” system [21]. Recent EM Aug-
+mented instruments include actuation of strings [2, 3, 8,
+14, 17], metal bars, asymmetric tuning forks [4, 24], and
+non-pitched percussion [19, 20]. In these instruments, EM
+actuation is presented as an alternative to conventional ac-
+tuation, providing means to shape or sustain sound in new
+ways [17].
+2.1 Acoustic Signal Modulation
+Two notable historical precedents exist in acoustic signal
+modulation synthesis. Both systems were developed for
+the electronic organ: the Hammond Tone Cabinet and the
+Leslie speaker, shown in Figure 1.
+Figure 1: Patent images for therotor tremulantused
+in the Hammond Organ (left), and the ”mercury
+slip-ring assembly” used in the Leslie Speaker Cab-
+inet (right). [7, 12]
+8
+The Hammond design produces AAM synthesis, whereas
+the Leslie design produces Acoustic Frequency Modulation
+(AFM) synthesis by exploiting the Doppler eﬀect through
+rotation of directional sound sources [9]. The Hammond
+Organ Company implemented arotor tremulant invented by
+B. Hartsough to produce a tremolo-like eﬀect using acoustic
+amplitude modulation [7]. Hammond modiﬁed an existing
+tone cabinet, the D-20, to include a rotor drum in the DXR-
+20 and XR-20 tone cabinets [26]. The Hammond rotor drum
+generates acoustic AM using a spinning drum with slotted
+vents that ﬁlter sound generated from small speakers. The
+Hammond and Leslie systems are limited by rotational rate
+and sound propagation, thus limiting the frequency range
+to exclusively narrow-band (tremolo-like) modulation.
+We encountered similar limitations in earlier prototypes
+utilizing a rotating aperture and tuning fork design, due to
+the high RPM’s required to produce higher frequency side-
+band components. In an eﬀort to overcome this problem, we
+oﬀer a Time-Varying Damping (TVD) solution presented
+ﬁrst as a theory-of-operation in Section 3 and then as an
+instrumental prototype in Section 4.
+3. AAM THEORY OF OPERATION
+3.1 Signal Modulation
+Signal modulation is the process of combining two signals
+into a third signal containing desired properties of both sig-
+nals, such as frequency sideband. In the time-domain this
+corresponds to multiplication of carrier and modulator sig-
+nals with the mathematical form,
+A(t) = M(t) ×C(t) = M(t) ×C0 cos(ωct) (1)
+where A(t) is the resultant signal, M(t) is the modulator
+signal, and C(t) is the carrier signal with constant fre-
+quency ωc. Equation 1 applies for all forms of Amplitude
+Modulation (AM), including Acoustic Amplitude Modula-
+tion (AAM). To illustrate sideband generation, we assume
+constant frequency for a time-varying modulator envelope
+function M(t) = cos(ωrt). Then A(t) is of the form:
+A(t) = cos(ωrt) ×C0 cos(ωct+ δ)
+= 1
+2C0[cos((ωc + ωr)t+ δ) −cos((ωc −ωr)t−δ)]
+(2)
+with δ the phase angle. A(t) includes the desired sideband
+components in the set ωAM = {ωc±ωr}in cos(ωc+ωr) and
+cos(ωc −ωr) shown in equation 2. This amplitude modula-
+tion through the nonliniearities of two or more frequencies
+is known as intermodulation.
+Harmonic sidebands of the form ωAM = {ωc ±n·ωr|n∈
+N}occur when the carrier signal is overdriven. Intermod-
+ulated sidebands occur as a linear combination of the car-
+rier and the modulating signal, which produce a continuous
+range of sidebands that can intersect harmonic sidebands.
+Additionally, the frequency of the modulator need not be
+constant and any M(t) can be used to modulate a carrier
+using the Fourier Transform. AAM synthesis of sidebands
+components arise by the same principle in a physical system.
+3.2 Dynamic System Model
+We describe AAM as a dynamic system under a Single De-
+gree of Freedom (SDOF), illustrated in Figure 2. The sys-
+tem consists of an acoustic carrier harmonic oscillator and
+a modulator-actuated TVD mechanism, where mand kare
+mass and spring constants, respectively. The oscillator is
+driven by F(t). The system is described by the equations
+of motion (EOM) in sections 3.3 and 3.3.2.
+System inputs for the carrier and modulator signals are
+deﬁned as two generic oscillators or unit generators, where
+⨂
+car corresponds to the carrier signal and ⨂
+mod corre-
+sponds to the modulator signal. These signals are then
+transformed into electromagnetic force as described in [15].
+3.3 SDOF Equations of Motion
+If an object’s position is directly related to acoustic ampli-
+tude, then we can model acoustic amplitude as a function
+of position with a SDOF. This section develops the theory
+of tracking the position of mass m.
+k
+X(t), ωAM
+F(t)
+ωr
+ mod
+ωs
+car
+m, ωc
+ωc= nωs
+ξ(t)
+ 
+ωm(t)
+ 
+Figure 2: Free body diagram of the AAM dynamic
+model of.
+3.3.1 Driven Harmonic Oscillator
+When the object’s natural frequency is actuated, it is in
+resonance. The natural frequency ωc of a harmonic oscil-
+lator is dependent on mass m and spring constant k, given
+by the relationship k= ω2m. Its position X(t) satisﬁes the
+following diﬀerential equations:
+mx′′(t) + ξx′(t) + kx(t) = F(t) (3)
+x′′(t) + ξ
+mx′(t) + ω2x(t) = F(t)
+m (4)
+where m is the mass of the object and ξ is the material’s
+damping coeﬃcient. The carrier signal is generated by actu-
+ating the system’s consistent natural frequency, using input
+signal ωs. This produces the driving force denoted in Equa-
+tion 5. Under EM actuation, an input’s signal frequency is
+typically one half ( n= 2) or one fourth ( n= 4) the carrier
+frequency [15].
+F(t) = F0(cos(nωst) + 1) = F0(cos(ωct) + 1) (5)
+When one strikes a tuning fork, its sound gradually de-
+creases in volume. This corresponds to the transient dissi-
+pation of energy after an initial force, described by x1 and
+x2 in equation 6. The coeﬃcients of x1 and x2 are zero if
+the mass is initially at rest. With constant and positive m,
+ξ and k, with the mass initially at rest, the motion of mass
+m is govern by the steady state solution in Equation 7:
+X(t) = c1x1(t) + c2x2(t) + Acos(ωct) + Bsin(ωct) (6)
+X(t) = Acos(ωct) + Bsin(ωct) = M0 cos(ωct+ δ) (7)
+where Aand B depend on F0 and are then reformulated as
+M0 and the phase angle δ.
+9
+When the driving frequency ω is equal to the carrier fre-
+quency ωc, the coeﬃcient M0 is given as:
+M0 = F0√
+m2(ωc −ω)2 + ξ2ω2
+= F0
+ξωc
+(8)
+where ωc−ω= 0. This expression is only correct when m,ξ,
+and k are constants, yet the inverse relation in equation 8
+suggests amplitude M0 can be modulated by varying either
+the driving frequency F(t) or damping value ξ.
+3.3.2 Modulation via TVD
+The driving frequency must be held constant to produce
+a consistent carrier signal, thus we produce Acoustic Am-
+plitude Modulation using Time-Varying Damping (TVD),
+using a similar approach found in variable impedance actu-
+ators and variable dampers utilized in anti-oscillatory sys-
+tems such as robotics, active vehicle suspensions, and earth-
+quake mitigation systems [27, 16, 11]. This is best achieved
+if certain conditions are met:
+1. The object is driven at its resonance frequency i.e.
+m2(ω0 −ω)2 = 0
+2. Change damping value ξ is small enough so that the
+natural frequency is the same, yet big enough to change
+the amplitude of ωc.
+ξis now a function of time, whereX(t) satisﬁes the following
+diﬀerential equation:
+x′′(t) + ξ(t)
+m x′(t) + ω2x(t) = F(t)
+m (9)
+The position of a mass under TVD can only be solved nu-
+merically, but we can illustrate periodic damping modula-
+tion based on the relationship in Equation 8. We chooseξ(t)
+such that M(t) is unipolar and sinusoidal and then combine
+it with Equation 7.
+M(t) = F0
+ξ(t)ωc
+= F0
+ξ0ωc
+(cos(ωrt) + 1)
+X(t) = M(t) cos(ωct+ δ)
+= ( F0
+ξ0ωc
++ 1) cos(ωrt) ×cos(ωct+ δ)
+= C0[cos((ωc + ωr)t+ δ) −cos((ωc −ωr)t−δ)]
+(10)
+where C0 is the combined constant coeﬃcient. If the modu-
+lating signal is periodic, the measured sidebands are ωAM =
+ωc ±ωr. This formulation of intermodulation produces side-
+bands consistent with Equation 2. We later solve for X(t)
+numerically with ξ = cos( ωrt) and compare the synthesis
+model to the acoustic synthesis of the AAM Prototype in
+Section 5.2.
+4. AAM PROTOTYPE
+4.1 Design
+Figure 3 illustrates the basic conﬁguration of the AAM pro-
+totype design. This design contains all the functional ele-
+ments of the dynamic system model presented in Section 3.2
+consisting of the following active components:
+1. Acoustic Carrier Harmonic OscillatorA driven
+harmonic oscillator composed of an EM actuator and
+a tuning fork.
+2. Modulator-Actuated TVD: An actuated TVD mech-
+anism, consisting of an EM actuator and an acoustic
+damping surface or medium.
+3. Stabilization Mechanism: spring-loaded stabiliza-
+tion frame restores the tuning fork to the zero position.
+Figure 3: AAM prototype layout with three active
+components 1. Acoustic Carrier Harmonic Oscilla-
+tor, 2. Modulator-Actuated TVD, 3. Stabilization
+Mechanism
+4.1.1 Acoustic Carrier Harmonic Oscillator
+A harmonic oscillator consisting of a tuning fork produces
+the acoustic carrier signal in the AAM prototype. The sym-
+metric tine movement of the fork generates an eﬃcient, al-
+most perfectly sinusoidal motion in the stem. Since, their
+motions are coupled, modeling the position of the tines di-
+rectly describes the motion of the stem and its acoustic
+eﬀect [23]. A cylindrical EM actuator drives the tines of a
+steel tuning fork at half or one-fourth its natural frequency,
+since both positive and negative magnetic ﬂux attracts fer-
+romagnetic objects [15]. This conﬁguration produces two
+salient carrier signals, the natural frequency ωc1 and twice
+its natural frequency ωc2.
+4.1.2 Modulator-Actuated TVD
+Displacement of the fork tines determines the amplitude of
+the periodic output signal, thus modulating the displace-
+ment of the forks through damping produces amplitude
+modulation. The second EM actuator applies force to the
+ﬁxed stem and causes it to pivot slightly. Since the angle
+is small and contact area is small, TVD is linearlized and
+modeled as horizontal displacement of the tines in Figure 3.
+Contact between the tuning fork tine and damping mate-
+rial on the carrier AM actuator produces the modulator-
+actuated TVD eﬀect. This corresponds to a nonsinusoidal,
+periodic modulation signal. Since the constant signadrivel
+frequency from the carrier electromagnet continues to excite
+the tines, the natural frequency of the tuning fork appears
+to remain the same. This is likely because damping only
+occurs to a limited cross section of the tine, while the rest
+of the tuning fork is unaltered.
+10
+4.1.3 Stabilization Mechanism
+A third component is a suspension system consisting of a
+three-leg base with a hole for a tuning fork and two com-
+pression springs. Two end-blocks control the tension of the
+springs to accommodate diﬀerent diameter harmonic res-
+onators. This construction provides restoring-force to re-
+turn to the mass’s equilibrium position.
+4.1.4 Isolation and Ampliﬁcation
+Additional non-active components decouple the force gener-
+ating noise from the desired AAM signals and acoustically
+amplify the signals. Using a T-Frame design we separate the
+structure holding the electromagnets from the tuning fork
+and stabilization mechanism. This decreases signal bleed
+caused by vibration and other noise generated by the EM
+actuators. Sound isolation pads further reduce propagation
+of noise through a table or stand. To amplify the desired
+signals, we employ a thin soundboard acoustic resonator
+consistent with surfaces commonly used to amplify tuning
+forks.
+4.2 Implementation
+Our implementation of the AAM prototype, pictured in Fig-
+ure 4, implements the three active design elements listed in
+Section 4.1. The components described below are the same
+as those evaluated in Section 5.2. The physical components
+and speciﬁcations are as follows:
+•Tuning fork with a natural frequency of (ωc = 419.41 Hz),
+driven at half it’s natural frequency ( ωs = 209.7 Hz).
+•EM actuators (two) E-77-82 [13].
+•Damping material consisting of a 0.27mm thick coated-
+cloth with a synthetic rubber adhesive. In resting po-
+sition, there was a small gap of approximately 2mm
+between the tine of the fork and the surface of the
+damping material.
+•Spring suspension system consisting of three-leg base
+made from 3D printed ABS plastic, two small steel
+compression springs with the with a length of 35mm
+and a diameter of 9mm tension springs, and adjustable
+steel end-blocks.
+•Sound board made from cedar wood, with the dimen-
+sions 381 mm, 254 mm, 12 mm (L,W,H), resting on
+laterally conﬁgured hardwood stands with the dimen-
+sions 152 mm, 25 mm, 25 mm (L,W,H).
+•Hardwood frame supporting and isolating the EM ac-
+tuators, and acoustic isolation pads (not pictured)
+lifting separately the soundboard and the hardwood
+frame.
+•SMSL SA-50 Class D 50 Watt ampliﬁer for the EM
+actuators with signals generated on a MacBook pro
+running max 7.
+5. EV ALUATION AND RESULTS
+5.1 Method
+To compare the dynamic system model and the AAM pro-
+totype, we developed three tests involving manipulation of
+the modulating frequency ωr The ﬁrst test consisted of ﬁve
+non-continuous modulations at ﬁxed modulator increments
+of approximately 83 Hz, between 5 Hz and 420 Hz, each last-
+ing 7 s, with 2 s silence in between. The second test consists
+of a 40 s linear envelope function sweep from 0 Hz to 210 Hz
+and back to 0 Hz. We also wanted evaluate for overmod-
+ulation in the AAM prototype, so we created a third test
+where ωr > ωc. This was accomplished through increasing
+ampliﬁcation of the modulator ωr, resulting in additional
+Figure 4: AAM Prototype: This is implementation
+consists of a harmonic oscillator and acoustic am-
+plitude modulation with parametric control of side-
+band components.
+harmonic sidebands [22]. Our rationale for developing these
+comparisons was to conﬁrm our model describes the audible
+sideband component behavior in common applications for
+AM in music audio synthesis. The results of these tests are
+presented in 5.2.
+5.1.1 Synthesis Evaluation Method
+To evaluate the AAM prototype and the dynamic model
+together, we constructed a numerical model in Matlab to
+synthesize audio using equations from Section 3. These sim-
+ulations were then synthesized and analyzed in Section 5.2,
+at a sampling rate of 44100 Hz at 16 bit resolution.
+5.1.2 Acoustic Evaluation Method
+The AAM prototype was tested in a -60dB environment,
+with an Earthworks QTC50 omnidirectional microphone at
+a distance from the soundboard of 20mm. The audio was
+recorded in Ableton Live 9 using a Focusrite RedNet audio
+interface with a True Precision pre-amp, at a sampling rate
+of 44100 Hz at 16 bit resolution. The AAM prototype setup
+was identical to the speciﬁcations described in Section 4.2.
+Analysis was conducted using the open-source Baudline
+time-frequency analyzer. We generated spectrograms using
+the Fourier transform with a transform size of 32768, and
+a Hanning window, with a hop-size of 256 using optimal
+(100%) Drift Integration [25].
+5.2 Results
+Figure 5 shows the spectrograms for the three tests de-
+scribed in Section 5. The model simulated the production
+of primary harmonic sidebands in the modulated condition.
+The third column in Figure 5 shows the results for the over-
+modulation conditions. This resulted in prominent second
+and third sideband harmonics, and inconsistent higher har-
+monics.
+Additional components, including a low-frequency sweep
+in the sweep test from 0 Hz to 105 Hz to 0 Hz, and a 205 Hz
+component in both tests are primarily attributable to signal-
+bleed from the ωr and ωs. A third component at approx.
+105 Hz appears in both the modulated and overmodulated
+AAM prototype spectrograms, and is subharmonic gener-
+ated from vertical oscillation of the tuning fork against the
+soundboard [23]. It is interesting to also note the pertur-
+bations along the linear striations in both tests. We posit
+these resonances are likely resulting from nonlinearities in
+11
+DYNAMIC MODEL AAM INSTRUMENT 
+OVERMODULATEDMODULATEDMODULATED
+TEST 1
+TEST 2
+frequency (Hz)
+frequency (Hz)
+t (sec)0 5 10 15 20 25 30 35
+0 250 500 750 1000 1250 1500
+frequency (Hz)
+t (sec)0 5 10 15 20 25 30 35
+0 250 500 750 1000 1250 1500
+t (sec)
+frequency (Hz)
+ frequency (Hz)
+t (sec)0 5 10 15 20 25 30 35
+0 250 500 750 1000 1250 1500
+0 5 10 15 20 25 30 35
+0 250 500 750 1000 1250 1500
+40 t (sec)
+frequency (Hz)
+0 5 10 15 20 25 30 35
+0 250 500 750 1000 1250 1500
+40
+250 500 750 1000 1250 1500
+t (sec)
+0 5 10 15 20 25 30 35 40
+0
+Figure 5: Spectrogram evaluations of the Dynamic Model and the AAM prototype. Non-continuous step
+modulation test (top row), continuous-sweep test (bottom row)
+the physical system, speciﬁcally from the non-sinusoidal pe-
+riodic motion in the TVD implementation.
+Results for the non-continuous step modulation test in
+the top row of Figure 5, show certain sidebands appear-
+ing more clearly with certain modulator frequencies. For
+instance, the ﬁrst three steps AAM prototype are clearly
+accounted for in the dynamic model synthesis, whereas the
+last two steps are nearly indiscernible in the modulated con-
+dition and only weakly visible in the overmodulated condi-
+tion. This is likely a result of eﬃciency problems in the EM
+actuator discussed further in Section 5.3.
+Speciﬁc to the continuous-sweep test, there are intersec-
+tions of the sidebands ofωc1 and ωc2, which generate greater
+sound intensity. These are shown as noticeable vertical stri-
+ations in the modulated and overmodulated iterations of the
+test, shown as both dark and bright streaks in the AAM pro-
+totype spectrograms. These areas denote nodes and anti-
+nodes, where the modulation frequency and its multiples
+form relatively simple integer ratios of the carrier frequency.
+Comparing the dynamic model and the AAM prototype
+further shows that the loudest sidebands at 105 Hz are con-
+siderably more prominent in the AAM prototype, while the
+model produces strong sidebands at twice the modulating
+frequency [15]. The Klang mode, roughly 6.25 times the
+natural frequency, of the tuning fork is also present in the
+AAM prototype evaluation.
+5.3 Additional Observations
+5.3.1 Improving Implementation of TVD
+Additional experimentation found that the EM actuator in
+the TVD system is ineﬃcient at generating displacement or
+movement of mass mat frequencies above 80 Hz, with a de-
+creasing eﬃciency toward an upper limit of approx. 350 Hz.
+This is consistent with prior observations of EM transduc-
+tion [15].
+Given this limitation, it is worth noting that an EM mod-
+ulated TVD system still produces AAM at signiﬁcantly
+higher modulation frequencies than previous acoustic sig-
+nal modulation systems discussed in Section 2. Therefore,
+development of a more suitable implementation of TVD
+system oﬀers the best opportunity for increasing modula-
+tion frequency range and improving overall eﬃciency. This
+would also allow analysis on the speciﬁc weight of sidebands
+between the numerical and physical model.
+Another limitation of this prototype is the relatively quiet
+production of the acoustic signal, which in turn adversely ef-
+fects the Signal-to-Noise Ratio (SNR). Improvements might
+include the use of diﬀerent acoustic ampliﬁcation, such as
+horns or more eﬃcient soundboards, or through the appli-
+cation of acoustic or transducer electric ampliﬁcation.
+6. CONCLUSION AND FUTURE WORK
+6.1 AAM Prototype Extensions
+Materiality is a notable feature of acoustic synthesis systems
+and EM augmented instruments [5, 14]. We consider here
+features that we plan to investigate in future work:
+•Live Input: Substitution of the oscillator driven mod-
+ulator with a signal-corrected live input.
+•Feedback and DSP: Create self-feedback using a
+pickup or via acoustic feedback, or using sonic trans-
+ducers to modify the signal through subtractive or ad-
+ditive synthesis.
+12
+•Multi-Degree of Freedom Systems: Generating
+complex timbres using a set of harmonic oscillators
+ampliﬁed on the same resonator or network of res-
+onators.
+•Material Variation: Utilization of diﬀerent sound-
+boards, dampers, harmonic resonators, and actuators.
+•Scaled Implementations: Develop a set of physi-
+cal eﬀects at a diﬀerent scale that can operate inside
+electronic systems [1].
+6.2 Conclusion
+In this paper we introduce a new approach to Acoustic Am-
+plitude Modulation. Starting from prior work in acoustic
+signal modulation and EM augmented instruments, we de-
+velop a dynamic model to explain the underlying mechanics
+of AAM. A prototype AAM instrument is implemented in
+the form of a driven harmonic oscillator with controllable
+time-varying damping modulation. Sonic results show that
+consistent acoustic sideband components can be produced
+and manipulated in an acoustic system utilizing a driven
+harmonic oscillator 1.
+Our results also show that a dynamic model describes
+the primary sideband harmonics generated by the physical
+system. AAM and more broadly, acoustic signal modula-
+tion, point to a new direction in EM augmented instrument
+research. It is one that oﬀers rich sonic possibilities for in-
+struments and eﬀects, and nearly limitless variation through
+materials, processing, and conﬁguration.
+7. ACKNOWLEDGMENTS
+We would like to thank Michael A. Casey and Paula Matthusen
+for their helpful feedback. This work was partially sup-
+ported by the Oﬃce of Undergraduate Research at Dart-
+mouth College.
+8. REFERENCES
+[1] 1010.co.uk. Erd modular eurorack series 2015.
+http://www.1010.co.uk/org/ERD.html, 2015.
+Accessed: 2016-01-23.
+[2] E. Berdahl, S. Backer, and J. Smith. If i had a
+hammer: Design and theory of an
+electromagnetically-prepared piano. In Proc.of ICMC,
+pages 81–84, 2005.
+[3] E. Berdahl, G. Niemeyer, and J. O. Smith. Active
+control of a vibrating string. The Journal of the
+Acoustical Society of America, 123(5):3666–3666,
+2008.
+[4] N. C. Britt, J. Snyder, and A. McPherson. The
+emvibe: an electromagnetically actuated vibraphone.
+In Proc. New Interfaces for Musical Expression , 2012.
+[5] C. Cadoz, A. Luciani, J.-l. Florens, C. Roads, and
+F. Chadabe. Responsive input devices and sound
+synthesis by stimulation of instrumental mechanisms:
+The cordis system. Computer music journal , pages
+60–73, 1984.
+[6] C. Camier, C. Touz´ e, and O. Thomas. Non-linear
+vibrations of imperfect free-edge circular plates and
+shells. European Journal of Mechanics-A/Solids,
+28(3):500–515, 2009.
+[7] B. Hartsough. Tone cabinet for electric organs,
+Sept. 28 1948. US Patent 2,450,139.
+[8] G. S. Heet. String instrument vibration initiator and
+sustainer, Feb. 28 1978. US Patent 4,075,921.
+1For a video summary of this paper, please visit: https:
+//vimeo.com/153815744. Additional media, and designs
+available at: https://goo.gl/ssbrSs
+[9] C. A. Henricksen. Unearthing the mysteries of the
+leslie cabinet. Recording Engineer/Producer magazine,
+April, 1981.
+[10] M. Keane. Understanding the complex nature of
+piano tones. Acoustics Research Centre. Available
+from http://www.acoustics.auckland.ac.nz/research/
+research ﬁles /keane nzas04.pdf, 2004.
+[11] U. Kurata, T. Kobori, M. Takahashi, N. Niwa, and
+H. Midorikawa. Actual seismic response control
+building with semi-active damper system. Earthquake
+Eng. Struct. Dyn , 28:1427–1447, 1999.
+[12] D. Leslie. Mercury slip ring assembly, Dec. 19 1961.
+US Patent 3,014,192.
+[13] Magneticsensorsystems.com. Tubular electromagnet.
+http://www.magneticsensorsystems.com/
+electromagnet/tubular/E-77-82.asp, 2016.
+Accessed: 2015-01-11.
+[14] A. McPherson. The magnetic resonator piano:
+Electronic augmentation of an acoustic grand piano.
+Journal of New Music Research , 39(3):189–202, 2010.
+[15] A. McPherson. Techniques and circuits for
+electromagnetic instrument actuation. In Proceedings
+of the Twelfth International Conference on New
+Interfaces for Musical Expression , 2012.
+[16] B. V. Murty. Electric, variable damping vehicle
+suspension, Mar. 28 1989. US Patent 4,815,575.
+[17] D. Overholt, E. Berdahl, and R. Hamilton.
+Advancements in actuated musical instruments.
+Organised Sound, 16(02):154–165, 2011.
+[18] D. Pantalony. Seeing a voice: Rudolph koenig’s
+instruments for studying vowel sounds. The American
+journal of psychology , pages 425–442, 2004.
+[19] A. Piepenbrink and M. Wright. The bistable
+resonator cymbal: An actuated acoustic instrument
+displaying physical audio eﬀects. 2015.
+[20] D. Rector and S. Topel. Emdrum: An
+electromagnetically actuated drum. In Proceedings of
+the Fourteenth International Conference on New
+Interfaces for Musical Expression , 2014.
+[21] H. Rhodes. Piano dampening mechanism, Dec. 14
+1948. US Patent 2,456,321.
+[22] C. Roads. A tutorial on non-linear distortion or
+waveshaping synthesis. Computer Music Journal ,
+pages 29–34, 1979.
+[23] T. D. Rossing, D. A. Russell, and D. E. Brown. On
+the acoustics of tuning forks. Am. J. Phys ,
+60(7):620–626, 1992.
+[24] G. Shear. The electromagnetically sustained Rhodes
+piano. PhD thesis, Univ. of Santa Barbara, 2011.
+[25] T. Thompson. Baudline signal analyzer - ﬀt
+spectrogram. http://http://www.baudline.com/,
+2010. Accessed: 2016-01-20.
+[26] T. Thompson. Mosweb online! tone cabinet database.
+http://mosweb.federalproductions.com/
+knowledgebase/tone-cabinet-database/, 2011.
+Accessed: 2016-01-01.
+[27] B. Vanderborght, A. Albu-Sch ¨aﬀer, A. Bicchi,
+E. Burdet, D. G. Caldwell, R. Carloni, M. Catalano,
+O. Eiberger, W. Friedl, G. Ganesh, et al. Variable
+impedance actuators: A review. Robotics and
+Autonomous Systems, 61(12):1601–1614, 2013.
+13

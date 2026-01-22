@@ -1,0 +1,524 @@
+Real-time CALM Synthesizer
+New Approaches in Hands-Controlled Voice Synthesis
+N. D’Alessandro
+TCTS Lab (FRIA Researcher)
+Faculté Polytechnique de Mons
+B-7000 Mons, Belgium
+nicolas.dalessandro@fpms.ac.be
+C. d’Alessandro, S. Le Beux, B. Doval
+LIMSI - CNRS
+Université Paris Sud XI
+F-91403 Orsay, France
+{cda, slebeux, boris.doval}@limsi.fr
+ABSTRACT
+In this paper, a new voice source model for real-time
+gesture–controlled voice synthesis is described. The syn-
+thesizer is based on a causal-anticausal model of the voice
+source, a new approach giving accurate control of voice
+source dimensions like tenseness and eﬀort. Aperiodic com-
+ponents are also considered, resulting in an elaborate mo-
+del suitable not only for lyrical singing but also for various
+musical styles playing with voice qualities. The model is
+also tested using diﬀerent gestural control interfaces : data
+glove, keyboard, graphic tablet, pedal board. Depending
+on parameter-to-interface mappings, several instruments
+with diﬀerent musical abilities are designed, taking advan-
+tage of the highly expressive possibilities of the synthesis
+model.
+Keywords
+Singing synthesis, voice source, voice quality, spectral
+model, formant synthesis, instrument, gestural control.
+1. INTRODUCTION
+Remarkable achievements have been recently reached in
+singing voice synthesis. A review of state of the art can
+be found in [1]. Technology seems mature enough for re-
+placing vocals by synthetic singing, at least for backing
+vocals [2] [3]. However, existing singing synthesis systems
+suﬀer from two restrictions : they are aiming at mimicking
+singers rather than creating new instruments, and are ge-
+nerally limited to MIDI controllers.
+We think it worthwhile to extend vocal possibilities of
+voice synthesizers and design new interfaces that will open
+new musical possibilities. On the one hand, a voice synthe-
+sizer should be able to reproduce several voice quality di-
+mensions, resulting in a wide variety of sounds (e.g. quasi-
+sinusoidal voice, mixed periodic aperiodic voice, pressed
+voice, various degrees of vocal eﬀort, etc.). On the other
+hand, vocal instrument being embodied in the singer, mul-
+tidimensional control strategies should be devised for ex-
+ternalizing gestural controls of the instrument.
+In this paper, a new elaborate voice source model able to
+produce various voice qualities is proposed. It is based on
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise,
+or republish, to post on servers or to redistribute to lists, requires prior
+speciﬁc permission and/or a fee.
+NIME 06,June 4-8, 2006, Paris, France
+Copyright remains with the author(s).
+spectral modelling of voice source [4]. Links between spec-
+tral parameters and auditory eﬀects are relatively straight-
+forward. Then playing instruments based on spectral mo-
+delling seems very intuitive. Another key point is gesture-
+to-parameter mapping. Following the pioneering work by
+Fels [5], we found data glove particularly well suited to
+vocal expression. Recent work on hand-controlled vocal
+synthesis include series of instruments presented by Cook
+[6] and the Voicer by Kessous [7]. It must be pointed out
+that musical possibilities oﬀered by an instrument stron-
+gly depend on mapping and interfaces. Then, depending
+on intended musical aims, diﬀerent instruments are pro-
+posed. This paper is organized as follows. In section 2, the
+voice synthesis model is reviewed. In section 3, control de-
+vices and mapping of voice quality dimensions onto control
+parameters are discussed. Section 4 presents two musical
+instruments built on basis of synthesis model and vocal
+dimensions. Section 5 presents a discussion of results ob-
+tained and proposes directions for future works.
+2. VOICE SYNTHESIS MODEL
+In this section, we ﬁrst give an overview of mechanisms
+involved in voice production. Then, we focus on the glot-
+tal source and present the causal-anticausal linear model
+developed by d’Alessandro/Doval/Henrich in [4]. We also
+explain the nature of non-periodical components we in-
+troduced in the model. Finally, we describe structure and
+possibilities of the real-time glottal ﬂow synthesizer based
+on CALM (RT-CALM) we developed and integrated in
+following singing instruments.
+2.1 Voice production
+Voice organ is usually described as a "source/ﬁlter" sys-
+tem. Glottal source is a non-linear volume velocity genera-
+tor where sound is produced by complex movements of vo-
+cal folds (larynx) under lungs pressure. A complete study
+of glottal source can be found in [8]. Sounds produced by
+the larynx are then propagated in oral and nasal cavities
+which can be seen as time-varying ﬁltering. Finally, the
+volume velocity ﬂow is converted into radiated pressure
+waves through lips and nose openings (cf. Figure 1).
+In the context of signal processing applications, and
+particulary in singing synthesis, some simpliﬁcations are
+usually accepted. First, lips and nose openings eﬀect can
+be seen as derivative of the volume velocity ﬂow. It is ge-
+nerally processed by a time-invariant high-pass ﬁrst order
+linear ﬁlter [9]. Vocal tract eﬀect can be modelized by ﬁl-
+tering of glottal signal with multiple (4 or 5) second order
+resonant linear ﬁlters (formants).
+Contrary to this "standard" vocal tract implementa-
+tion, plenty of models have been developed for represen-
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+266
+Figure 1: Voice production mechanisms : vocal
+folds vibrations, vocal tract ﬁltering and lips/nose
+openings radiation.
+tation of glottal ﬂow, with diﬀerences in accuracy and
+ﬂexibility. Usual models are KLGLOTT88 [10], R++ [11],
+Rosenberg-C [12] and LF [13] [14]. We present now the
+causal-anticausal linear model (CALM) [4], explain why
+we worked with this spectral approach and propose adap-
+tations of the existing algorithm to ease real-time mani-
+pulation.
+2.2 CALM : causal-anticausal linear model
+We have seen that modelling vocal tract in spectral do-
+main (with resonant ﬁlters central frequency, amplitude
+and bandwidth) is very powerful in term of manipulation
+because spectral description of sounds is close to auditory
+perception. Traditionally, glottal ﬂow has been modelized
+in time domain. A spectral approach can be seen as equi-
+valent only if both amplitude and phase spectra are consi-
+dered in the model.
+Figure 2: Amplitude spectrum of the glottal ﬂow
+derivative : illustration of glottal formant (Fg, Ag)
+and spectral tilt (Fa, Aa).
+For amplitude spectrum, two diﬀerent eﬀects can be iso-
+lated (cf. Figure 2). On the one hand, an amount of energy
+is concentrated in low frequencies (i.e. below 3 kHz). This
+peak is usually called "glottal formant". We can see that
+bandwidth, amplitude and position of the glottal formant
+change with voice quality variations. On the other hand,
+a variation of spectrum slope in higher frequencies (called
+"spectral tilt") is also related to voice quality modiﬁca-
+tions.
+Figure 3: Time-domain representation of derivated
+glottal pulse : anticausal part and causal part.
+Considering both "glottal formant" and "spectral tilt"
+eﬀects, two cascading ﬁlters are implemented. A second or-
+der resonant low-pass ﬁlter (H1) for glottal formant, and a
+ﬁrst order low-pass ﬁlter (H2) for spectral tilt. But phase
+information indicates us that this system is not completely
+causal. Indeed, as it is illustrated on Figure 3, glottal pulse
+is a combination of a "increasing" (or active) part and a
+"decreasing" (or passive) part. The decreasing part, called
+the return phase, mainly inﬂuences the spectral tilt and
+hence is causal. And we can also show that the second or-
+der low-pass ﬁlter has to be anticausal in order to provide
+a good phase representation.
+A complete study of spectral features of glottal ﬂow,
+detailed in [4], gives us equations linking relevant parame-
+ters of glottal pulse (F0 : fundamental frequency,Oq :o p e n
+quotient, αm : asymetry coeﬃcient andTl : spectral tilt, in
+dB at 3000Hz) toH1 and H2 coeﬃcients. Note that expres-
+sion of b1 has been corrected. [4] also contains equations
+linking this time-domain parameters with spectral-domain
+parameters.
+Anticausal second order resonant ﬁlter :
+H1(z)= b1z
+1+ a1z + a2z2
+where :
+a1 = −2e−apTecos(bpTe), a2 = e−2apTe
+b1 = E
+bp
+e−apTesin(bpTe)
+ap = − π
+OqT0tan(παm) , bp = π
+OqT0
+Causal ﬁrst order ﬁlter :
+H2(z)= bTL
+1 − aTLz−1
+where :
+aTL = ν −
+√
+ν2 − 1, bTL =1 − aTL
+ν =1 − 1
+η , η =
+1
+e−TL/10ln(10) −1
+cos(2π 3000
+Fe )−1
+2.3 Non-periodical components
+As described theoretically in [4], the glottal ﬂow is a de-
+terministic signal, completely driven by a set of parame-
+ters. Adding naturalness involves the use of some random
+components we propose to describe.
+Jitter
+Jitter is a natural unstability in the value of fundamental
+frequency. It can be modelized by a random value (gaus-
+sian distribution, around 0 with variance depending on the
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+267
+amount of jitter introduced), refreshed every period, ad-
+ded to the stable value of fundamental frequency.
+Shimmer
+Shimmer is a natural unstability in the value of the am-
+plitude. It can be modelized by a random value (gaus-
+sian distribution, around 0 with variance depending on
+the amount of shimmer introduced), refreshed every per-
+iod, added to the stable value of amplitude.
+Turbulences
+Turbulences are caused by additive air passing through
+vocal folds when glottal closure is not complete. It can be
+modelized by pink noise ﬁltered by a large band-pass (tube
+noise), modulated in amplitude by glottal pulses.
+We can note here that we kept a direct control on ir-
+regularities (based on Jitter, Shimmer and Turbulences
+rates). Other models were developed, involving granular
+synthesis coupled with self-organizing dynamic systems
+[15], and could be considered in further works.
+2.4 RT-CALM framework
+Figure 4: Framework of RT-CALM algorithm, al-
+lowing real-time synthesis of glottal pulses based
+on causal-anticausal linear model.
+Full anticausal processing is only possible oﬄine, by run-
+ning algorithms backwards on data buﬀers. Anyway, in
+this context, we can take advantage of physical proper-
+ties of glottis to propose a real-time algorithm. Indeed,
+glottal pulse corresponds to opening/closing movements
+of vocal folds. It means that impulse responses generated
+by H1 and H2 ﬁlters can’t overlap. Thus, if ranges of pa-
+rameters are correctly limited, impulse responses can be
+stored backwards and truncated period-synchronously wi-
+thout changing too much their spectral properties.
+To achieve the requested waveform, impulse response of
+causal version of H1 (glottal formant) is computed, but
+stored backwards in the buﬀer. This waveform is trunca-
+ted at a length corresponding to instantaneous fundamen-
+tal frequency ( F0+Jitter). Then the resulting period is
+ﬁltered by H2 (spectral tilt). Coeﬃcients of H1 and H2
+are calculated from equations described in subsection 2.2
+and [4]. Thus, both time-domain and spectral-domain pa-
+rameters can be sent. On the one hand, glottal pulses are
+derivated to produce pressure signal (cf. Figure 3). On the
+other hand, it is used to modulate the amount of addi-
+tive noise. Complete RT-CALM algorithm is illustrated at
+Figure 4.
+3. VOICE QUALITY DIMENSIONS
+Voice synthesis model is driven by a set of low-level pa-
+rameters. In order to use these parameters in singing, they
+must be organized according to musical dimensions. Map-
+pings between parameters and dimensions, and between
+dimensions and controllers are essential parts of instru-
+ment design. In this section, we describe main musical di-
+mensions for voice source (cf. Figure 5) and vocal tract (cf.
+Figure 6).
+3.1 Glottal source
+Figure 5: Mapping of the vocal source
+Melodic dimension
+For singing, this dimension can be decomposed into two
+parts. On the one hand, it seems important to sing in
+tune i.e. to make use of notes with well-deﬁned pitches.
+On the other hand, micro-melodic variations are essential
+for expressive and natural singing (portamento, vibrato,
+etc.). Two diﬀerent controls seem necessary for melodic
+dimension. This dimension mainly depends on parameter
+F0. Anyway, a more precise vibrato synthesis should also
+involve amplitude variations.
+Hoarseness dimension
+This dimension is linked to structural aperiodicities in
+voice source, like Jitter and Shimmer.
+Breathiness dimension
+This dimension is linked to aspiration noise in voice
+source. It controls the relative amount of voicing vs. whis-
+pering, using theNoise parameter.
+Pressed/lax dimension
+This dimension is mainly linked to the position of the
+glottal formant Fg and its bandwidthBg. It is often linked
+to breathiness and vocal eﬀort. The pressed/lax dimension
+is used in some styles of singing e.g. Japanese noh theater
+or belt singing.
+Vocal eﬀort dimension
+This dimension is linked to spectral tiltTl and of course
+to gain parameter Ag.
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+268
+3.2 Vocal tract
+Figure 6: Mapping of the vocal tract
+Vocalic space
+This space is deﬁning vocal genre (male/female/child),
+phonemes, and other expressive features (lips rounding,
+lips spreading, tongue position). This space can also be
+used for harmonic singing. The vocalic space is deﬁned by
+formant parameters F1, B1, A1, F2, B2, A2, ... FN , BN ,
+AN .
+Articulation dimension
+Finally, notes attacks and decays are controlled by an
+articulation dimension. “Articulation” is taken here in its
+musical meaning i.e. transitions between notes. It is essen-
+tially controlled by gain parameterAg.
+3.3 Musical control of vocal dimensions
+Playing with melody
+Melodic playing usually requires precise pitches. Then
+“selection” gestures are needed using e.g. a keyboard. Ho-
+wever, natural vocal note transitions are generally slow,
+with more or less portamento and vibrato. Small and control-
+led pitch variations are therefore needed, and the “selec-
+tion” gesture must be accompanied by a “modiﬁcation”
+gesture, using e.g. hand position in one dimension of space.
+Another elegant solution oﬀering accurate pitch control
+and smooth micro-melodic variation is using a graphic ta-
+blet. A virtual guitar board can be emulated this way. Well
+tuned pitches are not required in some singing styles imi-
+tating speech, like Sprechgesang (parlar cantando). Then
+only one control gesture is needed, that can be achieved
+by position of hand in one spatial dimension.
+Playing with timbre : vocalic space
+Playing with vocalic timbre is often used on slow moving
+melodies e.g. harmonic singing. The basic vocalic space
+needs two dimensions for contrasting vowels e.g. a joystick
+or a graphic tablet. One dimension is suﬃcient for harmo-
+nic singing (moving only second formant frequency), using
+a slider or position of hand in one spatial dimension. But
+a third dimension would be needed for signaling facial mo-
+vements like lips spreading or rounding, using e.g. a data
+glove.
+Playing with timbre : noise and tension
+Some musical styles are also playing with noise and ten-
+sion. These parameters are moving relatively slowly, on a
+limited scale, and gestures must not be extremely precise.
+They can be naturally associated to ﬂexion of ﬁngers in a
+data glove.
+Playing with articulation and phrasing The data
+glove proved also useful for articulation (in the musical
+meaning of note attack and release) and phrasing. Hand
+movements in space are well suited to phrasing and ﬁnger
+ﬂexions are well suited to articulation.
+4. CALM-BASED INSTRUMENTS
+This section describes two setups we realised. Main pur-
+pose of this work was to realize extensive real-time tests of
+our CALM synthesis model and voice quality dimensions
+mappings. No dedicated controllers were designed for this
+purpose. Only usual devices such as tablets, joyticks or
+keyboards were used.
+4.1 Instrument 1
+In this ﬁrst instrument implementation, we use a key-
+board to play MIDI notes in order to trigger the vowels at
+diﬀerent tuned pitches. Thus, by using keyboard, we are
+able to set glove free for ﬁne tuning of F0 so as to achieve
+vibrato, portamento of other types of melodic ornaments.
+Accurate control ofF0 by glove position alone proved diﬃ-
+cult because well tuned notes references were missing, due
+to approximative nature of hand gestures.
+Figure 7: Structure of Instrument 1
+Tempered notes (or other conventions) delivered by key-
+board can be modiﬁed to a certain extent, thanks to tra-
+cking of glove position along a certain axis (transversal axis
+gives better ergonomics as one don’t have to fold the elbow
+to achieve vibrato). General gain is mapped onto longitu-
+dinal axis of the glove. Then both vibrato and amplitude
+envelopes of sound can be produced by circular hand move-
+ments. Other vocal dimensions are controlled by ﬂexion of
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+269
+data glove ﬁngers. First ﬁnger controls vocal eﬀort (spec-
+tral tilt), second ﬁnger controls breathiness (linked to ad-
+ditive noise), third ﬁnger control the pressed/lax dimen-
+sion (linked to the glottal formant), fourth ﬁnger controls
+hoarseness (linked to jitter and shimmer). Voice quality
+modiﬁcations are achieved by closing/opening movements
+of whole hand or selected ﬁngers. Preset vowels are asso-
+ciated to keys of computer keyboard. Vowel formants can
+also be modiﬁed by additional devices, like pedal board or
+joysticks.
+In summary, for this ﬁrst instrument :
+1. left-hand controls the keyboard (tempered notes)
+2. right-hand movements control both ﬁne pitch modu-
+lation, and note phrasing.
+3. right-hand ﬁngers control tension, eﬀort, hoarseness,
+and breathiness.
+In this implementation, note phrasing results of relati-
+vely large hand movements. An alternative solution is to
+couple eﬀort and note phrasing in ﬁngers movements, and
+to keep one dimension of hand movement for controlling
+another vocal dimension (e.g. breathiness). Then, phra-
+sing is controlled by smaller and quicker ﬁnger movements.
+Overall description of this instrument and its various com-
+ponents is illustrated on Figure 7.
+4.2 Instrument 2
+The key point of this second instrument is simplicity
+of learning and using. Diﬀerent choices have been made
+to achieve that result. First, we decided to focus on voice
+quality. Vocal tract control would be limited to vowel swit-
+ching. Then, we took advantage of our natural writing
+abilities to map all glottal ﬂow features only on tree di-
+mensions of a graphic tablet (x axis, y axis and pressure).
+Figure 8: Mapping on the graphic tablet. X axis :
+fundamental frequency, Y axis : pressed/lax and
+vocal eﬀort dimensions, Pressure (P) : general vo-
+lume.
+As described on Figure 8, horizontal axis is mapped
+to fundamental frequency. Tests have been made showing
+that, after a few training, 2 or 3 (even 4) octaves can be
+managed on aWacom Graphire tablet. Anyway, transpo-
+sition and surface scaling features have been implemen-
+ted. Vertical axis control both pressed/lax and vocal ef-
+fort dimensions. Mapping is made by using Y value as an
+interpolation factor between two diﬀerent conﬁgurations
+of parametersOq, αm and TL, from a "quiet" voice to a
+"tensed" voice (cf. Figure 9). Finally, pressure parameter
+is mapped to the gain (E).
+Figure 9: Interpolation between "quiet" voice and
+"tensed" voice made by Y axis of the graphic ta-
+blet.
+Regression of voice quality control on an overall expres-
+sive axis makes main manipulations of voice source pos-
+sible with simple "drawings" (i.e. bidimensional + pressure
+shapes). This compromise makes this instrument really in-
+tuitive. Indeed, as it can be done e.g. with a guitar, inter-
+preter only needs graphic tablet to play. MIDI controller
+(e.g. pedal board) is just used for changing presets (cf.
+Figure 10).
+Figure 10: Structure of Instrument 2.
+5. CONCLUSIONS AND FUTURE WORK
+The two instruments implemented so far are suitable for
+musical use. Instruments have a truly human sound, and
+new possibilities oﬀered by gestures to sound mapping en-
+able intuitive playing. Compared to other voice synthesis
+systems, more emphasis is put on voice quality controls.
+It is then possible to play with expressive musical dimen-
+sions inherent to wind instruments, like eﬀort, pressure
+and noise. These dimensions are exploited in acoustic ins-
+truments like saxophones and brass, and of course voice,
+but are generally ignored in singing synthesis. Hand mo-
+vements in space and hand/ﬁngers closures/openings are
+intuitively associated to such dimensions as eﬀort or voice
+pressure.
+Another challenging point for singing synthesis is ac-
+curate yet ﬂexible F0 control, like in fretless string ins-
+truments. This has been implemented in two ways in our
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+270
+instruments (graphic tablet and glove controlledF0). This
+ﬂexible F0 control enables the player all possible types of
+intonation, from singing to speech. Melodic ornaments like
+e.g. vibrato or portamento are easily controlled.
+Spectral processing of voice quality proved also useful for
+“spectral” singing styles. Overtone singing, formant melo-
+dies, various types of throat singing are easily produced
+and controlled in this framework.
+Instruments can also be considered as tools for studying
+singing, because they produce very natural sounding and
+controlled signals. Then they can be used for investigating
+musical gestures involved in singing.
+Apart from the two instruments presented here, we are
+also investigating other types of data gloves and elaborated
+3D joysticks for reﬁning control of the synthesizer. Howe-
+ver, this will not change the nature and number of useful
+vocal dimensions, but improve precision and ergonomics.
+Of course, singing is an instrument that mixes toge-
+ther music and language. Thus, our next challenge is to
+control the “speech” part of singing. This point has been
+only marginally considered in the present research and will
+be the object of future work. Addition of speech articu-
+lations would drive us to more accurate modelization of
+vocal tract, eventually based on existing databases. Consi-
+dering interfaces, syntaxic abilities of controllers have to
+be determined in order to achieve syllables, words or sen-
+tences synthesis.
+6. ACKNOWLEDGMENTS
+This work originated from the Speech Conductor pro-
+ject, a part of the eNTERFACE’05 workshop organized
+by Prof. Thierry Dutoit (Faculté Polytechnique de Mons)
+within the SIMILAR Network of Excellence (European
+Union - FP6). We would like to thank all these institu-
+tions that provided excellent working conditions.
+7. REFERENCES
+[1] M. Kob, "Singing Voice Modelling As We Know It
+Today,” Acta Acustica United with Acustica, Vol. 90,
+pp. 649–661, 2004.
+[2] Virsyn Corporation, "The Cantor Singing Synthesis
+Software," 2005-present, url :
+http ://www.virsyn.de/
+[3] Yamaha Corporation, "The Vocaloid Singing
+Synthesis Software," 2003-present, url :
+http ://www.vocaloid.com/
+[4] B. Doval, C. d’Alessandro and N. Henrich, "The
+Voice Source as an Causal-Anticausal Linear Filter,"
+Proc. ISCA ITR W VOQUAL’03, Geneva,
+Switzerland, August 2003, pp. 15–19.
+[5] S. Fels and G. Hinton, "Glove-TalkII : A Neural
+Network Interface which Maps Gestures to Parallel
+Formant Speech Synthesizer Controls,"IEEE
+Transactions on Neural Networks,V o l9 ,N o .1 ,p p .
+205–212, 1998.
+[6] P. Cook, "Real-Time Performance Controllers for
+Synthesized Singing," Proc. NIME 2005, Vancouver,
+Canada, May 2005, pp. 236–237
+[7] L. Kessous, "Gestural Control of Singing Voice, a
+Musical Instrument," Proc. of Sound and Music
+computing 2004, Paris, October 20-22, 2004.
+[8] N. Henrich. "Etude de la source glottique en voix
+parlée et chantée." Thèse de doctorat à l’Université
+Paris VI, 2001.
+[9] G. Fant. "Acoustic Theory of Speech Production",
+Gravenhage, 1960.
+[10] D. Klatt and L. Klatt, "Analysis, Synthesis, and
+Perception of Voice Quality Variations among
+Female and Male Talkers,"J. Acoust. Soc. Am.,
+87(2) :820–857, 1990.
+[11] R. Veldhuis, "A Computationally Eﬃcient
+Alternative for the Liljencrants-Fant Model and its
+Perceptual Evaluation,"J. Acoust. Soc. Am.,
+103 :566–571, 1998.
+[12] A. E. Rosenberg, "Eﬀect of Glottal Pulse Shape on
+the Quality of Natural Vowels,"J. Acoust. Soc. Am.,
+49 :583–590, 1971.
+[13] G. Fant, J. Liljencrants, and Q. Lin, "A
+Four-Parameter Model of Glottal Flow,"
+STL–QPSR, 85(2) :1–13, 1985.
+[14] G. Fant, "The LF-Model Revisited. Transformations
+and Frequency Domain Analysis," STL–QPSR, 2–3,
+119–56, 1995.
+[15] E. R. Miranda, "Generating Source-Streams for
+Extralinguistic Utterances". Journal of the Audio
+Engineering Society (AES), Vol. 50 N°3, March 2002.
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+271

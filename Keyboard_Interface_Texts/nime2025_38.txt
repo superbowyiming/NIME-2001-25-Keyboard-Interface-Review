@@ -1,0 +1,997 @@
+The Sparksichord: Practical Implementation of a Lorentz Force
+Electromagnetic Actuation and Feedback System
+Adam Schmidt
+Imperial College London
+Dyson School of Design Engineering
+London, United Kingdom
+a.schmidt24@imperial.ac.uk
+Jeffrey Snyder
+Princeton University
+Department of Music
+Princeton, NJ, USA
+josnyder@princeton.edu
+Gian Torrano Jacobs
+Montclair State University
+John J. Cali School of Music
+Montclair, NJ, USA
+torranojacog1@montclair.edu
+Joseph Gascho
+University of Michigan
+School of Music, Theatre & Dance
+Ann Arbor, MI, USA
+jgascho@umich.edu
+Joyce Chen
+Princeton University
+Department of Music
+Princeton, New Jersey, United States
+joyce.chen@princeton.edu
+Andrew McPherson
+Imperial College London
+Dyson School of Design Engineering
+London, United Kingdom
+andrew.mcpherson@imperial.ac.uk
+Figure 1: The Sparksichord
+Abstract
+In line with a sustained community interest in electromagnetic
+actuation of musical instruments, we describe practical consider-
+ations for Lorentz Force actuation in conductive strings, exempli-
+fied by the Sparksichord – an augmented harpsichord that uses
+Lorentz Force actuation, optical feedback, and analog circuitry
+to sustain vibrations of its brass strings. Electromagnetically-
+actuated and feedback instruments have grown increasingly pop-
+ular in NIME, though most systems rely on the use of solenoid-
+style electromagnetic coils. By running current through the string
+itself, Lorentz Force actuation offers an alternate arrangement
+of magnets and wire that can afford new modes of interaction, a
+broader frequency response, and cheaper implementation. We
+aim to empower practitioners with a toolbox for designing and
+building actuated instruments of this style and describe our spe-
+cific implementation for this instrument.
+Keywords
+Electromagnetic actuation, sustain, augmented instruments, ana-
+log circuits, optical sensing
+This work is licensed under a Creative Commons Attribution 4.0 International
+License.
+NIME ’25, June 24–27, 2025, Canberra, Australia
+© 2025 Copyright held by the owner/author(s).
+1 Introduction
+A persistent topic of interest in digital musical instrument (DMI)
+research is the creation of hybrid acoustic-electronic instruments
+based on actuating (i.e. inducing vibrations in) musical instru-
+ment strings, membranes, air columns, or other resonant ele-
+ments [15, 23, 32]. Actuating physical systems rather than produc-
+ing purely synthetic sound offers a range of novel sonic and tac-
+tile effects, while also potentially exposing the sound-producing
+apparatus for direct manipulation by the performer. Strings are
+perhaps the most thoroughly explored of these actuated elements.
+The predominant actuation approach in both research and com-
+mercial practice involves the use of solenoid-style (cylindrical)
+electromagnetic coils driving strings made from steel or other
+ferromagnetic materials.
+This paper develops the theory and practice of a different
+approach to electromagnetic string actuation, building on ear-
+lier foundations in the literature [24]. The approach, commonly
+known as Lorentz Force actuation , involves an alternate arrange-
+ment of magnets, wire, and strings in which the string itself
+becomes the primary electrical conductor. Although the arrange-
+ment has been described before in patents and papers [ 20, 24],
+little documentation for realized musical systems exists. It is most
+notably used in Alvin Lucier’s Music on a Long Thin Wire [22]
+and has most recently been described within NIME by Schmidt
+& Gurevich [35].
+Lorentz Force actuation is less explored than coil-based actu-
+ation in the realm of musical instruments, perhaps because of
+the extensive documentation surrounding coil-actuated projects
+by hobbyists and professional practitioners alike, though as this
+NIME ’25, June 24–27, 2025, Canberra, Australia Schmidt et al.
+paper will show, both approaches can be relatively simple to im-
+plement with easily available parts. Lorentz Force actuation and
+coil-based actuation are not always interchangeable for a given
+instrument, and the two approaches have different advantages
+and limitations. This paper aims to provide a practical introduc-
+tion to Lorentz Force actuation, illustrating its musical utility
+through a case study of the Sparksichord, a harpsichord with
+48 self-sustaining strings using a fully analog configuration of
+Lorentz Force actuation and optical vibration sensing.
+2 Background
+2.1 Related Work
+Over the past decade, the NIME community has seen new works
+and discourse surrounding electromagnetic actuation and/or feed-
+back musical instruments. Many of these developments and dis-
+cussions describe implementations of electromagnetic actuation,
+most of which utilize coil-transducer style actuation. Coil-based
+augmentations largely fall into three categories; (1) using an
+electromagnet to drive a ferrous sound-making element with a
+solenoid coil [19, 20, 23], (2) using an electromagnet to drive a per-
+manent magnet attached to a non-ferrous sound-making element
+with a solenoid coil [1, 10], or (3) using a transducer mounted to
+an instrument body to indirectly vibrate the sound-making ele-
+ments through acoustic or mechanical coupling [18, 26, 31, 34, 37].
+Other methods of actuation and feedback that do not rely on
+electromagnetic coils nor Lorentz Force actuation to excite a
+sound-generating element are also possible (i.e., piezo-element
+actuation [9]) but less common.
+Keyboard instruments have been of particular interest to elec-
+tromagnetic actuation practitioners, with documentation of an
+electromagnetically-actuated piano dating back to the 19th cen-
+tury [13]. Some more recent works actuate their strings or tonebars
+by driving strings or magnets with synthesized tones, as does the
+Magnetic Resonator Piano [ 23], Electromagnetically-prepared
+piano [ 7], and the EMVibe [ 10], with some practitioners ex-
+perimenting with more tightly-controlled forms of feedback to
+achieve infinite-sustain as done in the Electromagnetically Sus-
+tained Rhodes piano [36]. Though many of these actuated instru-
+ments don’t require the player to be in direct physical contact
+with the vibrating element, many newer actuated instruments
+actually necessitate it, introducing a new paradigm of inher-
+ently haptic instruments that rely on chaotic, unpredictable feed-
+back that foster a greater sense of agency from the instrument
+[11, 15, 18, 26, 28, 30, 34, 35, 38].
+In the past couple years, we have seen a number of new com-
+mercial developments utilizing electromagnetic actuation (other
+than the renowned eBow [ 19]), such as Korg Berlin’s Electro-
+Acoustic Synth1 and SoundStone’s String Armonica2, as well as
+DIY and hobbyist efforts to share open-source knowledge and de-
+signs for sustainer systems3, suggesting an ever-growing interest
+in these instruments that extends beyond academia.
+2.2 Electromagnetic Actuation Overview
+2.2.1 Transducers: Sensors & Actuators.
+Transducers are devices that convert one form of energy into
+another. For example, microphones are a form of transducer that
+first converts acoustic energy into mechanical energy, and then
+mechanical energy to electrical signals. These can be thought of
+1https://www.youtube.com/watch?v=wpsXy8z0RGA
+2https://www.youtube.com/watch?v=5mOhg0gz9DI
+3https://bitbucket.org/metalmarshmallow/mm-diy-sustainer/src/main/
+as ‘sensors’. Conversely, speakers use electrical energy to induce
+mechanical motion in an element and consequently generate
+acoustic pressure, and can generally be thought of as ‘actuators’.
+Dynamic-coil microphones and loudspeakers are two common
+examples of coil-based sensors and actuators (respectively), and
+they work via the principles of electromagnetic induction.
+For example, as you speak into a microphone, the acoustic pres-
+sure generated by your vocal cords excites a thin diaphragm with
+many windings of copper wire (called the voice-coil) attached.
+This diaphragm and coil pair vibrates with this excitement near a
+permanent magnet such that the coil is subject to a changing mag-
+netic field, which in turn induces an alternating electric current
+in the coil per the laws of magnetic induction and proportional
+to the diaphragm was subject to. This phenomenon also works
+in reverse, as in the case of a dynamic coil speaker; applying an
+alternating electric current to a voice-coil near a permanent mag-
+netic field induces vibration in the coil and diaphragm pair, and in
+turn creates audible acoustic pressure. In either case, the strength
+of electromagnetic induction scales linearly with the number of
+turns of wire in the voice coil, increasing signal strength while
+keeping things physically compact.
+2.2.2 Lorentz Force Sensing and Actuation.
+Now one can imagine a special case of this voice coil and perma-
+nent magnet combination where the coil is unwound (number
+of turns = 1) and stretched out but still nearby the permanent
+magnet; electromagnetic principles are still in play such that
+moving the wire nearby the magnet will induce a voltage across
+the wire, and running an electric current through the wire will
+induce a force on the wire. The force felt by the wire is known as
+the Lorentz Force, and is the namesake of this actuation method.
+The former case – vibrating a string in a magnetic field – is
+well documented as a string-sensing method by scientists and
+practitioners [33] and is even available commercially as a pickup
+method for classical stringed instruments4.
+2.2.3 Sustaining, Damping, and Transformations.
+The ever-popular eBow device [19] popularized a musical effect
+probably most well known as ‘infinite sustain’. This device, when
+held close to a vibrating steel guitar string, uses the principles
+of electromagnetics to add energy to the string in such a way
+that its vibrations are sustained indefinitely (Figure 2). The fun-
+damental requirements for a feedback infinite-sustain system are
+(a) a sensor, (b) an actuator, and (c) a closed-loop gain between
+the sensing and actuating methods that adds enough energy to
+the system to allow vibrational energy to accumulate. Without
+sufficient gain, the sustain of an instrument may be increased or
+augmented but will eventually fade out.
+To augment the natural resonances of the sound-making ele-
+ment – in most cases a metal string – this feedback system needs
+to do more than simply add energy; extensive effort has gone into
+exploring the active damping of sound-making elements – a sig-
+nificantly more complex challenge than infinite sustain [3, 4, 40].
+To achieve effective damping, phase coherence between the sen-
+sor and actuator is required to remain stable across the desired
+audio bandwidth [6, 20]. Achieving phase coherence has been
+explored in a few different manners: ultra-low latency processing
+where the time delay is negligible; with additional processing to
+add a correction delay [7, 8]; and collocated or nearly-collocated
+sensing and actuation [6, 20]. Additionally, strings vibrate on two
+axes while most sensors and actuators only interact with a single
+4https://www.stringamp.com/
+The Sparksichord NIME ’25, June 24–27, 2025, Canberra, Australia
+Power Amplifier
+changing magnetic 
+field induces current 
+in sensor coil 
+alternating current 
+from actuator coil 
+induces magnetic 
+forces on string ferrous 
+vibrating 
+string
+in out
+Figure 2: Simplified block diagram of EM Coil Sustaining,
+as is done in eBows
+axis, thus requiring the use of multi-axis sensing and actuation
+to offer the most responsive control as explored by [20] and [4].
+Research efforts have also explored the active transformation
+of the feedback loop, allowing a system to alter harmonic content
+and timbre, sometimes to the point of making a convincing imi-
+tation of a synthesized tone or acoustic instrument. For example,
+a string may be driven such that the harmonics present in the
+string emulate that of a triangle wave or flute [ 3, 5, 20, 21], or
+harmonics may be altered to vibrate at frequencies they do not
+naturally resonate at [9].
+Electromagnetic coil sensing and actuating are well-documented
+and the most common method for achieving sustained vibrations,
+though feedback control is far from limited to coils; Optical, Mag-
+netic, and piezoelectric transducers can fill the role of sensing,
+while Lorentz Force Actuation or piezoelectric transducers can
+be used to actuate.
+3 Technical Implementation of Lorentz Force
+Actuation
+This section contains an explanation of each aspect of a practical
+implementation of open-loop Lorentz Force Actuation, closed-
+loop infinite sustain, and higher-order control of a string. The
+cumulative force felt by a charged particle exposed to electric
+and magnetic fields is known as the Lorentz Force . A special
+case of the Lorentz Force (sometimes referred to as the Laplace
+Force) describes the magnetic force felt by a current-carrying
+wire exposed to a magnetic field:
+F = 𝐼L × B (1)
+where F is the force vector felt by the wire, 𝐼 is the current
+through the wire, B is the magnetic field vector, and L is the
+length of the wire exposed to the magnetic field.
+permanent magnet
+Conductive StringForce F
+Power 
+Amplifier
+Some Audio 
+Source
+out+ –
+Current I
+Magnetic Field B
+Length L
+Figure 3: Lorentz Force Overview
+3.1 Open-Loop String Actuation
+3.1.1 Power Amplifier.
+A power amplifier takes a relatively small electric signal and
+amplifies it to a sufficient level to drive an element such as a
+speaker coil. A powered device like this is typically designed to
+drive the copper coils wound within a speaker, but as in Alvin
+Lucier’s Music on a Long Thin Wire [22], they can also be used
+to drive a tensioned, conductive string (Figure 3). The power
+amplifier modulates the value of current 𝐼 in equation 1.
+3.1.2 Permanent Magnets and their placement.
+As seen in equation 1, the magnitude of force F on a string at
+any given moment is proportional to the current 𝐼 through the
+string, the strength of the magnetic field B from the permanent
+magnet, and the length of the string in the field L. In the context
+of an actuated string, this intuitively suggests that the stronger
+pull-force a magnet has, the stronger the actuation force and
+the louder the string vibrates. Similarly, the higher the current
+through the string, the louder the string vibrates.
+The strength and timbre of actuation is highly dependent on
+the placement of the permanent magnet. In the case of open-
+loop actuation where an arbitrary signal is applied to the string,
+the analogy of guitar or harpsichord plucking position is useful.
+That is, the closer to the center of the vibrating portion of the
+string is plucked, the more prominent the fundamental frequency
+and lower harmonics of the string are, and the closer to the
+termination point (nut or bridge) the string is plucked, the more
+emphasis on the higher harmonics. Likewise, placing the magnet
+towards the center of the string favors the fundamental frequency
+and lower harmonics of the string, whereas placement towards
+the nut or bridge emphasizes higher harmonics.
+3.1.3 Open Loop Actuation, String Resistivity, & Heat Buildup.
+Putting these ingredients together, it is possible to drive a string
+with an oscillator tuned to match the string’s frequency. In fact,
+this is the premise of Hanson, Anderson, and Macomber’s 1994
+experiment investigating nonlinearities in harpsichord string
+dynamics [17]. However, depending on the material properties
+of the string, some of the actuation current may be dissipated
+as heat in the string’s internal resistance, introducing thermal
+expansion of the string and causing it to lengthen and reduce its
+tension. This brings the frequency of the string down causing
+it to no longer match the frequency of the open-loop actuation
+signal [24].
+The resistivity of some conductive metals is shown in Figure
+4 5. Metals such as yellow and red brass are much less resistive
+than iron and steel, which means they are more robust to string
+detuning. It should be noted, however, that heat treatment or
+work-hardening of the string material affects resistance [2, 12],
+where annealed metals will typically have higher conductivity
+than hardened metals. Heat-treating or other processes that in-
+crease the strength of a metal string are often required for strings
+to withstand the tensions typically found in musical instruments,
+so it is fair to assume any wire intended for stringing instruments
+will have slightly greater resistivity than in Figure 4.
+5https://www.effectrode.com/knowledge-base/conductivity-of-metals-sorted-by-
+resistivity/
+NIME ’25, June 24–27, 2025, Canberra, Australia Schmidt et al.
+Figure 4: Resistivity of conductive materials used in
+musical instrument strings (as reported by the CSNDT
+dataset by Eddy Current Technology Incorporated)
+The intensity of detuning is proportional to its heat buildup
+and therefore proportional to the resistivity inherent to the string:
+𝑄 = 𝐼2𝑅𝑡
+where 𝑄= heat buildup, 𝐼 = electric current, 𝑅= resistance, and 𝑡
+= time. Though this formula suggests that the string may heat up
+and continue to detune indefinitely as electric current is applied,
+there is an element of heat dissipation into the surrounding air
+and any other materials the string is in contact with6. In other
+words, for a real system, the detuning effect from heat buildup
+eventually finds equilibrium with the heat dissipation, stabilizing
+the tuning for a given electric current at a given room tempera-
+ture.
+To minimize the effects of string detuning, the following rec-
+ommendations are made:
+• Minimize resistivity of the string : Highly conductive
+materials such as brass will be more resilient to thermal de-
+tuning. Thicker diameter wire of the same material allows
+for a larger cross-sectional area, also increasing conduc-
+tivity.
+• Minimize the current through the string : Though this
+will yield a lower actuation force on its own, a similar
+actuation force can be achieved by bringing the permanent
+magnet closer to the string or using a stronger permanent
+magnet to increaseB. However, also note that the center of
+string has a wider displacement than near its termination
+points, meaning a magnet can only get so close before
+buzzing.
+• Or, if infinite sustain is the goal, then introduce closed-
+loop feedback as outlined in the following section.
+3.2 Closed-Loop String Actuation
+If one’s goal is to sustain vibrations of the string, a form of closed-
+loop feedback can be implemented to improve actuation effi-
+ciency and create a sustain that is robust to pitch change by
+sensing the string’s own vibration and using that signal for actu-
+ation. The following section outlines practical considerations for
+such a system.
+6It should be noted that for the relatively low-power (5 Watt, 1 Amp maximum)
+systems explored in this paper, a given string’s heat buildup was usually imper-
+ceptible to the touch and posed no apparent danger to the musicians, strings, or
+instruments involved.
+3.2.1 String Vibration Sensing.
+To achieve an infinitely-sustaining feedback system, some method
+of sensing the string’s vibration is required. Probably the most
+popular method for sensing string vibrations is an electromag-
+netic coil such as a guitar pickup. However, as mentioned previ-
+ously, this method of sensing is only applicable to ferrous strings
+such as iron and steel because pickups rely on the magnetizabil-
+ity of the sensed string. For non-ferrous strings, other sensing
+methods are possible. For example, a piezo pickup could be used
+to sense a string’s force [4, 16], or an optical pickup can be used
+to sense the string’s position [4, 17, 35? ] as seen in Figure 5.
+Signal 
+Processor
+permanent magnet
+Power 
+Amplifier
+out+ –
+Current I
+Optical Pickup
+Permanent Magnet
+Figure 5: Example of a Lorentz Force Feedback Sustainer
+system
+3.2.2 Signal Processing for Better Phase Coherency.
+As hinted above, not all sensors sense the same property of a
+sound-making element. When feeding a string sensor’s signal
+back into itself, one may find it beneficial to consider what exactly
+the sensor is measuring: a string’s position, velocity, or accel-
+eration? The implications of the sensing method on feedback
+actuation may not be initially obvious, but careful considera-
+tion and signal processing can increase system efficiency to use
+less power and increase headroom before detuning occurs. For
+Lorentz Force actuation, using a signal proportional to a string’s
+own velocity appears to be most effective.
+Position Signal: Optical sensors are a less common form
+of vibration sensing than coil or piezo pickups in the realm of
+musical instruments, but they have been explored commercially7,
+academically [4, 17, 35], and by hobbyists [? ] alike. This sensing
+method produces a voltage proportional to the displacement of a
+string from its resting, unperturbed position on one of its two
+vibrational axes.
+Actuating a string with its own position signal can achieve
+an infinite sustain, but this is not a particularly efficient use of
+power to sustain resonance. Pushing a child on a swing set is a
+wonderfully intuitive analogy to a string sustainer, where the
+pusher adds external energy to the system to maintain the reso-
+nance of the swinging child. If one were to push the child with
+an increasingly greater force as it gets further from the resting
+center point (as in, using the child’s position to dictate pushing
+force), the inefficiency immediately becomes apparent: while the
+child is on their upswing, the pusher starts out pushing gently,
+gradually pushing harder as the child moves further from the rest-
+ing point of the swing. However, even once the child has reached
+the peak and begins to swing backwards, the pusher continues to
+attempt to push forward through their downswing, resisting the
+child’s return. This half-cycle repeats in the other direction and
+7https://www.light4sound.com and
+https://www.willcoxguitars.com/lightwave-optical-pickup-system/
+The Sparksichord NIME ’25, June 24–27, 2025, Canberra, Australia
+resonant motion might be sustained, but a considerable amount
+of unnecessary work is being performed.
+Velocity Signal: Instead consider the scenario where the
+swinging child is pushed with a force proportional to their trav-
+eling velocity: as they approach the peak of a swing cycle, slow
+down, and change directions, the pusher eases off and changes
+the direction of their push as well. The force from the pusher
+is now supporting the motion throughout the entirety of each
+resonant cycle, pushing the hardest when the child is moving
+fastest.
+Much like the swing set example, it is more efficient to sus-
+tain a string’s vibrations by only adding energy to the string
+while it is already in motion. By taking the first-order derivative
+of a position reading and feeding that back into the string, we
+observed that this could yield the same sustained volume at a
+fraction of the actuation power. However, we reiterate that sus-
+tain was absolutely possible without differentiation – this is not
+a fundamental requirement but rather a form of optimization
+(and an especially useful one if a system is experiencing detun-
+ing issues or power limitations). Solenoid coil sensors such as
+guitar pickups need no further processing to achieve low-power
+sustain because the sensed signal is already proportional to the
+appropriate velocity signal, explaining why this processing can
+typically be ignored in a feedback system that uses coils for both
+sustaining and actuating.
+Acceleration Signal: Another common form of sensing used
+in musical instruments is a piezo-electric element. These sen-
+sors output a voltage proportional to the force exerted by the
+string if the string is sitting directly on the sensor (as is done in
+[4, 16]), which is proportional to the acceleration of the string.
+Presumably, this signal could be integrated to achieve a velocity
+signal.
+3.2.3 Closed-loop Sensor and Magnet Placement.
+In the case of closed-loop feedback actuation, sensor placement
+and magnet placement both play critical but less predictable roles.
+Similar to open-loop actuation, placing the magnet near the nut
+or bridge favors and emphasizes higher harmonics, and towards
+Permanent Magnet
+Current IOptical Pickup
+Power 
+Amplifier
+Out+ – 10W 2Ω Resistor 
+du
+dtPre-amp Voltage                 
+Controlled                 
+Amplifier
+Volume 
+DetectorVolume
+Comparator
+Threshold
+Dynamic Limiter
+Figure 6: Lorentz Force string sustainer with differentiation and dynamically-controllable amplitude
+the center of the string tends to emphasize lower harmonics.
+The result of sensor placement is similar, with sensing towards
+the center being more fundamental-heavy than sensing near the
+nut or bridge. In practice, sensing towards the center of a string
+can prove impractical since this is where the displacement of a
+vibrating string is greatest. For example, an optical sensor with
+a limited working range may produce a distorted signal when
+placed more centrally. Overall, the harmonic result of a closed-
+loop sustain can vary drastically with sensor placement, magnet
+placement/polarity, and actuation signal polarity (e.g., inverting
+the magnet’s pole can damp out the fundamental frequency and
+emphasize a higher harmonic instead, similar to an eBow’s ‘har-
+monic’ mode). Although Co-location of the sensor and magnet
+should theoretically yield the most predictable and controlled
+version of infinite sustain (as explained and demonstrated by
+Ierymenko and Berdahl [6, 20]), practical experimentation with
+placement is effective for exploring timbre, and the nonlineari-
+ties introduced by non-collocated control, sensor distortions, and
+analog circuitry may yield sonically desirable feedback.
+3.3 Dynamic Control via Amplitude
+Limitation
+Amplitude limitation placed in the feedback loop can add a level
+of control and dynamics to the string sustain so that feedback is
+not simply On or Off. Note that this is different from simply con-
+trolling the gain of the feedback loop, but is instead an amplitude
+limiter – a special case of compressor – that prevents feedback
+from building over a threshold, where the threshold becomes the
+parameter that can be controlled dynamically.
+This introduces an additional loop of feedback that provides
+the system awareness of a string’s current vibrational amplitude
+as seen by the optical sensor via a volume detector. Consequently,
+the loop only adds energy to the system when the current am-
+plitude measurement is below the threshold value to the vol-
+ume comparator, and stops adding energy when has reached the
+threshold value. The result is the ability to control the amplitude
+of sustained vibrations on a string (Figure 6).
+NIME ’25, June 24–27, 2025, Canberra, Australia Schmidt et al.
+4 Case Study: The Sparksichord
+In the summer of 2023, University of Michigan School of Music
+Associate Professor Dr. Joseph Gascho reached out inquiring if
+the same concepts used in the Magnetic Resonator Piano [ 23]
+could be applied to a harpsichord. The initial goal of the Spark-
+sichord was to use the existing keyboard interface to control
+the sustaining of the string corresponding to each string. Suc-
+cessful experiments on multiple different harpsichords strung
+in brass followed with several iterations of analog electronics
+development. Once ready to augment a full harpsichord, a 1970’s
+Zuckermann ‘Z-Box’ Harpsichord already owned by the second
+author became the subject of our augmentation. Audiovisual
+documentation of our specific implementation can be found in
+the accompanying github repository8, alongside our PCB design
+files, bill of materials, LTSpice circuit simulations, and more.
+4.1 System Overview
+The Sparksichord is a practical implementation of a 4-octave,
+48-channel Lorentz Force sustainer system. Though only 48 of
+its 57 strings are actuated, all of its strings are brass opposed
+to a more traditional split of brass, iron, and steel. Its original
+keyboard is continuously sensed with optical sensors to control
+the volume of each string’s actuation.
+8https://github.com/aschmidt99/Sparksichord_NIME2025
+External Audio 
+Input
+External CV
+Potentiometer CV
+Optical Keyboard CV
+Ø Polarity 
+Flip Switch
+Control 
+Source 
+Switch
+Audio Source 
+(ʼModeʼ) 
+Switch
+Permanent Magnet
+Current IOptical Pickup
+Power 
+Amplifier
+Out+ – 10W 2Ω Resistor 
+du
+dtPre-amp
+Voltage                 
+Controlled                 
+Amplifier
+Volume 
+DetectorVolume
+Comparator
+Threshold
+Dynamic Limiter
+Figure 7: Full system diagram for one string of the Sparksichord
+A diagram of the signal flow of each string actuator channel is
+shown in Figure 7. In addition to being controlled by the harpsi-
+chord’s own keyboard manual, it can alternatively be controlled
+with on-board potentiometers or control voltages from external
+sources such as modular synthesizers via 3.5mm mono jacks.
+The strings can either be in sustain mode , where they are fed a
+signal from their respective optical pickups, or audio actuation
+mode, where an arbitrary audio signal can be fed into the string.
+Each channel can be fed an independent signal via 3.5mm mono
+jacks, or a global stereo signal can be sent to all 48 channels of
+the board, where each channel can be switched to the 1st (’left’)
+or 2nd (’right’) audio channel via a 3.5mm stereo jack. While a
+key press for a given channel activates the sustainer feedback
+in sustain mode , the same key press control allows an external
+arbitrary audio signal to excite its respective string when inaudio
+actuation mode . The mode is can be changed with the flip of the
+’mode’ switch, which is an independent control for each string.
+4.2 Optical String Sensing
+An array of ITR20403 optical sensors is used to individually sense
+the vibrations of each string, and the sensing circuit for each
+channel is similar to the schematic described by Dave Corsie
+(https://www.davecorsie.com/optical-pickup-blog). The sensors
+are mounted on an aluminum rail that is fastened to the harpsi-
+chord’s original jack rail (Figure 9).
+The Sparksichord NIME ’25, June 24–27, 2025, Canberra, Australia
+Figure 8: 12-channel Sustainer Board and its controls
+NIME ’25, June 24–27, 2025, Canberra, Australia Schmidt et al.
+Figure 9: Optical String Sensor Schematic & the array mounted above strings
+4.3 String Signal Processing, Power Amplifier,
+& Power Resistors
+Figure 8 depicts one of the four 12-channel circuit boards. Each
+channel of the board contains an optical gain, differentiation, and
+limiter circuit. Various jacks, switches, and potentiometers allow
+a player/composer flexibility in how each string behaves.
+The op-amp differentiator circuit in Figure 10 is used for ob-
+taining our string velocity signal, where R18 and C3 are essential
+for differentiation and R15 and C5 are added for circuit stabil-
+ity. The voltage-controlled limiter circuit was based on a diode
+compression circuit designed by Moritz Klein9. Thorough doc-
+umentation detailing the details of its implementation can be
+found online10, and our implementation is provided in Appendix
+A.
+Figure 10: An op-amp preamplifier and differentiator
+To actuate each string, a PAM8406 Speaker Amplifier IC was
+used, paired with a 2Ω 10W power resistor in series with each
+string. Many speaker-driving power amplifiers are designed to
+drive a load of 4Ω-8Ω as a typical speaker’s voice coil is expected
+to be. The PAM8406 IC is one such amplifier, and it is designed
+to shut itself off for its own protection when it detects a load
+<2Ω. When the (+) and (-) terminals of the chip’s speaker outputs
+are connected to each end of a string, an especially conductive
+instrument string may appear as a short circuit and put the chip
+into shutdown mode. A workaround was identified by placing
+a power resistor in series with the conductive string to create a
+total resistance >2Ω. Depending on string’s resistance (which is a
+function of length, diameter, and material conductivity), resistors
+on the order of 0.5Ω-2.0Ω are all reasonable so long as the total
+resistance of the string + power resistor is >2Ω.
+9https://www.youtube.com/@MoritzKlein0
+10Video Guide and Written Guide
+4.4 Adjustable Magnet Rail
+It was identified early in the augmentation that magnet position
+was important and being able to adjust the position of each
+magnet would be desirable. Therefore, a rail that contains 24
+neodymium magnets in 24 parallel slots was designed and laser
+cut out of layers of clear acrylic and plywood. Each magnet is
+sufficiently close enough to 2 brass strings each to allow actuation
+and sustaining to occur (Figure 11). The slots allow for the magnet
+positions to be adjusted by sliding a magnet or piece of steel
+closely over a given magnet (Figure 12). Though this arrangement
+does not maximize the Magnetic Flux B through each string, it
+increases the stability of the magnets so they are not trying to
+pushing one another away, and this arrangement should ensure
+long-term stability of their magnetic strength.
+Neodymium Permanent Magnet Array
+Brass Strings Magnetic Field
+Acrylic Sheets
+Figure 11: Side view of magnets and strings (where strings
+are going into the page)
+Figure 12: Laser-cut Magnet Rail
+The Sparksichord NIME ’25, June 24–27, 2025, Canberra, Australia
+Figure 13: Optical Key Sensor Schematic & 12-channel optical keyboard sensor
+4.5 Optical Key sensing
+An array of 48 QRD1114 optical reflectance sensors were installed
+beneath the keyboard manual, resting at the end of the key levers.
+The sensors work using the same principle as the optical pickup
+sensors, though these are arranged to measure the infrared re-
+flectance off of a nearby object rather than an object obstructing
+its view. As the keys are unpressed, the back of the lever rests very
+close to the optical sensor, maximizing reflectance and activating
+the optical sensor so that its output voltage is nearly 0𝑉. As a key
+is depressed, the back of the lever is further away from the sensor,
+reflecting less infrared light back to the sensor and raising the
+output voltage of the sensor. The compression/limiter circuitry
+that enables dynamic range in the playing of the Sparksichord
+anticipates a control voltage range of approximately 0 Volts to
+3.3 Volts, where 0V allows no actuation to occur and 3.3V allows
+for full actuation. To obtain the desired voltage swing from the
+QRD1114 sensors as a key is pressed, the back of each key lever
+was first painted black, and then a small dot was carved out of
+the black paint approximately where the sensor rests under the
+key. The circuit for a single channel can be seen in Figure 13.
+This arrangement and sensing method is nearly identical to the
+keyboard scanner used in the MRP [ 25] which consists of an
+array of QRE1113 Optical Reflectance sensors over the keys of
+any piano. The pictured system is permanently installed rather
+than removable, and is designed specifically for the spacing of
+these keys since harpsichord key widths are not standardized.
+The sensor array can be seen in Figure 14.
+Figure 14: View of optical array from behind the manual –
+the rightmost key is depressed from the player’s position
+5 Discussion
+5.1 Comparison to other systems
+It is difficult to directly compare styles of actuation as they have
+different requirements and implications, although we attempt to
+describe some pros, cons, and considerations in Table 1.
+The Sparksichord closely resembles other electromagnetically-
+actuated instruments such as the MRP; both are keyboard instru-
+ments with an array of strings use electromagnetic actuation.
+However, the design challenges and choices made to create the
+Sparksichord and MRP are deeply entangled with their inherent
+properties prior to augmentation. For example, the iron frame
+and metal bridges of a piano means its steel strings are electrically
+connected, and consequently Lorentz Force actuation of a piano
+would require significant mechanical overhaul, design, and recon-
+figuration to implement. Conversely, the wooden nut and bridge
+of the harpsichord means every string is already electrically iso-
+lated and more practical for Lorentz Force actuation. Furthermore,
+the brass strings of the harpsichord are considerably more elec-
+trically conductive than the steel of pianos and therefore offer
+greater tuning stability at the electrical current values needed
+for actuation and sustain. Although it is not uncommon to see
+all-brass harpsichord stringing schedules – particularly in Italian
+harpsichords – we had restrung the Zuckermann harpsichord in
+all brass. However, after experiencing a few of the higher octave
+strings breaking when bringing them up to pitch and a brief
+consultation with Zuckermann Harpsichords, we decided to tune
+the whole instrument a major third down.
+5.2 Analog Circuits, Materials, Feedback, and
+Chaotic Behavior
+5.2.1 Analog Circuitry.
+This project was implemented using exclusively analog circuitry
+primarily due to the first author’s background and comfort with
+analog design, and secondarily for the potential benefits of analog
+design for feedback actuation. To have the best chance at phase-
+coherence between the sensing method and actuation method,
+there would ideally be no time delay between them. Digital sys-
+tems, however, introduce a time delay that will shift the phase
+response with respect to frequency due to their inherent process-
+ing time. Ultra-low latency processing optimized for audio (as
+offered by some microcontrollers or purpose-built FPGAs) may
+be used to mitigate this latency and introduce the opportunity for
+the flexibility and control of a digital system. Professional-grade
+compressors and limiters are designed to minimize undesirable
+NIME ’25, June 24–27, 2025, Canberra, Australia Schmidt et al.
+EM Coil Actuation Style 1:
+driving a ferrous object
+EM Coil Actuation Style 2:
+driving a permanent magnet
+EM Coil Actuation Style 3:
+Speaker coil or Transducer
+Coil
+Lorentz Force Actuation
+• Must be ferromagnetic mate-
+rial (iron or steel).
+• High power requirements for
+open-loop actuation
+• Medium for closed-loop sus-
+tain
+• Higher frequencies may be
+more difficult to induce
+• Can be any material
+• Fixing magnets to a resonant
+object may alter its expected res-
+onance
+• Actuation force scales with
+magnet strength
+• Higher frequencies may be
+more difficult to induce
+• Can be any material
+• Less predictable transfer func-
+tion between sensor and actua-
+tor
+• Higher frequencies may be
+more difficult to induce
+• Must be conductive (highly
+conductive to avoid detuning)
+• Requires electrically-isolated
+strings
+• Actuation force is lower than
+other methods for the same cur-
+rent and magnetic field
+• May require a non-coil sens-
+ing method (optical, piezo, etc)
+• Higher frequencies are easier
+to induce
+Table 1: Comparison of EM Coil Actuation Styles and Lorentz Force Actuation
+audio distortion, and parameters such as a limiter or compres-
+sor’s attack, release, and ratio are dialed in to mitigate distortions
+and non-linearities. However, the limiter circuit implemented is
+relatively simple, and we opted to use a fast attack and 100% ratio.
+Simulations of our diode-based compression circuit with these
+settings reveal that the feedback is subject to harmonic distortion,
+but when implemented in a real setting it accomplished the goal
+of dynamic control. The choice to remain entirely in the analog
+domain afforded a cheap and fast implementation compared to
+attempting to work with 48 channels of digital audio, but this
+limited our ability to prototype different feedback schemes.
+5.2.2 Material-Oriented Interaction and Design.
+Discussion surrounding material-oriented interaction [27] has
+become commonplace in NIME, and this work is no exception.
+Many musicians and practitioners are already intimately familiar
+– perhaps explicitly or implicitly – with the properties of an non-
+actuated string; the relationship between its length, weight, ten-
+sion, etc. to its expected timbral quality and harmonic response
+when plucked, struck, or bowed. However, the introduction of
+electromagnetic feedback suddenly reveals the string’s otherwise
+less-observed properties, such as conductivity or magnetic per-
+meability, or unnaturally exaggerated harmonic modes. Due to
+the nature of using permanent magnets rather than wired elec-
+tromagnetic coils, Lorentz Force actuation invites musicians to
+manually handle the magnets, bringing them near strings to ini-
+tiate actuation in the same touchless and quasi-magical manner
+that has promoted continued fascination with the Theremin. Of-
+fering the magnet to different points along the length of a string,
+adjusting proximity, or flipping the orientation of the magnet of-
+fer especially interesting vantage points to dynamically modulate
+the system’s behavior. Depending on the actuation current, fre-
+quency, and magnet size, one may even feel the actuation signals
+noticeably vibrate the magnet in their grasp11. We also discov-
+ered an intriguing mode of interaction while fine-tuning optical
+sensor placement, where shifting the optical sensors slightly such
+that they enter the nonlinear extremes of their operational range
+and encourage the feedback to settle into higher harmonics of the
+string, or in some cases creating a rich, droning timbre that peri-
+odically swirls between harmonics on the order of seconds. The
+response of the feedback can at times be slow, with graceful swells
+11We feel obliged to remind readers to practice safety when handling permanent
+magnets, as we have personally experienced the occasional finger pinching (not
+to mention the numerous frights as unattended, forgotten, or misplaced magnets
+enthusiastically and explosively embrace one another and, in some cases, crack,
+shatter, or spark
+and decays within the harmonic profile. At other times, changes
+can be immediate and dramatic, responding to sub-millimeter
+changes in sensor placement and drawing parallels to the practice
+of no-input mixing (NIM) [28–30].
+5.2.3 Leaning away from control, inching towards chaos.
+It seems many earlier feedback instruments/devices such as the
+Magnetic Resonator Piano [23] and the Moog Guitar [20] share
+a common desire to hyper-control feedback by parameterizing
+controls. In recent years, however, there has been an influx of
+vibrotactile feedback instruments and practitioners that embrace
+chaotic, unpredictable behavior, many of whom cite this unpre-
+dictability as precisely what makes it so exciting and engaging
+[28, 29].
+Playing with self-resonating feedback instru-
+ments demands that I pay close attention. The
+most satisfying feedback music seems to be at
+the thresholds and breaking points, and these
+are rarely stable. And this is a good thing, be-
+cause stability (or equilibrium) actually means
+death, where uncertainty, chaos and contingent
+connections are the realm of the living.
+– Paul Stapleton, in [15]
+For many of these practitioners, improvising is particularly
+fruitful and perhaps the highlight of their systems [30], and simi-
+lar sentiments are shared by those engaging with complex feed-
+back in musical instruments [ 11, 14, 26, 38, 39]. Lorentz Force
+sustain offers a new vantage point for exploring chaotic feedback,
+and informal experiments with Lorentz Force actuation and opti-
+cal sensing patched into the feedback path of a no-input mixing
+has been promising.
+6 Conclusion
+This paper has presented the theory behind Lorentz Force ac-
+tuation/sustain and has offered practical considerations for im-
+plementation within a musical context. After outlining the fun-
+damental ingredients needed to build a sustainer or feedback
+instrument of this style, we shared technical details of our multi-
+channel sustainer harpsichord. We hope this document serves as
+a reference, empowering practitioners with a toolkit for design-
+ing new musical augmentations and inventions surrounding this
+style of string actuation, and we leave readers with reflections
+on how Lorentz Force actuation has the potential to lead to new
+paradigms of actuated instrument design.
+The Sparksichord NIME ’25, June 24–27, 2025, Canberra, Australia
+7 Acknowledgments
+This work was supported by a UKRI Frontier Research (Consolida-
+tor) grant (EP/X023478/1) “RUDIMENTS: Reflective Understand-
+ing of Digital Instruments as Musical Entanglements” and by the
+Royal Academy of Engineering under the Research Chairs and
+Senior Research Fellowships scheme. Early development of this
+work was supported in part by the University of Michigan Organ
+Department, University of Michigan ArtsEngine Arts Integrative
+Interdisciplinary Research (AiiR) Grant, and the University of
+Michigan EXCEL Enterprise Grant.
+8 Ethical Standards
+This stage of the research is focused on technical development
+and testing by the authors, so institutional ethics review for hu-
+man subjects research has not yet been necessary. Electrical safety
+should be considered with any actuated instrument, though the
+risks in this setup are low given low power supply voltages and
+internal short-circuit protection in the amplifiers. Any future
+extensions of this work to historical harpsichords would need
+to consider issues of conservation and of the inevitable tensions
+between historical and experimental performance practices.
+References
+[1] Lior Arbel, Yoav Y. Schechner, and Noam Amir. 2019. The Symbaline — An
+Active Wine Glass Instrument with a Liquid Sloshing Vibrato Mechanism.
+In Proceedings of the International Conference on New Interfaces for Musical
+Expression. Porto Alegre, Brazil, 9–14. https://doi.org/10.5281/zenodo.3672848
+[2] Eugene A Avery. 1933. The Electrical Resistance of Metals in Their Hard and
+Soft States . B.S. Thesis. Montana School of Mines.
+[3] Edgar Berdahl. 2009. Applications of Feedback Control to Musical Instrument
+Design. Ph. D. Dissertation. Stanford University, Stanford, California, USA.
+[4] Edgar Berdahl and Julius O Smith III. 2006. Active Damping of a Vibrating
+String.. In International Symposium on Active Noise and Vibration Control .
+Adelaide, Australia.
+[5] Edgar Berdahl, Guenter Niemeyer, and Julius O. Smith. 2008. Active Control
+of a Vibrating String. The Journal of the Acoustical Society of America 123
+(May 2008), 3666. Issue 5. https://doi.org/10.1121/1.2934997
+[6] Edgar Berdahl, Julius O. Smith, and Günter Niemeyer. 2012. Feedback Control
+of Acoustic Musical Instruments: Collocated Control Using Physical Analogs.
+The Journal of the Acoustical Society of America 131, 1 (Jan. 2012), 963–973.
+https://doi.org/10.1121/1.3651091
+[7] Per Bloland, Richard Causton, and Henri Boutin. 2025. Artistic Research
+Residency Seminar | Per Bloland, Richard Causton & Henri Boutin - YouTube.
+https://www.youtube.com/watch?v=1t3cSMtNFj0
+[8] Henri Boutin. 2011. Méthodes de contrôle actif d’instruments de musique. Cas
+de la lame de xylophone et du violon. Ph. D. Dissertation. https://doi.org/10.
+13140/RG.2.1.4620.4966
+[9] Henri Boutin, Charles Besnainou, and Jean-Dominique Polack. 2015. Modify-
+ing the Resonances of a Xylophone Bar Using Active Control. Acta Acustica
+united with Acustica 101 (April 2015). https://doi.org/10.3813/AAA.918836
+[10] N. Cameron Britt, Jeff Snyder, and Andrew McPherson. 2012. The EMvibe:
+An Electromagnetically Actuated Vibraphone. In Proceedings of the Interna-
+tional Conference on New Interfaces for Musical Expression . The University of
+Michigan, Ann Arbor, MI, USA.
+[11] Tom Davis. 2017. The Feral Cello: A Philosophically Informed Approach To
+An Actuated Instrument. In Proceedings of the International Conference on New
+Interfaces for Musical Expression . Zenodo, Aalborg University, Copenhagen,
+Denmark. https://doi.org/10.5281/ZENODO.1176250
+[12] E. Paul DeGarmo. 2003. Materials and Processes in Manufacturing. 2003. (9th
+ed., update ed ed.). Wiley.
+[13] Richard Eisenmann. US Patent No. 496402A, 1893. Elektrophonisches Klavier.
+[14] Alice Eldridge and Chris Kiefer. 2017. Self-Resonating Feedback Cello: Interfac-
+ing Gestural And Generative Processes In Improvised Performance. InProceed-
+ings of the International Conference on New Interfaces for Musical Expression .
+Zenodo, Copenhagen, Denmark. https://doi.org/10.5281/ZENODO.1176157
+[15] Alice Eldridge, Chris Kiefer, Dan Overholt, and Halldór Úlfarsson. [n. d.].
+Self-Resonating Vibrotactile Feedback Instruments ||: Making, Playing, Con-
+ceptualising :||. In Proceedings of the International Conference on New Interfaces
+for Musical Expression .
+[16] Adrian Freed and Osman Isvan. 2000. Musical Applications of New, Multi-axis
+Guitar String Sensors.
+[17] Roger Hanson, James Anderson, and H. Kent Macomber. 1994. Measurements
+Of Nonlinear Effects In A Driven Vibrating Wire. Journal of the Acoustical
+Society of America 96, 3 (Jan. 1994), 1549–1556. https://doi.org/10.1121/1.
+410233
+[18] Jiffer Harriman. 2015. Feedback Lap Steel : Exploring Tactile Transducers
+as String Actuators. In Proceedings of the International Conference on New
+Interfaces for Musical Expression . Louisiana State University, Baton Rouge, LA,
+USA.
+[19] Gregory S. Heet. US Patent No. 4075921A 1978. String Instrument Vibration
+Initiator and Sustainer.
+[20] Paul F. Ierymenko. Patent EP1218716B1, 1999. Unitary Transducer Control
+System.
+[21] Paul F. Ierymenko. US Patent No. 20100275761A1, 2010. Player Technique
+Control System for a Stringed Instrument and Method of Playing the Instru-
+ment.
+[22] Alvin Lucier. 1980. Music On A Long Thin Wire. Vinyl. Lovely Music, Ltd.,
+VR 1011/12.
+[23] Andrew McPherson. 2010. The Magnetic Resonator Piano: Electronic Aug-
+mentation of an Acoustic Grand Piano. Journal of New Music Research 39, 3
+(Sept. 2010), 189–202. https://doi.org/10.1080/09298211003695587
+[24] Andrew McPherson. 2012. Techniques and Circuits for Electromagnetic In-
+strument Actuation. In Proceedings of the International Conference on New
+Interfaces for Musical Expression . The University of Michigan, Ann Arbor, MI,
+USA.
+[25] Andrew P McPherson. May 27 – 30, 2013. Portable Measurement and Mapping
+of Continuous Piano Gesture. In Proceedings of the International Conference on
+New Interfaces for Musical Expression . Daejeon, Korea.
+[26] Adam Pultz Melbye. 2021. Resistance, Mastery, Agency: Improvising with
+the Feedback-Actuated Augmented Bass. Organised Sound 26, 1 (April 2021),
+19–30. https://doi.org/10.1017/S1355771821000029
+[27] Tom Mudd. 2019. Material-Oriented Musical Interactions. In New Directions
+in Music and Human-Computer Interaction . Springer, 123–133. https://doi.org/
+10.1007/978-3-319-92069-6_8
+[28] Tom Mudd. 2023. Playing with Feedback: Unpredictability, Immediacy, and
+Entangled Agency in the No-input Mixing Desk. InProceedings of the 2023 CHI
+Conference on Human Factors in Computing Systems (CHI ’23) . Association for
+Computing Machinery, New York, NY, USA, 1–11. https://doi.org/10.1145/
+3544548.3580662
+[29] Tom Mudd and Akira Brown. 2023. Musical Pathways through the No-Input
+Mixer. In Proceedings of the International Conference on New Interfaces for
+Musical Expression. Mexico City, Mexico.
+[30] Tom Mudd, Simon Holland, and Paul Mulholland. 2019. The Role of Non-
+linear Dynamics in Musicians’ Interactions with Digital and Acoustic Mu-
+sical Instruments. Computer Music Journal 43, 4 (Dec. 2019), 25–40. https:
+//doi.org/10.1162/comj_a_00535
+[31] Dan Overholt. 2011. The Overtone Fiddle: An Actuated Acoustic Instrument.
+In Proceedings of the International Conference on New Interfaces for Musical
+Expression. https://doi.org/10.5281/ZENODO.1178127
+[32] Dan Overholt, Edgar Berdahl, and Robert Hamilton. 2011. Advancements in
+Actuated Musical Instruments. Organised Sound 16, 2 (Aug. 2011), 154–165.
+https://doi.org/10.1017/S1355771811000100
+[33] Laurel Pardue, Kurijn Buys, Dan Overholt, Andrew P. McPherson, and Michael
+Edinger. 2019. Separating Sound from Source: Sonic Transformation of the
+Violin through Electrodynamic Pickups and Acoustic Actuation. InProceedings
+of the International Conference on New Interfaces for Musical Expression . Porto
+Alegre, Brazil, 278–283. https://doi.org/10.5281/zenodo.3672958
+[34] Martin Piñeyro. 2012. Electric Slide Organistrum. In Proceedings of the Inter-
+national Conference on New Interfaces for Musical Expression . Zenodo, The Uni-
+versity of Michigan, Ann Arbor, MI, USA. https://doi.org/10.5281/ZENODO.
+1180571
+[35] Adam Schmidt and Michael Gurevich. 2024. The Lorentz Lap Brass: Method for
+Frugal Integrated Sonic/Haptic Interaction. In Proceedings of the International
+Conference on New Interfaces for Musical Expression . Utrecht, NL.
+[36] Greg Shear and Matthew Wright. 2012. Further Developments in the Elec-
+tromagnetically Sustained Rhodes Piano. In Proceedings of the International
+Conference on New Interfaces for Musical Expression . The University of Michi-
+gan, Ann Arbor, MI, USA.
+[37] Halldór Úlfarsson. 2018. The Halldorophone: The Ongoing Innovation of a
+Cello-like Drone Instrument. In Proceedings of the International Conference on
+New Interfaces for Musical Expression . Blacksburg, VA, USA.
+[38] Halldór Úlfarsson and Adam Pultz Melbye. 2020. Sculpting the Behaviour of
+the Feedback-Actuated Augmented Bass. In Proceedings of the International
+Conference on New Interfaces for Musical Expression . Birmingham, United
+Kingdom.
+[39] Federico Visi. 2024. The Sophtar: A Networkable Feedback String Instrument
+with Embedded Machine Learning. In Proceedings of the International Confer-
+ence on New Interfaces for Musical Expression . Utrecht, Netherlands, 142–148.
+https://doi.org/10.5281/zenodo.13904810
+[40] Marc Wijnand, Brigitte d’Andréa-Novel, Thomas Hélie, and Roze David. 2024.
+Experimental Implementation of a Finite-Time Controller for the Axisymmet-
+ric Vibration Modes of a Tom-Tom Drum - Archive Ouverte HAL. (2024).
+NIME ’25, June 24–27, 2025, Canberra, Australia Schmidt et al.
+A Schematics
+Figure 15: Limiter Circuit
+Figure 16: Circuit Configuration for PAM8406

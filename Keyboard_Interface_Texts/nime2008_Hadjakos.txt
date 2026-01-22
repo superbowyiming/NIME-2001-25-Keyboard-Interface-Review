@@ -1,0 +1,402 @@
+The Elbow Piano:
+Soniﬁcation of Piano Playing Movements
+Aristotelis Hadjakos
+TU Darmstadt
+Hochschulstr.10
+64289 Darmstadt
++49 6151 16 6670
+telis@tk.informatik.
+tu-darmstadt.de
+Erwin Aitenbichler
+TU Darmstadt
+Hochschhulstr. 10
+64289 Darmstadt
++49 6151 16 2259
+erwin@tk.informatik.
+tu-darmstadt.de
+Max Mühlhäuser
+TU Darmstadt
+Hochschulstr.10
+64289 Darmstadt
++49 6151 16 4557
+max@tk.informatik.
+tu-darmstadt.de
+ABSTRACT
+The Elbow Piano distinguishes two types of piano touch: a touch
+with movement in the elbow joint and a touch without. A played
+note is first mapped to the left or right hand by visual tracking.
+Custom-built goniometers attached to the player's arms are used
+to detect the type of touch. The two different types of touches
+are sonified by different instrument sounds. This gives the
+player an increased awareness of his elbow movements, which is
+considered valuable for piano education. We have implemented
+the system and evaluated it with a group of music students.
+Keywords
+Piano, education, sonification, feedback, gesture.
+1. INTRODUCTION
+A pianist can use different combinations of movements in
+different joints to perform a touch [4]. A touch can be performed
+by the isolated movement of a finger while wrist, elbow,
+shoulder, and the body support the finger without active
+movement. Alternatively, a pianist can execute a touch using
+movement in one of the mentioned joints. For example, a pianist
+can slightly fixate fingers and use the movement of the wrist,
+while elbow, shoulder, and body do not move. A pianist can also
+use a combination of activity in the different joints.
+It has been argued in the field of piano pedagogy that awareness
+of the playing movements can be beneficial. S. Bernstein, for
+example, states that becoming aware of the playing movements
+is one of the key goals a pianist should pursue [1]. By giving the
+pianist more consciousness of her playing movements, she can
+find movements that better fit the musical and technical
+demands, and gain more confidence to master stress situations,
+like public performance.
+This paper is structured as follows. First, different piano
+teaching systems related to this work are discussed in Section 2.
+The architecture, the main features, and the components of the
+Elbow Piano system are described in Section 3. Next, the results
+of our evaluation are presented in Section 4 and conclusions in
+section 5. Finally, we discuss opportunities for future work in
+Section 6.
+2. RELATED WORK
+Systems for music practice education that use sensor data to
+sonify playing movements have been developed for different
+instruments. The 3D Augmented Mirror [7] is an example of
+such a system for a bowed string instrument. The 3D
+Augmented Mirror provides the user with visual and auditive
+feedback based on the input of a visual tracking system.
+Piano teaching systems can be classified by the type of input
+they receive from the user. Recent piano teaching systems can
+be classified to pure MIDI systems and systems that receive
+physiological or physical data.
+2.1 Pure MIDI Piano Teaching Systems
+The Piano Tutor [3] uses score following to find errors, to
+provide accompaniments, and to turn pages. The system gives
+the user feedback using a combination of video, notation, voice,
+music, and graphics. An expert system module monitors the
+success of the student and suggests easier tasks if necessary.
+The pianoFORTE system [13] visualizes tempo, articulation and
+dynamics of a performance. Tempo is visualized by a speed-o-
+meter, dynamics by the color of the notes. To visualize the
+articulation, the lengths of the played notes are marked in the
+score. The MIDIATOR [12] compares a student‘s performance
+to the score or a previous performance of the piece and
+visualizes differences of tempo, note volume, note duration, and
+articulation.
+The practice tool for pianists by Goebl and Widmer [6]
+generates visual feedback from MIDI input in real-time. The
+practice tool finds reoccurring patterns by autocorrelation. The
+student can see timing deviations between successive patterns
+that indicate uneven play. Other visualizations display beats,
+time deviations between chord notes, and a piano roll overview.
+The Intelligent Virtual Piano Tutor [8] is a system that suggests
+fingerings for received MIDI sequences. The suggested
+fingering is animated by a 3D virtual pianist.
+2.2 Physiological- and Physical-Data Based
+Piano Teaching Systems
+Montes et al. used EMG biofeedback to teach thumb touches
+[9]. Electrodes were placed on the abductor pollicis brevis
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for profit or commercial advantage and that
+copies bear this notice and the full citation on the first page. To copy
+otherwise, or republish, to post on servers or to redistribute to lists,
+requires prior specific permission and/or a fee.
+NIME08, June 4-8, 2008, Genova, Italy
+Copyright remains with the author(s).
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+285
+muscle. While a student performs thumb touches, the amount of
+muscular activity is shown on a screen. In comparison to a
+control group that received traditional training of the thumb
+attack, a biofeedback group was able to match the muscle
+activity pattern of professional pianists better.
+A multimodal feedback system is used by Riley to improve
+piano lessons [11]. The system can record and replay MIDI,
+EMG, and video. The video and MIDI output is synchronized
+with a piano roll of the performance.
+Mora et al. developed a system that overlays a 3D mesh of a
+suggested posture over a video of the student's performance
+[10]. The student can see the differences and adopt the
+suggested posture. To generate the 3D mesh, the posture of a
+professional pianist was recorded using motion capturing.
+3. ELBOW PIANO
+A user who wants to practice with the Elbow Piano sits at the
+keyboard and attaches the goniometers to her arms. She then
+plays a tuning chord, which is necessary to initialize the visual
+tracking system. Visual tracking of the hands is used to assign
+the goniometer measurements to the notes played. In the
+following, we describe a typical use case of our system.
+The user starts playing. Sometimes the user performs elbow-
+touches, sometimes the user avoids them. Always when the user
+plays an elbow-touch, the system plays the elbow-touch sound.
+Now, if the user unintentionally plays an elbow-touch, the
+system will also produce the elbow-touch sound. The user can
+stop playing at this point and use a graphical visualization to
+analyze this condition. After some time, the user continues
+playing.
+3.1 Hardware Setup and Software
+Architecture Overview
+The Elbow Piano consists of sensors, which are connected to a
+computer, and a software that analyzes the incoming data stream
+and controls an attached synthesizer. The sensor hardware of the
+Elbow Piano consists of a MIDI keyboard, a webcam placed
+above the keyboard, and a pair of self-built goniometers. The
+webcam is used to visually track the hands. The goniometers
+provide data about the angles in the elbow joints.
+When the system receives a note-on event from the keyboard,
+the system assigns the note to the left or right hand. This is done
+by means of visual tracking (section 4.2). The history of
+goniometer data of the identified hand is examined to determine
+if the key was pressed with activity of the elbow joint (section
+4.3), or not.
+3.2 Visual Tracking
+Mapping MIDI data to hands without additional information is
+only possible to some extent as the mapping is ambiguous.
+Therefore, visual tracking was used.
+A webcam (Genius Slim 1322AF) mounted above the keyboard
+is monitoring the entire claviature. Before the user can start
+playing, she has to lock the visual tracking on her hands. This is
+done by playing a predefinedtuning chord. To obtain the image
+coordinates of the hands, the system has to map from keys to
+horizontal image coordinates. For that reason, it needs to know
+the horizontal position of the left and right end of the claviature,
+as well as the vertical coordinate of the front. These positions
+have to be configured once by the user using a GUI.
+The keys are mapped to horizontal positions by linear
+interpolation. Each key corresponds to an area with the width of
+1/88 of the width of the claviature. Although this approximation
+does not reflect the structure of the claviature, it is sufficiently
+accurate for the Elbow Piano.
+The visual tracking is locked on the hands when the user plays
+the tuning chord. This chord consists of two black keys per hand
+(each hand plays a f#-c#-chord on different octaves). When the
+tuning chord is played, the approximate positions of the hands
+are estimated by the system. Two areas, which are located in
+front of the claviature at the horizontal positions of the hands,
+are used to calculate the histograms of the skin colors (for each
+hand separately) and serve as initial search windows for the
+tracking algorithm.
+The visual tracking of the hands is done with the OpenCV
+implementation of the CAMSHIFT algorithm. CAMSHIFT [2]
+climbs the gradient of the probability distribution, which is
+computed using a histogram, to adjust the position of the search
+window. CAMSHIFT continuously changes the size of the
+search window. Therefore, the entire hand of the Elbow Piano
+user is tracked after some iterations of the algorithm. Because of
+the operating principle of the CAMSHIFT, the color of the floor
+and the clothing have to be sufficiently distinct from skin color
+and it is necessary that the user wears long-sleeved clothing.
+The Elbow Piano segments the claviature into a part for the left
+hand and a part for the right hand. For this purpose, the system
+examines the rightmost pixel assigned to the left hand and the
+leftmost pixel assigned to the right and determines the middle.
+Each note is assigned to the left or right hand by comparing its
+position to the middle.
+The user receives visual feedback about the hand tracking
+module (Figure 1). The hands are surrounded by a circle in the
+image from the webcam.
+Figure 1. Hands Are Tracked
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+286
+3.3 Recognition of Elbow Activity
+Based on the data from the goniometers, the Elbow Piano
+decides whether a touch was performed with movement in the
+elbow joint, or not.
+3.3.1 Goniometers
+A pair of custom-built goniometers (Figure 3) provide the
+computer with data about the angles in the elbow joints. Each
+goniometer consists of a potentiometer and two plastic strips.
+The plastic strips are connected to the axis of the potentiometer
+so that the motion of the plastic strips is transferred to the
+potentiometer. The potentiometer has a aluminum case and can
+therefore sustain the occurring physical forces. Velcro fasteners
+are attached to the plastic strips and are used to mount them on a
+suited pullover. The goniometers are additionally fixated by
+rubber bands. The potentiometers are wired up as voltage
+dividers and are connected to A/D converters. The digital signal
+is transmitted to the computer via USB with a rate of up to 100
+Hz (values are transmitted on change only). The A/D converter
+used is a CreateUSB board.
+3.3.2 Decision
+The goniometer data is continuously stored with the
+corresponding timestamps. When the keyboard sends a note-on
+message, the sensor data log of the arm that produced the tone is
+examined. The latest 0.2 seconds of the sensor data is analyzed.
+Considering the rapid sequences of movements that can occur in
+piano playing, the choice of this rather large time interval is
+reasonable, because elbow-touches cannot be done (much) more
+rapidly. The lowest angle in the elbow during that time interval
+and the last measured angle are compared. If the difference of
+these angles exceeds a predefined threshold, the touch is
+classified as a touch with elbow activity.
+3.3.3 Decision Visualization
+To provide feedback to the user, a visualization of the decision
+process was developed. The Elbow View (Figure 4) shows the
+goniometer data that was used to decide whether the touch was
+executed with activity in the elbow joint, or not. The graph is
+inverted along the y-axis to provide a more intuitive
+visualization. The graph of an elbow touch begins with high
+values and slopes to the right; this corresponds to the movement
+of the forearm performing an elbow-touch, which starts at a high
+position and then moves downwards. Relevant information
+about the graph and the decision is provided to the user: the
+lowest angle, the last angle, the difference between the two and
+the result of the decision. The user can access past
+visualizations. To assist the user to navigate, a separate view is
+provided for each hand. Furthermore, the graphs are stacked
+when a hand plays a chord, i.e., if two notes are received within
+0.1 seconds.
+3.4 Sound Generation
+When an elbow-touch is recognized, the system passes the note-
+on MIDI message that was received from the keyboard to the
+connected (software or hardware) synthesizer. The system
+changes the channel of the MIDI message to reflect which arm
+executed the elbow-touch. By configuring the synthesizer to
+play different instruments on these channels, the Elbow Piano
+can play different sounds for the left and right arm. The
+generated sound effects can be prolonged by using the sustain
+pedal of the MIDI keyboard.
+4. EVALUATION
+The Elbow Piano was evaluated with students of the HfMDK
+Frankfurt (University of Music and Performing Arts Frankfurt).
+Four pianists (professional level), one composer (advanced
+level), and one singer (intermediate level) participated in the
+user study. The system was briefly explained to each participant.
+Each participant then played pieces of her/his own choice with
+the Elbow Piano. Afterwards, the participant filled out a
+questionnaire and was interviewed. The questionnaire contained
+different statements, which were rated by the participants on a
+scale from 1 (disagree) to 5 (agree) (Table 1).
+It was evident that the participants improved their ability to
+control the system during the sessions. At the beginning, the
+participants tended to imitate the mere appearance of the
+motion, which had been shown to them. The participants often
+did not consistently use the elbow joint to move the fingers but
+used the wrist, the shoulder and (in one occasion) the back
+instead. During the session, the participants moved more
+consistently and could therefore control the system better. The
+participants expected that they could learn to control the system
+better if they have had more time to practice with it and they
+stated that the system increased their awareness of arm
+movements. Despite all that, all but one participants did rather
+not want to use the system for practice or teaching because the
+system focuses only on one specific aspect of piano technique
+and can therefore not (yet) be integrated into a piano syllabus.
+Overall, we received very positive feedback and were
+encouraged to continue with our approach.
+Figure 2. Goniometer
+Figure 4. Visualization of a
+non-elbow touch
+Figure 3. Visualization of
+an elbow touch
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+287
+Table 1. Questionnaire
+Statement Score (Avg.)
+I have good control of the sound. 3.5 of 5
+I would learn to control the system better if I
+had more time to practice with it.
+4.8 of 5
+I am more aware of the movement of my arm
+when using the system.
+4.5 of 5
+Using the system is fun. 4.2 of 5
+I would use the system to practice or teach the
+piano.
+2.5 of 5
+5. CONCLUSIONS
+Awareness of playing movements can be beneficial for
+instrumental performance. The Elbow Piano distinguishes two
+types of touch: a touch with movement in the elbow joint and a
+touch without. Therefore, the Elbow Piano can increase
+awareness of these movements with possible beneficial effects
+on normal piano performance.
+The Elbow Piano consists of a MIDI keyboard, a webcam, a pair
+of custom-built goniometers, a computer to which these sensors
+are connected to and a software that analyzes the incoming data
+stream and controls an attached synthesizer. The system uses
+visual tracking to find the positions of the hands on the
+keyboard. On each keypress, the goniometer data of the matched
+arm is evaluated and the system decides what type of touch the
+user executed. The user gets visual feedback about the decision
+process and can evaluate the decision of the system.
+A user study with music students of the HfMDK Frankfurt was
+conducted. The participants learned to better control their arm
+movements during the sessions. Despite that, most participants
+did not want to use the system to practice or teach the piano.
+Although a conservative attitude might be a minor factor for this
+result, we think that the our approach needs to be integrated into
+a systematic piano syllabus to make it more convincing. To this
+end, we are currently applying the presented approach to other
+playing movements.
+6. FUTURE WORK
+Gorodnichy and Yogeswaran developed a system that allows to
+track hands, fingers and the position of the keyboard in the
+images of a camera placed above the keyboard [5]. The visual
+tracking of the Elbow Piano could be improved using this
+approach and the user would not need to configure the position
+of the keyboard.
+Movements in the elbow joints are not only performed to press a
+key downwards. They also occur when the player moves the
+hand forwards, backwards or sideways. These changes of elbow
+angles could be estimated using information gained by visual
+tracking of the hands. The goniometer data input could be
+cleaned from this effect before the recognition method is
+applied. The posture of the player has also an effect on the
+angles in the elbows. Measured change of posture could be used
+to clean the goniometer before the recognition method is
+applied.
+We are currently exploring the use of different sensors to
+generalize the presented approach to other playing movements.
+7. REFERENCES
+[1] Bernstein, S. Twenty Lessons In Keyboard Choreography.
+Seymour Bernstein Music, 1991
+[2] Bradski, G. R. Real Time Face and Object Tracking as a
+Component of a Perceptual User Interface. In Fourth IEEE
+Workshop on Applications of Computer Vision (WACV
+'98), 1998
+[3] Dannenberg, R. B., Sanchez, M., Joseph, A., Joseph, R.,
+Saul, R., and Capell, P. Results from the Piano Tutor
+Project. In Proceedings of the Fourth Biennial Arts and
+Technology Symposium, 1993
+[4] Gat, J. The Technique of Piano Playing, Collet‘s Holding,
+London, 1965
+[5] Gorodnichy, D. O. , and Yogeswaran, A. Detection and
+tracking of pianist hands and fingers. In Proceedings of the
+The 3rd Canadian Conference on Computer and Robot
+Vision (CRV'06), 2006
+[6] Goebl, W., and Widmer, G. Unobstrusive Practice Tools for
+Pianists. In Proceedings of the 9th International Conference
+on Music Perception and Cognition (ICMPC9), 2006
+[7] Ng, K., Weyde, T., Larkin, O., Neubarth, K., Koerselman,
+T., and B. Ong. 3D Augmented Mirror: A Multimodal
+Interface for String Instrument Learning and Teaching with
+Gesture Support. In ICMI '07: Proceedings of the 9th
+international conference on Multimodal interfaces, 2007
+[8] Lin, C., and Liu, D. S. An Intelligent Virtual Piano Tutor.
+In Proceedings of the 2006 ACM international conference
+on Virtual reality continuum and its applications, 2006
+[9] Montes, R., Bedmar, M., and Martin, M. S. EMG
+Biofeedback of the Abductor Pollicis in Piano Performance
+Brevis. In Biofeedback and Self-Regulation, 2, 18, 1993
+[10] Mora, J., Lee, W., Comeau, G., Shirmohammadi, S., and
+Saddik, A. E. Assisted Piano Pedagogy through 3D
+Visualization of Piano Playing. In HAVE 2006 - IEEE
+International Workshop on Haptic Audio Visual
+Environments and their Application, 2006
+[11] Riley, K., Coons, E. E., and Marcarian, D. The Use of
+Multimodal Feedback in Retraining Complex Technical
+Skills of Piano Performance. Medical Problems of
+Performing Artists, 20, 2, 2005
+[12] Shirmohammadi, S., Khanafar, A., and Comeau, G.
+MIDIATOR: A Tool for Analyzing Students' Piano
+Performance. In Revue de recherche en éducation musicale,
+2, 2006
+[13] Smoliar, S. W., Waterworth, J. A., and Kellock, P. R.
+pianoFORTE: A System for Piano Education Beyond
+Notation Literacy. In MULTIMEDIA '95: Proceedings of
+the third ACM International Conference on Multimedia,
+1995
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+288

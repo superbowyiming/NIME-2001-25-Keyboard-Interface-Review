@@ -1,0 +1,635 @@
+Stellar Command: a planetarium software based cosmic
+performance interface
+Angelo Fraietta
+University of New South Wales
+Cnr. Oxford Street & Greens Road
+Paddington NSW 2021, Australia
+a.fraietta@unsw.edu.au
+ABSTRACT
+This paper presents the use of Stellarium planetarium soft-
+ware coupled with the VizieR database of astronomical cat-
+alogues as an interface mechanism for creating astronomy
+based multimedia performances, and as a music composi-
+tion interface. The celestial display from Stellarium is used
+to query VizieR, which then obtains scientiﬁc astronomi-
+cal data from the stars displayed–including colour, celes-
+tial position, magnitude and distance–and sends it as input
+data for music composition or performance. Stellarium and
+VizieR are controlled through Stellar Command, a software
+library that couples the two systems and can be used as
+both a standalone command line utility using Open Sound
+Control, and as a software library.
+Author Keywords
+NIME, Stellarium, Astronomy, Algorithmic Composition,
+VizieR
+CCS Concepts
+•Applied computing →Sound and music comput-
+ing; Performing arts; •Information systems →Music
+retrieval;
+1. INTRODUCTION
+Musical composition and performance inspired or based on
+astronomy has been used in many cultures for millennia,
+with many civilizations creating songs and dances based
+on the astronomical calendar to reinforce the tracking of
+seasonal activities; such as planting and harvesting of crops,
+times of trade, and religious or cultural practices [33, 8, 25].
+More recently, composers have used scientiﬁc data obtained
+from individual stars to generate sounds and have created
+compositions directly correlated to that data [14, 7].
+The advancement of computing power has made the avail-
+ability of planetarium software for both desktop and mobile
+platforms very accessible to many people. These software
+packages are not only used for scientiﬁc and research activ-
+ities; such as astronomy, education and general stargazing;
+they have also been used by artists in presenting multimedia
+artworks and installations [39, 35].
+This paper will introduce Stellar Command , a software
+system that integratesStellarium planetarium software with
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+online astronomical data acquisition throughVizieR database
+of astronomical catalogues [30]. Stellar Command can be
+used as an interface mechanism for correlating music and
+sound generation, allowing Stellarium to be used as both a
+direct input interface for performance or composition, and
+as a remotely controlled derivative multimedia display out-
+put.
+2. RELATED WORK
+Many composers have used the cosmos as inspiration or
+stimulus to their works, with many using scientiﬁc obser-
+vations or data as input [18, 14]. The Quadrivium linked
+astronomy, mathematics, geometry and music as a stan-
+dard part of classical education up until the renaissance
+[26]. Composers have been mapping mathematics and ge-
+ometry to music since antiquity [20, 5]. Kepler stated “The
+heavenly motions are nothing but a continuous song for sev-
+eral voices, to be perceived by the intellect, not by the ear; a
+music which, through discordant tensions, through syncopa-
+tions and cadenzas as it were, progresses toward certain pre
+designed six-voiced cadences, and thereby sets landmarks in
+the immeasurable ﬂow of time.” [32, cited in 286]. This no-
+tion inspired Rogers and Ruﬀ to compose The Harmony of
+the World (1979), describing their work as “A Realization
+for the Ear” [32, p. 286] of Johannes Kepler’s Astronomical
+Data from Harmonices Mundi 1619. More recently, com-
+posers have used measurements from online databases as
+inputs to automata or as stimulus to performers.
+Nick Ryan developed a musical instrument called Ma-
+chine 9 that uses the location of 27,000 pieces of space junk
+as input to an automaton [19]. The instrument is a large
+cylindrical phonograph that maps space debris to sound as
+it directly passes overhead. Each groove on the cylinder is
+associated with a catalogued piece of space debris [1]. The
+system accesses publicly available databases that provides
+the telemetry data of space debris, which is then modelled
+in real-time. When the telemetry data indicates that one
+of catalogued items is overhead, the machine locates one
+of the grooves on the cylinder and plays a mapped sound
+mechanically through a record-player type stylus.
+Another system based on astronomical catalogues was the
+author’s own musical composition and performance inter-
+face using naked eye and binocular astronomy [14]. A spe-
+ciﬁc star was determined by calculating its azimuth and
+height above the horizon–known as its altitude–using ac-
+celerometer and magnetometer sensors, and calculating the
+exact location of the star on the celestial sphere using the
+sensor data, time and geographical location of the observer.
+This calculation returns the star’s right ascension (RA) ,
+which is based on its azimuth at Greenwich Meantime at
+the vernal equinox, and its declination (Dec.), which is the
+stars north-south position at the same time [10, 14]. The
+resultant RA and Dec. are added as input to the VizieR
+387
+database of online catalogues, returning data about stars–
+such as brightness and colour–within the deﬁned radius.
+Various works were created using this interface. In one
+performance, which was conducted in conjunction with the
+Newcastle Astronomical Society on one of their ﬁeld view-
+ing nights, members of the public were enticed into viewing
+the night sky through high powered binoculars, while the
+sound generated, which was based on data from the stars
+they were viewing, was played through loudspeakers on the
+ﬁeld [13]. Another set of performances was conducted with
+an improvising ensemble that featured various astronomi-
+cal photos displayed as a slide show where the astronomical
+data was mapped as MIDI and functioned as inspirational
+impetus for the performers [7].
+Although both systems are innovative and impressive,
+they have identiﬁable boundaries. First, Machine 9 exists
+as an installation piece using unique piece of specialised
+hardware [1]. Furthermore, a publicly available API to con-
+vert the space debris to a musical transmission protocol like
+MIDI or OSC [37] is not yet available for the wider com-
+puter music community. Secondly, although the binocular
+display has an awesome display–the actual night sky–“few
+people ventured outside to the astronomical equipment”[14,
+p. 50] because they were required to leave the room to look
+through binoculars while the ensemble played in a room.
+Furthermore, the work is severely bound by weather condi-
+tions and a clear view of the sky. In one of the performances,
+“the sky was completely covered with cloud and it rained,
+so there was nothing to see through the binoculars. The
+audience, however, enjoyed the ensemble performance with
+the NASA image slide show with samples fed from stored
+star tables.”[14, p. 50]. This weather constraint inspired
+the author to use planetarium software as the input and
+display mechanism as an alternative to binoculars.
+Stellar Command enables composers to access astronom-
+ical data as input to their software using a common API.
+It also enables them to provide the audience an impressive
+planetarium software display that runs on a laptop com-
+puter without requiring the audience to leave the room.
+Furthermore, it facilitates creation of interactive celestial
+based installations. Stellar Command is available as open
+source software through GitHub [16].
+2.1 Stellarium
+Stellarium is a software program designed to enable people
+to create a virtual planetarium using their home computer
+[40]. It runs on Windows, OSX and Linux/Unix, including
+Raspberry Pi [40, p. 6]. Stellarium calculates positions of
+the Sun, moon, stars and planets based on the time and
+location deﬁned by the user, and renders them to the dis-
+play. Stellarium is used by both amateur and professional
+astronomers, and is used by the European Organisation for
+Astronomical Research in the Southern Hemisphere to fa-
+cilitate distribution and sharing of visual data among sci-
+entists [6]. Stellarium has a very high quality graphical
+display, supporting spherical mirror projection that can be
+used with a dome [27] and is used in many schools and
+museums because it is both scientiﬁcally accurate and visu-
+ally engaging [6]. Moreover, Stellarium can display con-
+stellations from several diﬀerent cultures and has labels
+translated to more than 40 languages, making Stellarium
+both culturally aware and inclusive [6]. For example, Fig-
+ures 1 and 2 display the same area of sky, however the ﬁrst
+presents the constellations using the western sky lore while
+the latter presents them in the Tukano sky lore 1 [31]. A
+1The Tukano tribes are indigenous peoples of the north-
+western region of Brazil [21].
+comparison reveals that Scorpius and Crux are referred to
+as the Fer-de-lance and the Tortoise. This feature can make
+Stellarium an extremely useful tool in facilitating multime-
+dia presentations for ethnomusicogy or composing in non-
+western contexts.
+Figure 1: Constellations displayed in Western sky
+lore.
+Figure 2: Constellations displayed in Tukano sky
+lore.
+Many astronomers use Stellarium to display a prediction
+of the sky for a future time, such as organising a view-
+ing night or planning an astro-photography session [4]. Ar-
+chaeoastronomers also use the feature to generate an astro-
+nomical display from a location for a period sometime in
+the past [38]. Also, the landscape feature facilitates a con-
+nection between landscape and skyscape, so one can map
+the sky against a landscape for research or aesthetics [39].
+Stellarium scripts are written in ECMAScript, also known
+as Javascript, and enables the programmer to generate and
+run an automated astronomy presentation, facilitating au-
+tomation of all the functionality of Stellarium [40].
+Stellarium has a Remote Control plugin that enables third
+party programs to communicate with Stellarium via a REST
+client. This feature was used by the author to create an in-
+teractive spacecraft game using a sonic ball as a preliminary
+test of Stellarium’s viability as a responsive performance
+interface [17]. The plugin also allows clients to query the
+status of Stellarium, including the area of sky currently be-
+ing displayed. The exact celestial vector and ﬁeld of view
+displayed are used as the input to the VizieR server in order
+to obtain data about stars in that location.
+2.2 VizieR
+388
+VizieR is an online database of high quality astronomical
+catalogues collected by the Centre de Donn´ ees astronomiques
+de Strasbourg (CDS), one of whose main goals “is to pro-
+mote the usage of the reliable astronomical catalogues to
+the astronomical community” [30, p. 25]. One of the ways
+CDS ensures the reliability of their archives and catalogues
+is to only collect data that has been published or accepted in
+refereed scientiﬁc journals or literature. The number of cat-
+alogues available has grown from 3000 in 1999 [30, p. 24] to
+currently 18000 [3]. Catalogues can be selected by name or
+based on the wavelength, mission and astronomy type [29].
+Wavelength dictates the frequency spectrum of the data in
+the catalogue, such as radio, infra-red, optical, x-ray, and
+Gamma-RAY. The mission indicates the purpose for which
+the catalogue was created or is used. For example, the pur-
+pose of the Kepler Mission is to“detect Earth-size planets in
+the habitable zone ... of solar-like stars... , determine their
+frequency, and identify their characteristics.” [22, p. 2]; and
+so catalogues created or used within this mission can be
+speciﬁcally targeted. The type of astronomy indicates the
+subject area of research that the catalogue belongs to; for
+example, black holes, galaxy clusters, planetary nebulae,
+red shifts, and photometry.
+Once a user has selected the database criteria to search,
+they must provide VizieR a search window that consists of
+a target centre and area around that point to search. The
+target centre is the point on the celestial sphere referenced
+to a celestial equinox2, and can be deﬁned by object name,
+RA and Dec., or by IAU-coordinates [2].
+3. STELLAR COMMAND MODULE
+Although it is possible to communicate directly to Stellar-
+ium and VizieR directly through the HTTP interface, the
+stellar position parameters between the two systems are dif-
+ferent. Stellarium returns its position information as three
+dimensional spherical points, with a separate query for the
+ﬁeld of view; whereas, VizieR requires the data as a two
+dimensional geometric point with a deﬁned radius. The
+Stellar Command module abstracts this information from
+the client software and removes the requirement to perform
+these calculations by the client. Stellar Command directs
+VizieR to query the Hipparcos catalogue because it provides
+a “complete all-sky survey of astrometric and photometric
+parameters for one million stars down to magnitude 11 ”
+[36, p. 201]. An attempt was made using other photomet-
+ric catalogues, however, it was diﬃcult to obtain consistent
+results for all sky locations.
+In order to simplify interfacing the two systems, querying
+of the Stellarium and VizieR systems were separated into
+separate modules. In addition to reducing coupling between
+them, resulting in more robust code [23], the modules could
+also be used independently for astronomical applications.
+In addressing the diﬀerent target communities—artistic and
+scientiﬁc–the code would be expected to run on multiple
+operating systems, including Windows, OSX, and Linux.
+Moreover, it was preferable to have a single executable ver-
+sion of the software rather than having to conﬁgure and
+build a separate program for each diﬀerent platform.
+The interface required to control both Stellarium and
+VizieR was HTTP based, so a language that provided net-
+work functionality as a fundamental core feature was pre-
+ferred. Also, it was imperative that third party users of
+the library should not have to learn a particular program-
+ming language, but instead, could easily interface with the
+library using their preferred music package such as Max
+MSP, SuperCollider or PD. Furthermore, it would be ad-
+2The default equinox is J2000 [29].
+vantageous for users to be able to integrate the library into
+the programming language of their choice, such as C, C++,
+Python, Ruby, or Java.
+Developing the system as a Java Archive (JAR) fulﬁlled
+all these requirements. Using a JAR ﬁle allowed instantia-
+tion from the command line, running as separate processes
+and using OSC to communicate with other programs. Ad-
+ditionally, many other programming languages can connect
+directly to a JAR through the Java Native Interface (JNI)
+[24].
+3.1 Launching Stellar Command Module
+The Stellar Command system, displayed in Figure 3, shows
+how the diﬀerent systems interact with the Stellar Com-
+mand module and with one another.
+Figure 3: Stellar Command Use Case.
+A performer is able to either control Stellarium directly,
+for example using Stellarium’s keyboard commands or a
+third party Remote Control client, or through the Stellar
+Command module via an OSC or JNI client 3.
+The Stellar Command module is instantiated by execut-
+ing Java with the name of the JAR ﬁle and the required
+program arguments that deﬁne communication, such as the
+network port to send OSC messages to, and the OSC ad-
+dress space. For example, to start the StellarCommand
+module so it sends OSC messages on UDP port 1234 using
+an OSC address space of /Stellar,4 one would execute the
+following command:
+java -jar StellarCommand.jar port=1234 \
+osc=/Stellar.
+When the server starts, it will open the ﬁrst available
+UDP port, and notify the client of this port. For exam-
+ple, if the command module opened port 4567, it will send
+an OSC message /Stellar/osc 4567 to the client on the
+localhost. Allowing the command module to ﬁnd its own
+port number removes the probability of port clashes as each
+client furnishes the other with a valid port number for com-
+municating without requiring conﬁguration in the command
+module. It is, however, possible to request the Stellar Com-
+3Communicating via the JNI interface is done by the host
+programming language and is outside the scope of this pa-
+per.
+4In this instance, the OSC client and Stellarium are on the
+same computer.
+389
+mand module try certain ports by adding the argument try-
+port with a comma separated list of ports. For example,
+the argument tryport=3333,4444,5555 will cause Stellar-
+ium to sequentially try opening the ports listed, and if these
+all fail, will then open the ﬁrst available port.
+The OSC client and the Stellarium server do not have to
+be on the same physical computer as the Stellar Command
+module. For example Figure 4, shows three OSC clients
+and a Stellarium server on a LAN, and a remote Stellarium
+server accessible from the internet through myserver.com.
+Figure 4: Remote Stellarium and OSC Clients.
+Creating a connection between OSC Client 1 and Remote
+Stellarium Server is eﬀected by adding adding the argu-
+ments
+client=192.168.0.5 and stellarium=http://myserver.com
+to the command line. This will cause the Stellar Command
+module to send OSC messages to “192.168.0.5” and Stellar-
+ium commands to http://myserver.com on HTP port 80905,
+eﬀectively acting as a proxy between the two. A typical se-
+quence of events is shown in Figure 5.
+Figure 5: OSC Client to Remote Stellarium Server.
+1). The Stellar Command module is initialised with the
+OSC Client and Stellarium addresses. 2). The Stellar Com-
+mand module open its ﬁrst available port and notiﬁes the
+5The default Stellarium Remote Control port is 8090, how-
+ever, this can be changed inside Stellarium. It is assumed
+that port forwarding when not using a local area network
+has been conﬁgured to send packages to the correct com-
+puter hosting Stellarium
+Table 1: Astronomical Data retrieved from VizieR
+RArad DErad Hpmag B-V
+184.9737 -62.8541 6.8854 0.248
+185.9260 -63.8700 7.4616 0.146
+186.6497 -63.0990 0.6739 -0.243
+186.8535 -63.7889 6.0467 0.052
+OSC Client of this port so it knows which port to send OSC
+to. 3). The OSC client sends a message to Stellar Command
+to eﬀect a position or display change in Stellarium. 4). Stel-
+lar Command decodes the message and sends an encoded
+HTTP message to Stellarium. 5). Stellar Command then
+sends a query to Stellarium to receive information about
+position state. 6). Stellar Command queries VizieR and
+obtains data about the stars displayed. 7). Stellar Com-
+mand packs and sends the data to the OSC Client.
+It is possible to instantiate multiple instances of the com-
+mand module with diﬀerent program arguments, so one
+could eﬀectively control any number of systems running
+Stellarium on any number of computers, interfacing with
+any number of OSC clients.
+It is simple to create sudo conﬁguration ﬁles by creating
+shell scripts for OSX and Linux or a batch ﬁle for Windows
+with predeﬁned program arguments. For example, execut-
+ing the following in a shell script will run the command
+module with the port and OSC address deﬁned in variables
+PORT and OSC:
+#!/bin/bash
+PORT="1234"
+OSC="/Stellar"
+java -jar StellarCommand.jar port=$PORT osc=$OSC
+3.2 Decoding Stellar Parameters
+The data received from Stellar Command by the client con-
+tains all the data for the ﬁeld of view as a single event.
+When using an OSC client, the messages are packed into
+a bundle, with the column names in the ﬁrst OSC packet
+with an address space of names while the data uses an ad-
+dress space of value is used for the actual data values. For
+example, if Stellarium was displaying 0.9 degrees at ACrux,
+the data returned from the VizieR catalogue would approx-
+imately be that shown in Table 1 6, the bundled packets
+would be transmitted as below.
+/Stellar/names RArad DErad Hpmag B-V
+/Stellar/value 184.9737 -62.8541 6.8854 0.248
+/Stellar/value 185.9260 -63.8700 7.4616 0.146
+/Stellar/value 186.6497 -63.0990 0.6739 -0.243
+/Stellar/value 186.8535 -63.7889 6.0467 0.052
+The data in Table 1 represents less than a one degree ﬁeld
+of view, whereas the skyscape shown in Figure 1 displays
+a fourteen degree ﬁeld of view, which would return over
+3000 stars. Although a user could ﬁlter these in the client
+application, parsing and decoding an OSC bundle message
+containing more than 3000 OSC packets would use a sig-
+niﬁcant amount of resources. It is possible to reduce the
+number of messages received by applying a ﬁlter inside the
+Stellar Command module. For example, to retrieve data
+about stars brighter than magnitude 6, one would send the
+following OSC message to Stellar Command: 7
+/Stellar/filter/Hpmagr/less 6
+6RArad is Right Ascension, DErad is Declination, Hpmag
+is Hipparcos magnitude and B-V is Colour index
+7Brighter stars have lower magnitude values.
+390
+After receiving the command, Stellar Command will apply
+the ﬁlter to all messages until the ﬁlter is reset. Also, the
+server can be conﬁgured to only send a notiﬁcation that new
+bundle of stars being available instead of sending thousands
+of OSC messages every second.
+It is possible to save VizieR tables to a ﬁle and access
+them later. The advantage of this is twofold. First, the sys-
+tem can be used when little or no Internet access is available.
+Secondly, accessing the data from a ﬁle signiﬁcantly reduces
+latency when used in a choreographed work.
+4. COMPOSITIONAL EXAMPLE
+When considering a method to demonstrate mapping astro-
+nomical data with music, the challenge was to compose a
+work that not only demonstrated the possibilities and ca-
+pabilities of Stellar Command as a composition and perfor-
+mance interface, but to compose a work whose subject cel-
+ebrated the conference theme and location. The Brazilian
+national ﬂag, shown in Figure 6, was chosen as the subject
+because the author was not only able to blend art, science
+and politics into a multimedia performance; the ﬂag also de-
+picts a hidden astronomical event at a ﬁxed point in Brazil’s
+history that can be veriﬁed and analysed in detail using
+Stellarium.8 The ﬂag displays twenty-seven stars from nine
+constellations as they would have appeared above the sky
+of Rio de Janeiro at 8:30 a.m. on November 15, 1889, with
+each star representing a diﬀerent state [9]. The audience is
+taken for a cosmic tour of Brazil in that they are escorted
+across the sky from one star on the ﬂag to the next, while
+being presented scientiﬁc data, the state represented by the
+star, and music that has been created from star data re-
+trieved from the VizieR catalogues that have been mapped
+to musical parameters. The idea of this work was inﬂuenced
+by the author’s proposed musical tour of the Southern Cross
+[14].
+Figure 6: Flag of Brazil
+The primary method of audio generation was through
+the use of the HappyBrackets creative coding toolkit, which
+facilitated granular synthesis of samples from recordings of
+indigenous Indians of Brazil, complex digital signal process-
+ing, and eﬀective quantisation of azimuth values to rhyth-
+mic timing and altitude to pitches modes. The star colour
+and magnitude were mapped to grain width and note du-
+ration respectively. Communication between Stellar Com-
+mand and HappyBrackets was eﬀected by directly interfac-
+ing the Java library to the Java algorithmic composition
+8A video showing the composition can be viewed at https:
+//youtu.be/NhXRdd-MNoo.
+software, which in turn reduced ineﬃciencies inherent of
+OSC decoding [28, 12, 11, 34]. Sending the data via OSC
+would require allocation and decoding of the string param-
+eters in memory, coupled with communication through the
+localhost, whereas, using the Java event directly allowed the
+system to pass the data structure by reference, signiﬁcantly
+reducing valuable system resources. The complete details
+of the composition and mapping strategies are too detailed
+to be included in this paper and are presented in a separate
+paper in these conference proceedings [15].
+5. FUTURE WORK
+Although the system is eﬀective for obtaining astronomical
+data based on Stellarium’s display, it is bound in that it
+requires Internet access to VizieR between composition and
+performance. If for example, a composer wanted to create
+a new work and they were in a remote location with no
+Internet access, then they would be unable to continue. The
+system could be improved by accessing the database used
+by the actual Stellarium program. Moreover, this research
+could be used to provide mapping and soniﬁcation of stellar
+information in the Stellarium program in a future release.
+6. CONCLUSIONS
+This paper detailed a mechanism for correlating a display
+from the Stellarium planetarium software and scientiﬁc data
+from the Hipparcos astronomical database through the VizieR
+database of astronomical catalogues. Furthermore, it pre-
+sented the Stellar Command software package, which facil-
+itates the correlation of the two systems into both a library
+that can be called directly within other software programs,
+and as a separate process that communicates through OSC.
+The system is able to connect with multiple instances of
+Stellarium on both local area networks, and remote net-
+works through the Internet.
+Finally, a brief description of how Stellar Command was
+used to implement a multimedia composition based on the
+Flag of Brazil.
+7. ACKNOWLEDGMENTS
+I would like to acknowledge the support of Georg Zotti and
+Alexander Wolf from the Stellarium development team for
+their advice and guidance in using Stellarium.
+8. REFERENCES
+[1] Space debris motion translated into music.
+https://www.youtube.com/watch?v=PJ8ojV5hiOk,
+2016. Accessed: 2019-01-18.
+[2] Vizier help - faq - tutorial output preferences and
+constraint speciﬁcations. http://vizier.u-strasbg.
+fr/viz-bin/vizHelp?3.htx#target, 2017. Accessed:
+2019-01-18.
+[3] VizieR.
+https://vizier.u-strasbg.fr/viz-bin/VizieR,
+2018. Accessed: 2019-01-18.
+[4] J. Ashley. Computers and computer programs. In
+Astrophotography on the Go , pages 151–161. Springer,
+2015.
+[5] G. Assayag and H. G. Feichtinger. Mathematics and
+music: A Diderot mathematical forum . Springer
+Science & Business Media, 2002.
+[6] K. Berglund. Using free, open source Stellarium
+software for iya2009. In Preparing for the 2009
+International Year of Astronomy: A Hands-On
+Symposium, volume 400, page 483, 2008.
+391
+[7] C. Bright. spa-c–e, 2013. Performed live at Colbourne
+Ave Glebe, Sydney, Australia May 23rd 2013 by The
+Colin Bright Syzygy Band and Angelo Fraietta.
+[8] F. C. de Mello. Astronomy and Cosmology of the
+Guarani of Southern Brazil , pages 975–980. Springer
+New York, New York, NY, 2015.
+[9] P. A. Duarte. Astronomia na Bandeira Brasileira.
+https:
+//web.archive.org/web/20080502120005/http://
+www.cfh.ufsc.br/~planetar/textos/astroban.htm,
+2010. Accessed: 2018-12-21.
+[10] P. Duﬀett-Smith and J. Zwart. Practical astronomy
+with your calculator or spreadsheet. Cambridge
+University Press,, 2011.
+[11] E. Fl´ ety and C. Maestracci. Latency improvement in
+sensor wireless transmission using IEEE 802.15. 4. In
+New Interfaces for Musical Expression (NIME 2011) ,
+pages 409–412, 2011.
+[12] A. Fraietta. Open Sound Control: Constraints and
+limitations. In International Conference on New
+Interfaces for Musical Expression (NIME-2008) ,
+pages 19–23, 2008.
+[13] A. Fraietta. Echoes from the fourth day - a segue
+through the southern night sky for FM synthesiser
+and binoculars, 2014. Performed in Brickworks Park
+in collaboration with the Newcastle Astronomical
+Society.
+[14] A. Fraietta. Musical composition with naked eye and
+binocular astronomy. In Australasian Computer Music
+Conference 2014, pages 47–52. Victorian College of
+the Arts, 2014.
+[15] A. Fraietta. Creating order and progress. In
+International Conference on New Interfaces for
+Musical Expression (NIME-2019). Federal University
+of Rio Grande do Sul, 2019.
+[16] A. Fraietta. Stellar command software module. https:
+//github.com/angelofraietta/StellarCommand,
+2019. Accessed: 2019-02-02.
+[17] A. Fraietta and O. Bown. Creating a soniﬁed
+spacecraft game using HappyBrackets and Stellarium.
+In Procedings of the 17th Linux Audio Conference
+(LAC-19), pages 1–7. CCRMA, Stanford University,
+USA, 2019.
+[18] A. Fraknoi. Music inspired by astronomy: A selected
+listing for the international year of astronomy. In
+Preparing for the 2009 International Year of
+Astronomy: A Hands-On Symposium , volume 400,
+page 514, 2008.
+[19] S. Ings. Plane speaking: Analogue tech powers a
+futuristic artwork. New Scientist Archive,
+235(3133):43, 2017.
+[20] J. James. The music of the spheres: Music, science,
+and the natural order of the universe . Springer
+Science & Business Media, 1995.
+[21] F. Knobloch. The Tukano indians and advancing
+“civilisation”. Mankind Quarterly, 17(2), 1976.
+[22] D. G. Koch, W. J. Borucki, G. Basri, N. M. Batalha,
+T. M. Brown, D. Caldwell, J. Christensen-Dalsgaard,
+W. D. Cochran, E. DeVore, E. W. Dunham, et al.
+Kepler mission design, realized photometric
+performance, and early science. The Astrophysical
+Journal Letters, 713(2):L79, 2010.
+[23] C. Larman. Applying UML and patterns: an
+introduction to object-oriented analysis and design
+and the uniﬁed process. Prentice Hall, second edition,
+2002.
+[24] S. Liang. The Java Native Interface: Programmer’s
+Guide and Speciﬁcation. Addison-Wesley Professional,
+1999.
+[25] F. P. Lima. Astronomy in Brazilian Ethnohistory ,
+pages 945–951. Springer New York, New York, NY,
+2015.
+[26] M. Lundy, J. Martineau, M. Lundy, D. Sutton,
+A. Ashton, and J. Martineau. Quadrivium: The four
+classical liberal arts of number, geometry, music, &
+cosmology. Walker & Company, 2010.
+[27] M. Mc Cool. Touring the cosmos through your
+computer: a guide to free desktop planetarium
+software. CAPjournal,(7), pages 21–23, 2009.
+[28] M. McCurry. Rtosc-realtime safe open sound control
+messaging. In Linux Audio Conference 2018 , page 51,
+2018.
+[29] F. Ochsenbein. The “vizquery” program. http:
+//vizier.u-strasbg.fr/vizier/doc/vizquery.htx,
+2010. Accessed: 2019-01-18.
+[30] F. Ochsenbein, P. Bauer, and J. Marcout. The VizieR
+database of astronomical catalogues. Astronomy and
+Astrophysics Supplement Series , 143(1):23–32, 2000.
+[31] G. Reichel-Dolmatoﬀ. Cosmology as ecological
+analysis: a view from the rain forest. Man, pages
+307–318, 1976.
+[32] J. Rodgers and W. Ruﬀ. Kepler’s harmony of the
+world: A realization for the ear: Three and a half
+centuries after their conception, Kepler’s data
+plotting the harmonic movement of the planets have
+been realized in sound with the help of modern
+astronomical knowledge and a computer-sound
+synthesizer. American Scientist, 67(3):286–292, 1979.
+[33] C. L. Ruggles et al. Handbook of Archaeoastronomy
+and Ethnoastronomy. Springer New York, 2015.
+[34] L. Turchet, C. Fischione, G. Essl, D. Keller, and
+M. Barthet. Internet of musical things: Vision and
+challenges. IEEE Access, 6:61994–62017, 2018.
+[35] E. Tuveri, S. A. Iacolina, F. Sorrentino, L. D. Spano,
+and R. Scateni. Controlling a planetarium software
+with a kinect or in a multi-touch table: a comparison.
+In Proceedings of the Biannual Conference of the
+Italian Chapter of SIGCHI , page 6. ACM, 2013.
+[36] F. Van Leeuwen. The Hipparcos mission. Space
+Science Reviews, 81(3-4):201–409, 1997.
+[37] M. Wright, A. Freed, et al. Open SoundControl: A
+new protocol for communicating with sound
+synthesizers. In ICMC, 1997.
+[38] G. Zotti. Towards serious gaming for
+archaeoastronomical simulation. Mediterranean
+Archaeology & Archaeometry, 14(3), 2014.
+[39] G. Zotti, F. Schaukowitsch, and M. Wimmer. The
+skyscape planetarium, 2017.
+[40] G. Zotti and A. Wolf. Stellarium 0.18.0 user guide.
+2018.
+392

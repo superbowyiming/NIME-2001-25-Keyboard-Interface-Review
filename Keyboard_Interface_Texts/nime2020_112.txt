@@ -1,0 +1,577 @@
+Cyclops: Designing an Eye-Controlled Instrument for 
+Accessibility and Flexible Use 
+William Payne Ann  Paradiso Shaun K. Kane 
+New Y ork University Microsoft Research University of Colorado Boulder 
+370 Jay St, Rm 323 14820 NE 36th St 430 UCB 
+Brooklyn, NY 11201 Redmond, WA 98052 Boulder, CO 80309 
+william.payne@nyu.edu annpar@microsoft.com shaun.kane@colorado.edu 
+ABSTRACT 
+The Cyclops is an eye-gaze controlled instrument designed
+for live performance and improvisation. It is primarily mo-
+tivated by a need for expressive musical instruments that 
+are more easily accessible to people who rely on eye track-
+ers for computer access, such as those with amyotrophic 
+lateral sclerosis (ALS). At its current implementation, the 
+Cyclops contains a synthesizer and sequencer, and provides 
+the ability to easily create and automate musical param-
+eters and eﬀects through recording eye-gaze gestures on a 
+two-dimensional canvas. In this paper, we frame our proto-
+type in the context of previous eye-controlled instruments, 
+and we discuss how we designed the Cyclops to make gaze-
+controlled music making as fun, accessible, and seamless as 
+possible despite notable interaction challenges like latency, 
+ inaccuracy, and “Midas Touch.”1
+        
+Author Keywords 
+Accessibility, Eye Gaze, Human Music Interaction, ALS, 
+Motor Neuron Disease 
+CCS Concepts 
+•Human-centered computing →  Accessibility tech-
+nologies; User interface design; •Applied computing →  
+Sound and music computing; 
+1. INTRODUCTION 
+1To see the Cyclops in use, a demo video is available https: 
+//youtu.be/u8j7AapyQPY. 
+Licensed under a Creative Commons Attribution 
+4.0 International License (CC BY 4.0). Copyright 
+remains with the author(s). 
+NIME’20,  July 21-25, 2020, Royal Birmingham Conservatoire, 
+Birmingham City University , Birmingham, United Kingdom. 
+17]. Still, few developments to date have supported musi-
+cians with the most severe motor impairments caused by 
+injuries such as a high-level spinal fracture or diseases such 
+as Amyotrophic Lateral Sclerosis (ALS), also known as Mo-
+tor Neurone Disease (MND). The Cyclops is designed from 
+the ground up to support musicians who only have control 
+over their eyes and is thus accessible to those with any mo-
+tor control. 
+A seemingly crucial element of instrument learning is the
+development of precision, speed, and muscle memory. For 
+people with limited dexterity and motor skills, there are not 
+always obvious paths forward to becoming expressive musi-
+cians. New Interfaces for Musical Expression can lower bar-
+riers to meaningful music-making given that inputs are not 
+constrained by acoustic realities, while audio outputs and 
+thoughtful mappings [10] can result in incredibly expressive 
+tools. The most famous case of a technology restoring ex-
+pression is the Theremin at the hands of Clara Rockmore, 
+a musician who gave up the violin due to tendinitis, but 
+the NIME community has demonstrated an active commit-
+ment to empowering people of diverse abilities [1, 3, 13, 
+         
+1.1 Eye T racking 
+Prior work extensively describes the challenges in control-
+ling user interfaces via eye gaze [8]. Functionally, the use 
+of an eye tracker as the primary mode of input introduces 
+two major constraints. The ﬁrst limitation is precision: 
+compared to pointing, targets must be made larger and 
+must be spaced further apart, which signiﬁcantly reduces 
+the amount of input elements that can be displayed. The 
+second limitation is timing: because eye gaze users typi-
+cally select an on-screen target by holding their gaze over 
+a speciﬁc region (known as dwelling), it is diﬃcult  or im-
+possible to precisely control the timing or rhythm of inputs. 
+Taken together, these limitations present signiﬁcant barriers 
+to music creation. 
+       
+When designing eye-gaze systems, additional human and
+echnological constraints must be considered. Eye tracker 
+ccuracy and precision varies widely across users, trackers, 
+nd lighting conditions [6]. Targeting tends to be more ac-
+urate near the center of the screen, and less accurate on 
+he edges, especially at the bottom and bottom-right cor-
+ers [6]. A person’s head must be positioned carefully for 
+he tracker to work. As Hornof notes [8], the interface used 
+n Duet for Eyes [20] provides visual feedback so that users 
+re aware when they are outside tracker range. People with 
+LS, an important population of eye-tracker users, lack vol-
+ntary control over most of their body. Communication 
+s especially demanding and frustrating due to low typing 
+peed and few opportunities for personal expression [11]. 
+inally, eye tracker users may use old hardware and soft-
+are and may not be comfortable installing prototypes for 
+ear of breaking systems that provide crucial access. 
+       
+t
+a
+a
+c
+t
+n
+t
+i
+a
+A
+u
+i
+s
+F
+w
+f
+1.2 Eye-Gaze Controlled Music 
+Hornof writes the most comprehensive review of eye-controlled
+musical instruments and performances to date [8]. One of 
+the earliest designs identiﬁed nine eye positions (apparently 
+with some error) used to trigger sounds [18]. The recent 
+availability and relative aﬀordability of eye tracking hard-
+ware allows systems to capture eye positions at high sam-
+pling rates and feed the resulting x,y coordinates into real-
+time audio synthesis algorithms (e.g. [9]). Still, ongoing 
+challenges including hardware inaccuracies and gaze inter-
+action constraints, (e.g. “Midas Touch:” accidental target 
+activation during exploration, eye fatigue during use, limits 
+        
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+576
+on rhythmic “eye tapping” [2]), have demanded novel design 
+strategies. The EyeHarp addresses the “Midas Touch” Prob-
+lem through a [24] radial design allowing a user to rest their 
+eyes at the center and move outward triggering intended 
+targets without accidentally crashing into targets along the 
+way, while Netytar [5] addresses navigation complexity with 
+an isomorphic interface which, its authors argue, reduces 
+screen distance between targets and input error in compari-
+son to the EyeHarp. EyeJam [15] removes dwell latency en-
+tirely through a Context Switching paradigm [15] in which 
+triggering a note is done through crossing a “bridge” at the 
+center of the screen after selecting a pitch above or below 
+it. However, EyeJam limits the number of available in-
+puts since identical pitches are duplicated above and be-
+low the bridge. While we focused entirely on gaze, recent 
+systems explore multimodal inputs. Dueto is adjustable 
+to player ability supporting switch and cooperative modes 
+[23]. Finally, Focal, is a see-through, head-mounted dis-
+play in which players select various eﬀects with their eyes 
+extending the capabilities of a single expression pedal [7]. 
+In a few cases, eye-controlled instruments have supported 
+the musical expression of players with disabilities. Duet 
+for Eyes was a performance bringing together users with 
+severe motor impairments, AAC experts, and others and 
+largely taking advantage of oﬀ-the-shelf technologies using 
+gaze to trigger pre-selected audio ﬁles [20]. The EyeHarp 
+[24] involved an informal evaluation with people with cere-
+bral palsy, and Ableton Live Adapted [8] was a collabo-
+ration between two people, one with ALS, to develop an 
+eye-controlled Ableton Live interface overlay. 
+2. DEVELOPMENT 
+The Cyclops builds on and diﬀers from existing work. Due 
+to a primary motivation to make musical expression more 
+accessible, it uses a commercially available eye-tracker with 
+free drivers, and it is developed entirely in Universal Win-
+dows Platform (UWP) with the goal of eventual release on 
+the Windows Store. Furthermore, the design ethos of the 
+Cyclops can be summarized as “low ﬂoors and high ceilings” 
+[19] resulting in a multi-screen design with independent yet 
+interconnected modules supporting scaﬀolded growth and 
+takes inspiration from the Dato DUO [4], a two-player synth 
+designed for kids. 
+2.1 Hardware and Requirements 
+Our system is tested with the Tobii Eye Tracker 4c and the
+Tobii PcEye Mini (both can be found under $200) [22]. To-
+bii eye trackers use a combination of near-infrared light, 
+camera capture, and onboard image processors, and are 
+quite small mounting to the bottom of a monitor. When 
+sold as an assistive technology for communication (AAC), 
+Tobii eye trackers are very expensive, usually over $1000 
+[21]. The bulk of this cost is the software which converts 
+text and symbols to speech, and provides other applications 
+to enhance computer access for eye tracker users. The To-
+bii 4c is also sold as a gaming device without expensive 
+AAC software. The tradeoﬀ is that the free drivers pro-
+vide limited customization and only six-point targeting for 
+calibration. It also conceals how raw capture data of eye 
+position is ﬁltered and reduced into the gaze point shown 
+on screen limiting any alteration of the underlying capture 
+algorithms. 
+            
+2.2 UWP/Gaze Interaction Library 
+Many, if not most, who rely on eye trackers use Windows
+due to the operating system’s built-in support for eye con-
+trol. Thus, the main advantage of UWP as a development 
+platform is its compatibility with existing tracker-enabled 
+           
+devices. (We successfully installed the Cyclops on a To-
+bii Dynavox AAC device.) Simplifying development of eye 
+gaze-enabled applications, the Gaze Interaction Library is 
+available freely to Windows developers as part of the open-
+source Windows Community Toolkit. With only three lines 
+of code, the Gaze Interaction Library adds dwell-based ac-
+tivation to common controls, and the API supports signif-
+icant customization. Each control contains “Enter,” “Fix-
+ation,” “Dwell,” and “Exit” properties enabling the devel-
+oper to specify the timing and events that occur when a 
+user looks at or away from a control. (Dwell, unlike ﬁxa-
+tion, is intended to indicate comprehension of the control’s 
+purpose.) Furthermore, the library supports customization 
+over the appearance of the gaze cursor, a visual representa-
+tion of where the tracker detects the eyes, and access to its 
+pixel position. 
+2.3 Audio Synthesis 
+While UWP supports some audio output through the Au-
+dioGraph API including ﬁle playback, routing, and a few 
+built-in eﬀects, UWP is not intended for building sophisti-
+cated audio or music applications and does not contain an 
+audio synthesis engine. We wanted the Cyclops to produce 
+high-quality yet comprehensible sounds and not to emu-
+late acoustic instruments with pre-recorded ﬁles or MIDI 
+synths. Synthesizers are expressive instruments that do not 
+necessarily require ﬁne motor skills or precise timing, yet 
+enjoyment of them is often the result of experimentation 
+and happening upon unique settings. This is made possible 
+through synthesis. 
+One feature of UWP is the ability to embed a web ap-
+plication rendered with Microsoft Edge, thus allowing for 
+the use of the Web Audio API. The interface of the Cy-
+clops is built in C# and XAML, the synthesizer is written 
+in Javascript and runs completely oﬄine,  and the two com-
+municate with each other using built-in UWP messaging 
+functions. The audio components are built on Tone.js [14], 
+a Web Audio framework for creating interactive music in 
+the browser. The audio implementation includes: 
+• Polyphonic Synthesizer 
+– Four oscillators 
+– Amplitude and ﬁlter envelopes 
+– Eﬀects: bitcrusher, chorus, delay, low pass ﬁlter 
+– Eﬀects automation 
+• Sequencer 
+– 1–16 steps 
+– Accent/on/oﬀ 
+– Separate gate sequencer from pitch sequence 
+3. INTERF ACE DESIGN 
+We began with two primary design goals: 
+1. Low barrier of entry (low ﬂoors): Gaze input should 
+be as easy and accessible as possible. 
+2. Expressive control (high ceilings): Live play should be 
+fun and engaging with room for growth. 
+3.1 Low Barrier of Entry 
+To provide a low barrier of entry, the Cyclops is inspired by
+a synthesizer for kids, utilizes predeﬁned and user-selectable 
+dwell times, and gives ample visual feedback. 
+            
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+577
+Table 1: Dwell Times for Controls on the Cyclops 
+Control Total Dwell Time 
+Play/Pause Button 800 ms 
+Sequencer Selection 450 ms 
+Synthesizer Attack (Slow) 450 ms 
+Synthesizer Attack (Medium) 200 ms 
+Synthesizer Attack (Fast) 60 ms 
+3.1.1 Dato DUO Inpsired 
+The chief design inspiration for the Cyclops is the Dato 
+Duo Synth [4]. The Dato Duo is designed for two collab-
+orators, one responsible for an 8-step sequencer and the 
+other for timbral qualities. Unlike the Dato Duo, we di-
+vide control into three screens, “Instrument,” “Sequence,” 
+and “Eﬀects”  to support more playable notes and sequencer 
+control. We reduce interaction to a single player model pri-
+marily through eﬀects automation. Splitting musical con-
+trol across screens renders targets extra large compensating 
+for jitter and eye tracker error. It is also intended to reduce 
+cognitive load since only a subset of controls are available 
+at any given time. (While the EyeHarp also supports ex-
+pressive control, its design of multiple selections within one 
+radial input results in over a hundred selectable elements on 
+screen at once [24].) To compensate for divided control, ev-
+ery screen contains unifying features including a Play/Pause 
+button and a miniature keyboard ensuring there is always a 
+way to produce sound. Furthermore, at the very bottom is 
+a non-selectable representation of the pitch sequence. This 
+region can be safely ﬁxated upon without aﬀecting the syn-
+thesizer in any way. 
+3.1.2 Dealing with Midas T ouch 
+“Midas Touch” is a design challenge in creating responsive 
+gaze-only interfaces. When dwell time is long, the user has 
+enough time to identify and comprehend controls before ac-
+tivation, but the resulting interaction can feel sluggish. Re-
+ducing dwell time results in “Midas Touch” where the user 
+activates controls accidentally, e.g. when moving from a 
+button on one corner of the screen to another (in the same 
+way that everything Midas touched turned to gold). Thus, 
+dwell time determination presents a trade-oﬀ between preci-
+sion and timing ampliﬁed in musical contexts where timing 
+is literally everything. We address dwell times in two pri-
+mary ways. First, dwell times across the interface are not 
+homogeneous, but vary widely based on musical task (Ta-
+ble 1). Low-level/timing-critical tasks, (e.g. playing a note, 
+toggling the gate sequencer), require a short dwell, while 
+higher-level tasks that have a major eﬀect, (e.g. powering 
+the sequencer, altering global settings), take longer reduc-
+ing the chances of accidental triggering. Eﬀects automa-
+tion uniquely requires an activation time, but then becomes 
+dwell-less tracing the user’s gaze path. Second, like the 
+dwell time musical keyboard implemented in EyeJam [16], 
+we support user control over note activation dwell times on 
+the “Instrument” screen through a single button that toggles 
+between slow, medium, and fast modes. This feature aﬀords 
+diﬀerent musical tasks. When trying to learn or recreate a 
+melody, a longer dwell grants more time to identify correct 
+notes and reduces the chance of accidental notes. When 
+soloing/improvising, a shorter dwell time enables speed. 
+3.1.3 V isual F eedback 
+In gaze-based interfaces, it is important balance feedback 
+with simplicity indicating tracker accuracy without too much 
+distracting or uncomfortable clutter. The Cyclops uses a 
+gaze cursor, a small dot, to show where the player is look-
+ing on-screen, but goes much further than prior eye-gaze 
+instruments in providing visual feedback to make play feel 
+responsive and ﬂuid. Screens slide in and out of view, con-
+trol surfaces expand when looked at, and note-triggering 
+buttons snap outward during synthesizer attack all provid-
+ing large central targets without much visual clutter. We 
+have found that the sluggishness of dwell can be partly mit-
+igated by earlier-triggered animations when the user enters, 
+ﬁxates on, and exits controls. Actions always produce an 
+immediate visual eﬀect. (Of course, this only aﬀects the 
+perception of responsiveness, but does not accelerate con-
+trol input or solve musical timing challenges.) 
+3.2 Expressive Control 
+Through interacting with the DATO Duo, our team was 
+surprised to discover that we did not all unanimously pre-
+fer one side and each enjoyed it diﬀerently. Similarly, the 
+Cyclops uses separate screens that can be played indepen-
+dently or together through automation. A new player might 
+stick entirely with the “Instrument” screen learning various 
+tunes. Because the sequencer is always recording, they may 
+input a melody on their own tempo and then toggle the 
+sequencer looping it in time. The Cyclops provides room 
+to grow. More experienced players may add dynamics and 
+warping timbral changes on the “Eﬀects”  screen or create 
+complex rhythms adjusting the relative sizes of gate and 
+pitch sequences on the “Sequence” screen. Due to high-
+quality audio and tonal pitch sets, virtually everything per-
+formed sounds “good,” from minimalist grooves to ambient 
+clouds. 
+3.2.1 Instrument: Key Layout 
+Figure 1: “Instrument”  screen. The number of 
+notes available in the Key Grid can be toggled to a 
+pentatonic mode (left), while the available pitches 
+are locked to a user-selected key (right). 
+On the“Instrument”screen,  we elected for a two-dimensiona
+grid design, inspired by a string instrument fretboard, for 
+its simplicity and understandability (Figure 1). (This is 
+most similar to the Netytar [5].) The available pitches in 
+the grid are locked to a user-selected root, octave, key (ma-
+jor or natural minor), and mode (diatonic or pentatonic). 
+The bottom row begins with the root, while above rows 
+are transposed such that the top row is an octave higher 
+than the bottom. Duplicate note targets enable a user to 
+repeat notes in a single gaze motion rather than look away 
+from and back onto a note (a problem also mitigated with 
+switch control). Horizontal movement along the rows pro-
+duces the steps in a scale. Vertical movement produces 
+arpeggios. Gutters, gaps in between buttons, help reduce 
+“Midas Touch.” 
+l 
+3.2.2 Sequencing/Recording 
+Given that the Cyclops is intended to be an instrument 
+above composition tool, our design enforces the rule that 
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+578
+Figure 2: “Sequence”  screen. A sequence with 10 
+pitches is controlled by a gate sequence of length 8. 
+users must “play” each and every note. Rather than im-
+plementing a standard step sequencer grid, we again emu-
+late the design of the Dato Duo Synth in which every note 
+played is automatically recorded to the sequence. This fea-
+ture promotes simplicity since there is no extra “record” or 
+“loop” button, as well as reduce fatigue enabling a player to 
+input a phrase only once at a tempo comfortable to them 
+and then loop it. When the sequencer is toggled on, notes 
+inputted by the player overwrite the current step in the se-
+quence locking their inputs in time. The “Sequence” screen 
+provides additional expressive control allowing notes to si-
+lenced or accented through an independent gate sequencer 
+(Figure 2). Choosing distinct prime numbers for the pitch 
+and gate sequence lengths can produce long, complex pat-
+terns with little eﬀort. 
+3.2.3 Effects 
+Figure 3: “Eﬀects”  screen: The player controls 
+crush, mapped to Y, and chorus, mapped to X. 
+Knobs and sliders do not transition easily to eye gaze 
+control. We drew inspiration from the Korg Kaoss Pad, 
+a touch-surface in which two audio parameters are altered 
+based on the x/y position of the cursor [12]. Like the note 
+input screen, the “Eﬀects”  control automatically records 
+user behavior allowing for real time eye-gaze gesture record-
+ing and eﬀects automation (Figure 3). For instance, the 
+player can record a ﬁve second volume swell on the “Eﬀects”  
+screen, then move to the “Instrument” screen and improvise 
+with a looping, dynamic volume. Or, the player can trigger 
+the sequencer and move to the “Eﬀects”  screen and alter 
+the loop’s timbre, or even record both and take a break. In 
+eﬀect, they can control many musical parameters at once, 
+despite only two dimensions of input. While this feature 
+does not replace an acoustic musician’s simultaneous con-
+trol over pitch, timbre, and amplitude, it does add a layer 
+of expressive freedom not evident in previous eye-gaze in-
+struments. 
+4. FUTURE WORK 
+Numerous updates and additions would make the Cyclops 
+an even more adaptive and fully-featured music technol-
+ogy. On the “Instrument” screen, we could support cus-
+tomization over the number of columns and transposition 
+of rows the same way string instruments aﬀord alternate 
+tunings. On the “Eﬀects”  screen, we could allow automa-
+tions to be synced and de-synced to the sequencer. We 
+would like to explore error-aware features such as automat-
+ically resizing/repositioning targets based on the deviation 
+of gaze points captured during ﬁxations [25]. Such features 
+may support adapting the interface to various screen sizes. 
+While the Cyclops began as a gaze-only design, adding 
+switch support to enhance timing control for users with 
+some body movement is a low hanging fruit, and the ability 
+to split screens into multiple windows would enable coop-
+erative play. Finally, given that gaze-only interfaces map 
+well to single-touch inputs and the Cyclops is already al-
+most fully touch compatible, it might support individuals 
+with other disabilities and less severe motor impairments. 
+4.1 Formative Design and T esting 
+At this stage, the Cyclops has been primarily played by the 
+ﬁrst author in solo and group improvisation settings. We 
+received feedback from developers of Windows Eye Con-
+trol and the Gaze Interaction library who helped us un-
+derstand the aﬀordances and constraints of eye tracking af-
+fecting most aspects of design from target layout to dwell 
+times. They emphasized that accessibility barriers beyond 
+the software itself can block use, e.g. an inaccessible pop-
+up, leading us to choose UWP as our development platform. 
+Furthermore, without telling us how it should sound, they 
+felt strongly that it should be capable of producing recogniz-
+able tunes. In designing our “Instrument” screen, we made 
+sure we could play “Yankee Doodle” and “Happy Birthday” 
+along the way. We also demonstrated the Cyclops to two 
+individuals with Cerebral Palsy and their caretakers but we 
+were not able to position them in tracker range for testing. 
+We are actively working to schedule a session with a musi-
+cian with ALS who has given feedback to our team about 
+interface designs in the past. This individual uses a very 
+old version of Windows that we cannot install the Cyclops 
+on and we have been unsuccessful to date at scheduling a 
+test session. 
+5. CONCLUSION 
+The Cyclops is an expressive eye-controlled synthesizer in-
+tended to enable live improvisation and play for musicians 
+with severe motor impairments. Work on the Cyclops is 
+ongoing and has yet to be evaluated. Next, we intend to 
+conduct usability tests, iterate, and ultimately release the 
+Cyclops for much wider use. 
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+579
+6. ACKNOWLEDGMENTS 
+We would like to thank the MSR Enable and Ability Teams, 
+especially Dwayne Lamb and Christopher O’Dowd. 
+7. REFERENCES 
+[1] I. C. Almeida, G. Cabral, and P. G. B. Almeida. 
+AMIGO: An Assistive Musical Instrument to Engage, 
+Create and Learn Music. Proceedings of the 
+International Conference on New Interfaces for 
+Musical Expression, pages 168–169, 2019. 
+[2] R. Baath, T. Strandberg, and C. Balkenius. Eye 
+Tapping : How to Beat Out an Accurate Rhythm 
+using Eye Movements. Proceedings of the 
+International Conference on New Interfaces for 
+Musical Expression, (June):441–444, 2011. 
+[3] R. B. Conservatoire, J. Wright, and J. Dooley. On the 
+Inclusivity of Constraint : Creative Appropriation in 
+Instruments for Neurodiverse Children and Young 
+People. pages 162–167, 2019. 
+[4] Dato Musical Instruments. Dato DUO: The 
+synth-for-two. Retrieved January 20, 2020 from 
+https://dato.mu. 
+[5] N. Davanzo, P. Dondi, M. Mosconi, and M. Porta. 
+Playing music with the eyes through an isomorphic 
+interface. Proceedings - COGAIN 2018: 
+Communication by Gaze Interaction, pages 1–5, 2018. 
+[6] A. M. Feit, S. Williams, A. Toledo, A. Paradiso, 
+H. Kulkarni, S. Kane, and M. R. Morris. Toward 
+Everyday Gaze Input. pages 1118–1130, 2017. 
+[7] S. Greenhill and C. Travers. Focal : An Eye-Tracking 
+Musical Expression Controller. NIME 2016 
+Proceedings of the International Conference on New 
+Interfaces for Musical Expression, 16:230–235, 2016. 
+[8] A. Hornof. The Prospects For Eye-Controlled Musical 
+Performance. Proceedings of the International 
+Conference on New Interfaces for Musical Expression, 
+pages 461–466, 2014. 
+[9] A. J. Hornof and L. Sato. EyeMusic: Making Music 
+with the Eyes. Proceedings of the International 
+Conference on New Interfaces for Musical Expression, 
+pages 185–188, 2004. 
+[10] A. Hunt, M. M. Wanderley, and M. Paradis. The 
+importance of parameter mapping in electronic 
+instrument design. International Journal of 
+Phytoremediation, 21(1):429–440, 2003. 
+[11] S. K. Kane, M. R. Morris, A. Paradiso, and 
+J. Campbell. ” at times avuncular and cantankerous, 
+with the reﬂexes ol a mongoose” : Understanding 
+self-expression through augmentative and alternative 
+communication devices. Proceedings of the ACM 
+Conference on Computer Supported Cooperative 
+Work, CSCW, pages 1166–1179, 2017. 
+[12] KORG Inc. Kaoss Pad KP3+ Dynamic 
+Eﬀect/Sampler, 2020. Retrieved January 20, 2020 
+from https://www.korg.com/us/products/dj/ 
+kaoss_pad_kp3_plus/. 
+[13] A. M. Lucas, M. Ortiz, and D. F. Schroeder. Bespoke 
+Design for Inclusive Music: The Challenges of 
+Evaluation. Proceedings of the International 
+Conference on New Interfaces for Musical Expression, 
+pages 105–109, 2019. 
+[14] Y. Mann. Interactive Music with Tone.js. In 
+Proceedings of the 1st annual Web Audio Conference, 
+2015. 
+[15] C. H. Morimoto and A. Amir. Context switching for 
+fast key selection in text entry applications. Eye 
+[
+[
+[
+[
+[
+[
+[
+[
+[
+[
+Tracking Research and Applications Symposium 
+(ETRA), pages 271–274, 2010. 
+16] C. H. Morimoto, A. Diaz-Tula, J. A. T. Leyva, and 
+C. E. L. Elmadjian. Eyejam: a gaze-controlled 
+musical interface. In Proceedings of the 14th Brazilian 
+Symposium on Human Factors in Computing 
+Systems, pages 1–9, 2015. 
+17] S. T. Parke-Wolfe, H. Scurto, and R. Fiebrink. Sound 
+Control: Supporting Custom Musical Interface Design 
+for Children with Disabilities. Proceedings of the 
+International Conference on New Interfaces for 
+Musical Expression, pages 192–197, 2019. 
+18] A. Polli. Active Vision: Controlling Sound with Eye 
+Movements. Leonardo, 32(5):405–411, 1999. 
+19] M. Resnick and B. Silverman. Some reﬂections on 
+designing construction kits for kids. Proceedings of: 
+Interaction Design and Children 2005, IDC 2005, 
+pages 117–122, 2005. 
+20] SMARTLab Digital Media Institute. World premiere: 
+DUET for EYES: Eyejamming & eyebodyweaving., 
+2008. Retrieved January 20, 2020 from http: 
+//smartlab-ie.com/flyer/dublin_mytobii09.pdf. 
+21] Tobii Dynavox. PCEye Mini, 2020. 
+22] Tobii Gaming. Eye Tracker 4c, 2020. Retrieved 
+January 20, 2020 from https: 
+//gaming.tobii.com/tobii-eye-tracker-4c/. 
+23] S. Valencia, D. Lamb, S. Williams, H. S. Kulkarni, 
+A. Paradiso, and M. Ringel Morris. Dueto: 
+Accessible, Gaze-Operated Musical Expression. In 
+The 21st International ACM SIGACCESS Conference 
+on Computers and Accessibility - ASSETS ’19, pages 
+513–515, Pittsburgh, PA, USA, 2019. ACM Press. 
+24] Z. Vamvakousis and R. Ramirez. Temporal control in 
+the EyeHarp gaze-controlled musical interface. 
+Proceedings of the 12th International Conference on 
+NIME, pages 11–16, 2012. 
+25] J. O. Wobbrock, S. K. Kane, K. Z. Gajos, S. Harada, 
+and J. Froehlich. Ability-based design: Concept, 
+principles and examples. ACM Transactions on 
+Accessible Computing, 3(3):1–27, 2011. 
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+580

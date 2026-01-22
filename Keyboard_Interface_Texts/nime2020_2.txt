@@ -1,0 +1,606 @@
+Excello: exploring spreadsheets for music composition
+Henry Mattinson
+Computer Laboratory
+University of Cambridge
+15 JJ Thomson Avenue, Cambridge, UK
+henrymattinson@westﬁ eldhouse.org
+Advait Sarkar 1,2
+1Microsoft Research
+21 Station Road, Cambridge, UK
+2University of Cambridge
+advait@microsoft.com
+ABSTRACT
+Excello is a spreadsheet-based music composition and pro-
+gramming environment. We co-developed Excello with
+feedback from 21 musicians at varying levels of musical and
+computing experience. We asked: can the spreadsheet in-
+terface be used for programmatic music creation? Our de-
+sign process encountered questions such as how time should
+be represented, whether amplitude and octave should be en-
+coded as properties of individual notes or entire phrases, and
+how best to leverage standard spreadsheet features, such as
+formulae and copy-paste.
+We present the user-centric rationale for our current de-
+sign, and report a user study suggesting that Excello’s no-
+tation retains similar cognitive dimensions to conventional
+music composition tools, while allowing the user to write
+substantially complex programmatic music.
+Author Keywords
+Spreadsheets, end-user programming, notation, cognitive
+dimensions
+CCS Concepts
+•Applied computing → Sound and music comput-
+ing; Performing arts; • Information systems → Music
+retrieval;
+1. INTRODUCTION
+Programmatic environments for music creation, such as
+ChucK [15] or Sonic Pi [1], enable the creation of complex
+and dynamic compositions with rich and interactive feed-
+back. However, these systems are extremely hard to learn,
+especially for users new to programming.
+On the other hand, spreadsheets are a well-known and
+easy to learn programming environment. The 2-dimensional
+grid, along with support for computation, annotation, and
+visualization, forms the basis for the world’s most ubiqui-
+tous non-expert end-user programming environment. There
+are four times more spreadsheet users than software devel-
+opers [14], and spreadsheets are the preferred programming
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’20, July 21-25, 2020, Royal Birmingham Conservatoire,
+Birmingham City University , Birmingham, United Kingdom.
+language for many people [9]. This ubiquity, along with the
+aﬀordances of the spreadsheet, enables new ways to interact
+with musical notation that capitalise on existing familiarity
+with spreadsheets and their data handling capabilities.
+We present Excello (Fig. 1, shown here in use with a study
+participant’s arrangement), an Excel add-in for end-user
+music programming. The Excello add-in opens a pane on
+the right side of Excel. The user deﬁnes notes and ‘turtles’
+in the cells of the spreadsheet. Turtles are programmable
+playheads that move through the grid using a simple in-
+struction language. Notes in cells are played when turtles
+move through them. When the play button is pressed, the
+melodic lines deﬁned by all turtles are played simultane-
+ously (by default using a sampled piano sound).
+2. EXCELLO’S DESIGN
+2.1 Design process
+Excello’s design is grounded in concrete user needs and feed-
+back. Twenty-one University of Cambridge students, across
+a range of subjects, took part in the participatory design
+process. We conducted initial feedback sessions as follows:
+one-on-one tutorials on the initial prototype were given, fol-
+lowed by a short exercise of the participant’s choice; either
+transcribing a piece from memory or from staﬀ notation
+into the Excello notation, or modifying and extending a
+composition already written in Excello. Next, users were
+interviewed about their experience, drawing particular at-
+tention to actions that they found unintuitive or requiring
+notable mental eﬀort. Comparisons were made to musical
+interfaces with which participants were already familiar.
+These sessions were conducted in January 2019. Partici-
+pants continued using Excello for the next 7-8 weeks, until
+the summative evaluation sessions in March, ensuring that
+the evaluation was conducted on participants with signif-
+icant experience using Excello. Additional feedback was
+collected as participants used Excello in their own time.
+In the next section, we explain and describe some of the
+interesting and important design issues that arose in con-
+sultation with our participants.
+2.2 Abstracting time with turtles
+The spreadsheet’s chief advantage is its 2-dimensional grid,
+which allows the end-user to spatially organise their com-
+putations and data. Many music composition environments
+also use grid structure, albeit in a limited fashion. For ex-
+ample, MIDI sequencers [8] typically use the horizontal axis
+for time, and the vertical axis for pitch or musical parts.
+Manhattan [12] uses a grid where formulae can deﬁne a
+1
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+11
+Figure 1: An arrangement with separated and labelled parts per instrument. Turtles use a global tempo in cellH2.
+cell’s value, like in a spreadsheet. However, it is limited
+to columns deﬁning tracks and rows corresponding to time.
+Similarly, other spreadsheet music projects1 only use the
+spreadsheet grid with the conventional sequencing layout,
+sacriﬁcing the ﬂexibility of using both grid axes.
+SheetMusic [13] was the ﬁrst investigation of formulae
+with sound output within the spreadsheet paradigm. Sheet-
+Music abstracts time away from the grid using an incre-
+menting globaltick variable which could be referred to in
+formulae. Both axes can be used interchangeably for Sheet-
+Music notation or non-musical markup (e.g., data, labels,
+formatting), a concept idiomatic to spreadsheets. Music is
+notated with formulae such as:if(tick%2==0) p(‘snare’)
+else p(‘kick’), which plays an alternating snare and kick
+sound. However, such formulae quickly become unwieldy
+for larger pieces, especially if they are not highly repetitive.
+How do we compactly represent time without sacriﬁcing
+a grid axis? To solve this problem, we apply the metaphor
+of turtle graphics [5]. In the Logo programming language,
+agents known as ‘turtles’ are programmed to produce graph-
+ical output: e.g.,repeat 4 [forward 5 right 90] has a
+turtle move forwards 5 units and turn right 90 degrees, to-
+gether repeated four times, to draw a square.
+The turtle abstraction is employed by Excello by deﬁning
+notes in cells, and agents, known as turtles, move through
+the spreadsheet playing them. Al-Jazari [10] also uses the
+turtle metaphor, albeit in a limited fashion. In Al-Jazari,
+robotic agents navigate around a two-dimensional grid. Dis-
+tance in space maps to time [11]. Excello extends this, as
+turtles can move at diﬀerent speeds. Therefore parts with
+varying speeds, and phase music (where identical parts are
+played concurrently at diﬀerent speeds) can be deﬁned more
+concisely. Moreover, Al-Jazari’s agents are programmed
+1https://hackaday.com/2019/02/02/
+never-mind-the-sheet-music-heres-spreadsheet-music/
+with movement symbols in thought bubbles above them.
+This is unlike spreadsheets where both data and compu-
+tation logic exist in the same grid. Al-Jazari’s grid only
+measures ten cells wide and long, which greatly simpliﬁes
+and constrains agents’ movements.
+2.3 Encoding musical notes
+Notesare written using scientiﬁc pitch notation (SPN); e.g.
+F#4 is the F� above middle C. Empty cells and the full stop
+character (.) denote rests. The character s or - instructs
+the turtle to sustain the previously played note, and a cell
+can be subdivided using commas into multiple equal length
+notes (Figure 2). The combination of sustains and subdi-
+visions allows the composer to choose the most convenient
+note duration to correspond to each cell. Without subdi-
+vision, a piece deﬁned primarily with crotchets (one unit)
+but with occasional quavers (half a unit) would need twice
+as many cells and many additionals cells.
+Figure 2: Two identical phrases, deﬁned (above) by using
+sustains or (below) with subdivided cells.
+Octave numbers can be omitted for brevity; during
+testing we discovered that repeatedly writing the octave
+number was tiresome. If omitted, we use the last explic-
+itly notated octave encountered by the turtle. We tested
+two methods for octave inference: playing the note insame
+octave as the previous note, or choosing the octave in which
+the note would benearest to the previous note. Both
+have advantages and disadvantages. The nearest-octave ap-
+proach may require fewer explicit statements of octave num-
+2
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+12
+Concept Encoding
+Note Name ( A-G), optional accidental,
+octave number and dynamics
+e.g.F#4 pp
+Sustain s or -
+Time-subdivided
+notes
+Notes, rests or sustains separated
+by a comma. Rests must be a space
+or an empty string e.g.E4, ,C4,s
+Rest Any cell not interpreted as a note,
+sustain or multi-note. Rests can be
+explicitly denoted with ‘.’
+Table 1: Summary of note encoding.
+bers, but it is harder for a reader to immediately identify
+the octave of any given note; they would need to locate the
+last explicit octave notation and walk through subsequent
+notes, keeping track of the inferred octave. The same-octave
+approach may require many octave deﬁnitions if a melody
+frequently crosses the boundary between octaves, but it is
+much easier for the reader to identify the octave of a note by
+backtracking, and this was the trade-oﬀ our users preferred.
+Dynamics Just as dynamics in western notation are a
+property of the staﬀ, not of individual notes, dynamics were
+originally deﬁned in the turtle, not in notes, using the sym-
+bols pp p mp mf f ff (etc.) next to turtle movement com-
+mands. However, users found that dynamics, being un-
+related to movement, made it harder to read the turtle’s
+path. Furthermore, as dynamics weren’t next to the notes
+to which they corresponded, knowing the volume of a note
+or where to place the dynamics within the turtle to apply
+to notes in the spreadsheet was challenging.
+Thus, we settled on dynamics being deﬁned in the cells
+after the note, separated by a space as in Manhattan [12].
+In addition to Western dynamic symbols, a number between
+0 (silent) and 1 (equivalent tofff) can be used. Like oc-
+tave numbers (and indeed, like staﬀ notation), a dynamics
+speciﬁcation applies to all following notes until the turtle en-
+counters another explicit speciﬁcation. Table 1 summarises
+our note encoding.
+2.4 Encoding the turtle’s path
+The following formula-like syntax deﬁnes a turtle:
+!turtle(Start_Cell, Instructions, Tempo, Loops)
+The preﬁx “!” signals that the turtle is active; omitting this
+preﬁx causes the turtle not to play, analogous to muting and
+soloing in digital audio workstations / music sequencers.
+Instead of typing this text directly, the user can also de-
+ﬁne a turtle using the formula function EXCELLO.TURTLE,
+enabling users to leverage the built-in autocompletion and
+cell referencing features of Excel. The output of this func-
+tion is our textual turtle notation (Figure 4).
+Figure 3: A short melody in an early prototype (above)
+with its output in staﬀ notation (below).
+Figure 4: Deﬁning a turtle usingEXCELLO.TURTLE.
+Start Cell The turtle’s starting cell (A2 in Figure 3),
+which is also played, is a cell reference (a concatenation of
+letters for the column and numbers for the row). As each
+turtle only plays one note at a time, multiple turtles must
+be deﬁned for polyphony. A common user pattern was to
+deﬁne turtles following identical paths but in adjacent rows
+or columns. To simplify this process, we made it possible
+to instantiate multiple turtles using Excel’s range notation.
+Setting the starting cell toA2:A5 deﬁnes four turtles in the
+cells A2,A3,A4,A5. This removes the need for multiple turtle
+deﬁnitions diﬀering in only the start cell.
+Tempo An optional third argument is the speed of the
+turtle in cells per minute (the default is 160). An early
+implementation required this as a multiplier for 160 (thus
+1 corresponded to 160 cells per minute, 0.5 corresponded
+to 80 cells per minute, etc.), so that it would be easier to
+tell the speed relation between turtles. This particularly
+suits phase music. However, participants felt calculating
+this speed factor was eﬀortful and unnatural so we switched
+to cells per minute. Luckily, in a spreadsheet environment,
+it is still straightforward to implement relative tempi using
+formulae: turtles could reference a single cell containing a
+‘base’ speed, and apply a turtle-speciﬁc multiplier.
+Loops An optional fourth argument deﬁnes the number
+of repetitions of the turtle’s entire path (e.g., the turtle in
+Figure 3 plays 1 time). By default, turtles loop inﬁnitely.
+Turtle motion Turtles begin facing north (towards the
+top of the screen). Like Logo, turtles always move in the
+direction they are facing. The commandsl and r turn the
+turtle 90 degrees left and right respectively, and commands
+n, e, s and w directly re-orient the turtle north, east, south
+and west. The commandm moves the turtle one cell forward.
+Commands are repeated by placing a number immediately
+after it (this is less verbose than Logo’s notation:repeat
+followed by the number of repeats and the commands [5]).
+Thus,m4 moves the turtle forwards four cells in the direc-
+tion it faces. Commands can be nested within parentheses,
+and nested commands can be repeated. Thus,(r m5)4 de-
+ﬁnes a clockwise path around aﬁve-by-ﬁve square. Nested
+instructions with repeats allow concise notation of repeated
+sections and movements.
+Just as conventional staﬀ notation spans multiple lines,
+splitting melodies into parts spanning multiple rows is a
+useful layout for human readers. This requires the tur-
+tle to move to non-adjacent cells. In Logo, lifting the
+pen allows the turtle to move without drawing a line; the
+graphical output is unaﬀected by the turtle’s path in ‘pen-
+up’ mode. However, Excello’s musical output depends on
+the turtles’ movements in time, so a ‘pen-up/pen-down’
+metaphor would introduce large rests as the turtle moved to
+its destination. Thus, our language supports jumps withj.
+Jumps are either absolute, with a destination cell (e.g.,jA5),
+3
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+13
+Figure 5: Turtle with repeating jump instructions.
+or relative (e.g., j-7+1), with a column-row oﬀset. Rela-
+tive jumps enable concise patterns. For example,r (m3 j-
+3+2)2 m3 plays 3 rows of 4 cells from top to bottom, playing
+each row left to right (Figure 5).
+Automatic path length counting Writing turtle in-
+structions requires counting cells on the grid. If a sequence
+of notes is in a straight line, the user can select the cells and
+see a count in the Excel status bar. However, this requires
+manual eﬀort and is error-prone, and users found it particu-
+larly inconvenient when adding notes to a partially complete
+line and periodically testing the composition written so far.
+Some users instructed turtles to move forward signiﬁcantly
+more steps than required to avoid counting steps, but this
+strategy doesn’t work for repeating paths.
+We thus implementedm*, which instructs a turtle to move
+as far as there are notes deﬁned in the direction it is facing.
+After adding notes to the end of a line, the turtle instruc-
+tions do not need editing before pressing play. A cell can
+be explicitly deﬁned as a rest with a full stop (.). This is
+required if multiple turtles are playing a repeating section
+where some turtles end on rests, and others on notes. With-
+out an explicit rest, the turtle would repeat too soon and
+the parts would subsequently be out of alignment.
+2.5 Excello’s use of spreadsheet affordances
+HighlightingTo provide visual structure, turtle deﬁnitions
+are automatically highlighted green. Cells containing deﬁ-
+nitions of notes, or multiple notes, are highlighted red. Sus-
+tain cells are highlighted a lighter red, showing correspon-
+dence to notes whilst maintaining diﬀerentiation.
+Chord Input To play a chord, multiple turtles must si-
+multaneously pass through multiple cells corresponding to
+the notes of the chord. Each cell and turtle is only re-
+sponsible for up to one note at a time, maintaining high
+notational consistency, as grid cells encode musical entities
+at only one level of musical abstraction (notes). However,
+this sacriﬁces the chord abstractions in languages like Sonic
+Pi, such aschord('F#', 'maj7'), forcing users to constantly
+think of chords in terms of their constituent notes, which
+can inhibit theﬂow of composition. Our solution was to
+include a tool for adding chords (right sidebar of Figure 1).
+The user selects the chord root, type, inversion and starting
+octave from menus. The insert button enters the notes of
+the chord into the grid where the user has made a selection.
+Notes are inserted to “ﬁt” the shape of the selection (ver-
+tical or horizontal), and for a vertical selection, notes are
+inserted from top to bottom in decreasing pitch order, to
+mimic staﬀ notation (based on user feedback).
+Transpose Some users found it more intuitive to consider
+a melodic line by the intervals between notes rather than
+by the note names. Moreover, many users sought to deﬁne
+harmony lines by a transposition from a melody line.
+Thus, a transposition function EXCELLO.MODULATE lets
+melodic lines be deﬁned by the intervals between notes and
+transposition of existing sections of a piece. The function
+takes a cell and an interval and outputs the cell with any
+notes transposed by the interval, maintaining any dynamics.
+The advantage of implementing EXCELLO.MODULATE and
+EXCELLO.TURTLE as spreadsheet functions is that it allows
+users to take advantage of functionality such as drag-ﬁll,
+formula autocomplete, graphical cell referencing, etc. For
+example, a section can be modulated by calling this function
+on theﬁrst note with a provided interval and then using
+spreadsheet drag-ﬁll. A melodic line can be produced from
+a starting note and a series of intervals as shown in Figure 6.
+Figure 6: Transposing notes usingEXCELLO.MODULATE
+2.6 Example: Piano Phase
+Theﬁrst section of Reich’s Piano Phase is two identical pi-
+ano melodies, one played slightly faster than the other [3].
+The parts move out of phase, periodically aligning at dif-
+ferent oﬀsets. It can be implemented in Manhattan using
+24 rows of 3 columns [12]. Sonic Pi requires one line for
+the notes and eight for playback. Excello only requires two
+cells to deﬁne two turtles with diﬀerent speeds, in addition
+to the notes. Piano Phase represented in these three sys-
+tems is shown in Figure 7.
+Figure 7: Comparing representations of Reich’s Piano
+Phase. Top to bottom: Manhattan, Sonic Pi, Excello.
+4
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+14
+2.7 Implementation details
+We implemented Excello as an add-in using the Oﬃ ce.js
+API.2 When the play button is pressed, turtle deﬁnitions
+in the grid are identiﬁed. For each, the starting cell and
+movement instructions are used to establish the contents of
+the cells it passes through. This is converted to a series of
+note deﬁnitions: pitch, start time, duration, volume. These
+are in turn passed to the the Tone.js library3 to schedule
+and initiate playback.
+3. COGNITIVE DIMENSIONS STUDY
+Of the 21 initial participants, 19 continued using Excello af-
+ter formative evaluation sessions over a period of 7-8 weeks
+and participated in a user study. To ensure users suﬃ ciently
+understood the interface before giving feedback, features
+added after the initial sessions were recapped, and partic-
+ipants completed a short task requiring transcription of a
+short melody and authoring an additional phrase.
+To study the properties of our system, we applied Black-
+well and Green’s questionnaire [2] for evaluating informa-
+tion devices’ usability using the Cognitive Dimensions of
+Notations (CDN) framework. For example, the dimension
+Role Expressiveness(how much an element suggests its pur-
+pose) is assessed by: “Are there some parts that are partic-
+ularly diﬃ cult to interpret?” . CDN can be used to analyse
+musical notation [4] and software systems [7], so is ideal for
+evaluating Excello’s notation and interface.
+We focused on closeness of mapping, consistency, sec-
+ondary notation, viscosity and visibility. The questions
+used are shown in Table 9. Users responded with aﬁve-
+point Likert scale. Responses were combined into negative
+and non-negative categories. We tested the signiﬁcance of
+the response distribution versus a uniform distribution with
+chi-squared tests. Chi-squared testp-value and modal re-
+sponses are shown in Table 2. The distribution of responses
+is shown in Figure 9.
+3.1 Comparative evaluation
+By way of comparison, CDN results were also collected for
+the user’s preferred music composition interface. 12 users
+chose Sibelius, which was used for comparison. We think
+this is a better comparison than to ChucK or Sonic Pi, since
+Excello is designed to be an accessible introduction to music
+programming for musicians familiar with more conventional
+notations.
+The signiﬁcance of each dimension varies for diﬀerent cog-
+nitive activities [6], so users identiﬁed the proportion of time
+they spent carrying out these activities (searching for infor-
+mation, translating, incrementation, modiﬁcation and ex-
+ploratory design). Figure 8 shows the time users reported
+spending on the diﬀerent cognitive activities in Excello and
+in Sibelius, based on results from 19 users for Excello and
+12 for Sibelius. Translation is important for both interfaces.
+Users perceived spending more time on modiﬁcation and in-
+crementation in Excello. Little time is spent searching in
+either tool.
+We compared participants’ answers to the questions in
+Table 2 for Excello and Sibelius. We performed a Wilcoxon
+2https://docs.microsoft.com/en-us/javascript/api/
+excel
+3https://tonejs.github.io/
+0 50 100
+Searching
+Translation
+Incrementation
+Modiﬁcation
+Exploratory Design
+Time (%)
+Sibelius
+0 50 100
+Percentage of Time
+Excello
+Figure 8: The proportion of time users reported spending
+on the diﬀerent cognitive activities.
+Statement CDN Mode p
+(a) The notation
+used (In Excello: notes/
+Closeness Agree 0.0004
+dynamics in cells and
+the deﬁnition of turtles)
+of
+is related to the result
+you are describing (In
+Mapping
+Excello: Musical out-
+put)
+(b) Where there are
+diﬀerent parts of the
+Consistency Agree 0.0087
+notation that mean
+similar things, the
+similarity is clear from
+the way they appear.
+(c) You can add ex-
+tra marks (or colours or
+Secondary Agree 0.0020
+format choices) to clar-
+ify, emphasise or repeat
+Notation
+what is there already.
+(d) When you need
+to make changes to
+Viscosity Agree 0.0004
+previous, work it is easy
+to make the change.
+(e) It is easy to see or
+ﬁnd the various parts of
+Visibility/ Agree 0.0087
+the notation while it
+is being created or
+changed.
+Juxtaposition
+(f) If you need to
+compare or combine dif-
+ferent parts, you can see
+Visibility/ Agree 0.0312
+them at the same time. Juxtaposition
+Table 2: CDN of Excello: questions and results.
+matched pairs signed-rank test on the 12 pairs by encoding
+theﬁve responses as -2,-1,0,1,2. For all six questions, there
+is no indication that the answers for the two interfaces come
+from populations with diﬀerent means (i.e., no signiﬁcant
+diﬀerences).
+Closeness of mapping We found no signiﬁcant dif-
+ference between Sibelius and Excello, suggesting Excello’s
+spreadsheet notation has not compromised the closeness of
+mapping (to the musical domain) of staﬀ notation.
+5
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+15
+Strongly
+Disagree
+Disagree Neutral Agree Strongly
+Agree
+0
+2
+4
+6
+8
+10
+12
+14
+Frequency
+Figure 9: CDN of Excello: distribution of responses (colour
+legend from Table 2).
+Consistency We found no signiﬁcant diﬀerence between
+Sibelius and Excello, suggesting that Excello’s notation is
+no less consistent than staﬀ notation. Each cell and turtle
+only produces one note at a time. Excello keeps consistency
+with Excel by sharing notations (e.g., A1:A5 for ranges) and
+using the existing formula editor.
+Secondary notation We found no signiﬁcant diﬀerence
+between Sibelius and Excello, suggesting that the spread-
+sheet paradigm can provide secondary notation abilities
+similar to Sibelius, software already equipped with numer-
+ous ways to customise a score. Given the time spent trans-
+lating, secondary notation is particularly important [4]. As
+Excello abstracts time from the grid axes, existing Excel
+features for formatting and grouping cells remain available.
+Viscosity We found no signiﬁcant diﬀerence. This sug-
+gests the interfaces have comparable viscosity. Allowing dy-
+namics and octave marking to be omitted and letting turtles
+count steps automatically, provides low resistance to mak-
+ing additions and changes to the music. Furthermore, Excel
+provides easy editing and movement of cells.
+Visibility/Juxtaposition We found no signiﬁcant dif-
+ference. This suggests that the spreadsheet interface can
+provide a similar ability to view components as Sibelius.
+4. CONCLUSION
+We set out to explore the hypothesis that spreadsheets
+would provide a productive medium for musical expression.
+Excello is a notation and corresponding program for musi-
+cal playback implemented within Microsoft Excel. By ab-
+stracting time away from the axes of the grid, the exist-
+ing functionality of Excel (whitespace, formatting, layout,
+copy-paste and data storage) remains highly available and
+useful. Excello was developed in close consultation with a
+group of 21 users, as a result of this, many nuances in nota-
+tional design were discovered, and our solutions were shown
+to improve the interface and make it competitive (on cog-
+nitive terms) with conventional composition tools. Excello
+provides a simple, yet powerful interface for musical compo-
+sition and programming to the hundreds of millions of users
+already familiar with the spreadsheet interface.
+In future work, we aim to explore live editing of the piece
+as it plays, and graphical enhancements to show the loca-
+tions of turtles during playback.
+5. ETHICAL COMPLIANCE
+Our study was approved by the Cambridge University com-
+puter science departmental ethics review board. We con-
+ducted pilot studies of the formative and summative evalu-
+ation sessions, resulting in revisions to the protocol. Partic-
+ipants were briefed, and signed forms of informed consent.
+Participant data was anonymised and any audio recorded
+during the sessions was transcribed and deleted.
+6. ACKNOWLEDGEMENTS
+We thank Alan Blackwell for discussions, and our study
+particpants for their time and eﬀort.
+7. REFERENCES
+[1] S. Aaron. Sonic pi–performance in education,
+technology and art.Int. J. Performance Arts and
+Digital Media, 12(2):171–178, 2016.
+[2] A. F. Blackwell and T. R. G. Green. A Cognitive
+Dimensions questionnaire optimised for users. In
+PPIG, 2000.
+[3] P. Epstein. Pattern Structure and Process in Steve
+Reich’s “Piano Phase” .The Musical Quarterly,
+72(4):494–502, 1986.
+[4] A. F. Blackwell, T. Green, and D. Nunn. Cognitive
+Dimensions and Musical Notation Systems.Workshop
+on Notation and Music Information Retrieval, 11
+2000.
+[5] R. Goldman, S. Schaefer, and T. Ju. Turtle geometry
+in computer graphics and computer-aided design.
+Computer-Aided Design, 36:1471–1482, 2004.
+[6] T. Green and A. Blackwell. Cognitive dimensions of
+information artefacts: a tutorial. Technical Report
+Version 1.2, BCS HCI Conference, 1998.
+[7] T. Green and M. Petre. Usability Analysis of Visual
+Programming Environments: A ‘Cognitive
+Dimensions’ Framework.Journal of Visual Languages,
+7:131–, 06 1996.
+[8] D. Hosken. An introduction to music technology.
+Routledge, 2014.
+[9] S. P. Jones, A. Blackwell, and M. Burnett. A
+user-centred approach to functions in excel. In
+Proceedings of the eighth ACM SIGPLAN
+international conference on Functional programming,
+pages 165–176, 2003.
+[10] A. McLean, D. Griﬃ ths, N. Collins, and G. Wiggins.
+Visualisation of live code.Electronic Visualisation
+and the Arts (EVA 2010), pages 26–30, 2010.
+[11] A. McLean and G. A. Wiggins. Texture: Visual
+notation for live coding of pattern. InICMC, 2011.
+[12] C. Nash. Manhattan: End-User Programming for
+Music. In NIME, 2014.
+[13] A. Sarkar. Towards spreadsheet tools for end-user
+music programming. InPsychology of Programming
+Interest Group (PPIG), pages 228–231, Sept. 2016.
+[14] C. Scaﬃ di, M. Shaw, and B. Myers. Estimating the
+numbers of end users and end user programmers. In
+2005 IEEE Symposium on Visual Languages and
+Human-Centric Computing (VL/HCC’05), pages
+207–214, Sep. 2005.
+[15] G. Wang, P. R. Cook, and S. Salazar. Chuck: A
+strongly timed computer music language.Computer
+Music Journal, 39(4):10–29, 2015.
+6
+Proceedings of the International Conference on New Interfaces for Musical Expression (NIME-20), Birmingham, 2020
+16

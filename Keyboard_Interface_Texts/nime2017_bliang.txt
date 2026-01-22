@@ -1,0 +1,563 @@
+Piano Pedaller: A Measurement System for Classiﬁcation
+and Visualisation of Piano Pedalling Techniques
+Beici Liang
+Centre for Digital Music
+Queen Mary University of
+London
+London, UK
+beici.liang@qmul.ac.uk
+György Fazekas
+Centre for Digital Music
+Queen Mary University of
+London
+London, UK
+g.fazekas@qmul.ac.uk
+Andrew McPherson
+Centre for Digital Music
+Queen Mary University of
+London
+London, UK
+a.mcpherson@qmul.ac.uk
+Mark Sandler
+Centre for Digital Music
+Queen Mary University of
+London
+London, UK
+mark.sandler@qmul.ac.uk
+ABSTRACT
+This paper presents the results of a study of piano ped-
+alling techniques on the sustain pedal using a newly de-
+signed measurement system named Piano Pedaller. The
+system is comprised of an optical sensor mounted in the
+piano pedal bearing block and an embedded platform for
+recording audio and sensor data. This enables recording
+the pedalling gesture of real players and the piano sound
+under normal playing conditions. Using the gesture data
+collected from the system, the task of classifying these data
+by pedalling technique was undertaken using a Support Vec-
+tor Machine (SVM). Results can be visualised in an audio
+based score following application to show pedalling together
+with the player’s position in the score.
+Author Keywords
+Piano pedalling, playing techniques classiﬁcation, musical
+gesture visualisation
+ACM Classiﬁcation
+H.5.2 [Information Interfaces and Presentation] User Inter-
+faces, I.5.5 [Pattern Recognition] Implementation — Inter-
+active systems.
+1. INTRODUCTION
+The role of pedalling in piano performance is regarded as
+“the soul of the piano”, according to Russian pianist Anton
+Rubinstein. Pianists can add variations to the tones with
+the help of three pedals. However, the role of pedalling as
+an instrumental gesture to convey diﬀerent timbral nuances
+has not been adequately and quantitatively explored, de-
+spite the fact that the acoustic eﬀect of the sustain pedal
+on piano sound has been studied [11]. Since the pedalling
+parameters are diﬃcult to estimate from the audio signal
+[6], reliable recognition of pedalling techniques that com-
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’17,May 15-19, 2017, Aalborg University Copenhagen, Denmark.
+.
+prise when and how to depress or release the pedals would
+be helpful for applications in areas of pedagogy, interactive
+performance, music information retrieval and so on. There-
+fore we present a non-intrusive measurement system that
+can capture pianists’ pedalling gesture and piano sound si-
+multaneously. The classiﬁcation results of these movements
+and the piano sound can be used in a score following system
+for visualisation.
+The use of the pedals was not marked in musical scores
+before the 1790s [19]. In the beginning, it was considered
+gimmicky by serious musicians [9], but soon in the 19th
+century composers like Chopin and Liszt took advantage of
+the modern technique and employed the usage of the pedals
+actively in their works [10]. Debussy and Scriabin rarely no-
+tated pedalling, but they and later composers continued to
+ﬁnd new sounds through the assumed use of the pedals [18].
+Modern grand pianos have three pedals, which from left to
+right are commonly referred to as the una corda pedal, the
+sostenuto pedal and the sustain pedal. The sustain pedal
+is the most commonly used one. It lifts all dampers and
+sets all strings into vibration due to sympathetic resonance
+and the energy transmission via the bridge. This allows the
+strings to keep vibrating after the key is released.
+Pedalling techniques can be varied from timing and depth
+of pedal press and release. Especially for the sustain pedal,
+there are a variety of ways to apply it, ranging from par-
+tial pedal to continuous ﬂuttering pedal. Professional pi-
+anists employ diﬀerent fractions of partial pedal to colour
+the resonance subtly. Three or four levels are commonly
+deﬁned from the continuous changes of pedal in order to
+interpret the pedal usage. Flutter pedalling is similar to
+half-damping, which consists of very quick and light move-
+ments in order to reduce accumulating sound. However,
+no compositional markings exist to indicate the variety of
+techniques on the sustain pedal [20]. This requires a visual-
+isation system to classify the pedalling techniques ﬁrst and
+then represent them using custom notations. Our study was
+implemented on the sustain pedal. Onset and oﬀset time
+were detected at ﬁrst. Four pedalling techniques (quarter,
+half, three-quarters and full pedal) were classiﬁed using con-
+tinuous pedal position changes in one dimension as inputs
+to a SVM algorithm. They can be demonstrated with a
+music score in our visualisation application.
+In this paper, we ﬁrst discuss related works on gesture
+sensing in piano performance (Section 2). Then we present
+our system architecture (Section 3) and implementation (Sec-
+325
+tion 4). We ﬁnally conclude the paper and how our system
+could be applied in the future (Section 5).
+2. RELATED WORK
+In many studies of musical gestures, systems are developed
+to be in place for multi-modal recordings in order to capture
+comprehensive parameters, such as timing, dynamics and
+motion in musical performance. There has been a signiﬁcant
+number of projects focusing on piano performance.
+Most related projects focus on hand and arm gestures.
+Hadjakos et al. [7, 8] developed a piano pedagogy appli-
+cation that measures the movement of hand and arm and
+generates feedback to increase piano students’ awareness of
+their movement. McPherson [12] created a portable opti-
+cal measurement system for capturing continuous key posi-
+tion and providing multicolour LED feedback on any piano.
+Apart from the use of specialised sensors, commercial mo-
+tion capture systems have been employed to augment piano
+performance. Brent [3] developed the Gesturally Extended
+Piano, an augmented instrument controller that tracks per-
+former movements using infrared motion capture system in
+order to control real-time audiovisual processing and syn-
+thesis by pre-deﬁned gestures. A similar approach has been
+used by Yang et al. [23] where Microsoft Kinect was used
+and visual feedback was provided.
+Recent advances in machine learning bring real time per-
+formance, robustness and invariance in modelling data. This
+makes machine learning increasingly capable of analysing
+live, expressive gestural input [4]. Gillian and Nicolls [5]
+created an improvisation system for piano where Kinect
+data feeds a machine learning based classiﬁcation algorithm.
+This allows pianist control high level musical switches by
+performing pre-deﬁned static postures which are separate
+from pianistic gesture vocabulary. Given that, Van Zandt-
+Escobar et al. [24] developed PiaF, a prototype that studies
+variations in the interpretation of gestures that are inside
+the range of the pianists’ practice.
+None of these projects considered the inclusion of ped-
+alling techniques as part of gesture sensing. B ¨osendorfer
+CEUS piano has the ability to record continuous pedal posi-
+tion, which was used by Bernays and Traube [2] as one of the
+performance features to investigate timbral nuances. How-
+ever, it is rather expensive and unable to be moved easily,
+which remains a barrier to wider adaptation. To overcome
+this, the PianoBar [1] is a convenient and practical option
+for adding MIDI capability to any acoustic piano but its
+pedal sensing is discrete that only provides on/oﬀ informa-
+tion. McPherson and Kim [13] modiﬁed the PianoBar in
+order to provide a continuous stream of position informa-
+tion, but thus far few detailed studies have made use of
+the pedal data. These problems have motivated our work
+to develop a system that can be portable, self-contained,
+low-cost and non-intrusive to measure continuous pedalling
+gesture and analyse it using a SVM-based machine learning
+method. The system could contribute to various types of
+sensing for piano and other keyboard instruments.
+3. ARCHITECTURE
+Piano Pedaller has been designed in order to be used in
+diﬀerent piano performance scenarios without a complex
+setup process. Figure 1 illustrates the schematic overview of
+our study which has three main components communicating
+with each other:
+1. Data Capture: This portion collects the sensor data of
+the sustain pedal movement and the audio data while
+grand piano
+optical sensor calibration
+Belarecorder
+audioIn
+analogIn
+pedal.csv
+audio.bin
+classiﬁcation-results.csv
+audio.wav
+Visualisation
+Figure 1: Schematic overview.
+playing piano excerpts with pedal eﬀects using Bela 1
+which is an open-source embedded platform for real-
+time, ultra-low-latency audio and sensor processing on
+the BeagleBone Black [14].
+2. Classiﬁcation: The pedal sensor data is sent to sig-
+nal processing algorithms, which compute the onset
+and oﬀset time of each pedalling technique. Features
+are extracted from every segment when the pedal is
+depressed. Based on these features, classiﬁcation re-
+sults are derived using a SVM algorithm and stored
+for visualisation.
+3. Visualisation: Classiﬁcation results of piano pedalling
+techniques can be mapped to diﬀerent pedal nota-
+tions. Since these notations are time-aligned with the
+recorded audio, they can be presented in a score fol-
+lowing system which aligns the audio recording with a
+musical score of the same piece. Therefore when and
+how the pedal is used can be visualised with which
+notes in the score are being played according to the
+audio.
+4. IMPLEMENTATION
+Based on the above architecture, we deployed Piano Ped-
+aller on the sustain pedal of a Yamaha baby grand piano. A
+pianist was asked to perform ten excerpts of Chopin’s piano
+music based on the scores where the sustain pedal should
+be pressed to what extent in each music phrase was notated
+by the experimenter. The audio and the gesture data were
+recorded to ﬁles. The gesture data was labeled according to
+the notated score in order to provide a basic ground truth
+dataset. Here we describe the newly designed measurement
+system for data capture, the classiﬁcation based on the SVM
+method, and the visualisation application.
+4.1 Data Capture
+In the current scenario we focused on tracking the pianist’s
+pedalling techniques of the sustain pedal in a non-intrusive
+way. For this purpose, near-ﬁeld optical reﬂectance sens-
+ing was used to measure the position of the pedal. A pair
+of Omron EESY1200 sensors, which include an LED and
+a phototransistor in a compact package, were mounted in
+the pedal bearing block. The output voltage is proportional
+to incoming light and roughly follows the inverse square of
+1http://bela.io/
+326
+the pedal-sensor distance. A removable white sticker was af-
+ﬁxed to the pedal in order to reﬂect enough light to be mea-
+sured reliably. The output voltage was calibrated through
+a custom-built Printed Circuit Board (PCB) in order to
+improve response speed and ensure stability.
+Thereafter our data was collected using the Bela plat-
+form [14] which provides stereo audio input and output,
+plus channels of 16-bit analog-to-digital converter (ADC)
+and 16-bit digital-to-analog converter (DAC) for sensors and
+actuators. It combines the resources of an embedded Linux
+system with the performance and timing guarantees typi-
+cally reserved for dedicated digital signal processing (DSP)
+chips and microcontrollers. Audio and sensor data can be
+sampled and synchronised to the same master clock. Our
+sensor data was recorded at 22.05kHz sampling rate using
+the analog input of Bela. The piano sound was simultane-
+ously recorded at 44.1kHz through a recorder as the audio
+input to Bela as well. These two types of signal data were
+aligned and stored as CSV ﬁles and binary ﬁles respectively.
+4.2 Classiﬁcation
+For our implementation, we used the sensor data alone to
+do the classiﬁcation. Despite pedal position was measured
+in a continuous space, classiﬁcation of pedalling as discrete
+types may beneﬁt applications such as transcription and vi-
+sualisation. Four pedalling techniques (quarter, half, three-
+quarters and full pedal) were classiﬁed using a supervised
+learning method. Since the usage of a pedalling technique
+almost never remains the same even for the same pianist, a
+machine learning method could eﬃciently learn an optimal
+threshold for classiﬁcation in a data-driven manner.
+The classiﬁcation task operates in three separate phases:
+a pre-processing phase, in which the pedalling onset and oﬀ-
+set are detected and segments are deﬁned; a training phase
+that learns a function between input variables and discrete
+labels using SVM; and a testing phase that assigns an out-
+put label to a new input sample.
+4.2.1 Pre-processing
+The Savitzky-Golay ﬁlter is a particular type of low-pass
+ﬁlter, well-adapted for data smoothing [17]. It has been
+used to smooth time-series data collected from sensors such
+as electrocardiogram processing [15]. We applied this ﬁlter
+to the sensor data in order to avoid spurious detection of
+pedalling onset and oﬀset.
+Based on the ﬁltered sensor data, pedalling onset and oﬀ-
+set time were found by comparing with a threshold, below
+which is the onset and above is the oﬀset. Instead of manu-
+ally setting a threshold, the threshold was decided by choos-
+ing the minimum value from a peak detection algorithm. It
+was noted that there would be false-positive detection of
+pedalling onset and oﬀset because of the eﬀect of ﬂuttering
+pedal. Hence we calculated the time interval between each
+pedal onset, and then set a timing as the ﬂuttering thresh-
+old. If the time interval between two detected onsets is
+below the ﬂuttering threshold, the latter onset followed the
+former one in such a short time that should be considered
+as part of the data within the same pedal usage instead.
+We repeated the process to remove false-positive onset and
+oﬀset.
+In this way, each segment was deﬁned by data between
+the onset and oﬀset time. We created the histogram of the
+data in each segment. As the shape of histogram largely ﬁt-
+ted the normal distribution by visual observation, Gaussian
+parameters of every segment were extracted as the features
+for further classiﬁcation. The features were identiﬁed by
+the following formula, where µ is mean of the distribution
+and σ is standard deviation.
+P(x) = 1
+σ
+√
+2π
+e−(x−µ)2/2σ2
+4.2.2 Training
+A large number of classiﬁcation methods exist in the ma-
+chine learning literature. SVM is a supervised learning
+method that attempts to ﬁnd a hyper-plane separating the
+diﬀerent classes of the training instances with the maximum
+error margin [21]. In other words, it tries to create a fence
+between the two classes, letting as few instances of a class
+to be on the wrong side of the fence as possible. There-
+fore it can be used to learn the optimised thresholds for
+diﬀerentiating pedalling techniques from the ground truth
+dataset.
+A subset of our dataset was used to train the SVM classi-
+ﬁer in order to classify the remaining data into quarter, half,
+three-quarters and full pedal. The cross-validation method
+was obeyed to evaluate the accuracies of our experiment, as
+this process was repeated as the training data and the data
+to be classiﬁed were rotated. Leave-one-group-out cross-
+validation was employed because of our small dataset. In
+this scheme, samples were grouped in terms of music ex-
+cerpts. Each training set was thus constituted by all the
+samples except the ones related to a speciﬁc group. The
+number of pedalling instances in each music excerpt is listed
+in Table 1. A mean F-measure score of 0.93 was obtained
+from the cross-validation trials. Table 2 shows that SVM
+performs the best among common machine learning classi-
+ﬁcation methods for our case using the scikit-learn library
+[16].
+Table 1: Number of pedalling instances in the music
+excerpts from our dataset.
+Music Excerpts 1/4 1/2 3/4 full pedal
+Op.10 No.3 14 13 7 5
+Op.23 No.1 7 17 8 29
+Op.28 No.4 17 24 5 24
+Op.28 No.6 9 27 5 17
+Op.28 No.7 2 10 3 1
+Op.28 No.15 7 34 4 22
+Op.28 No.20 9 12 11 17
+Op.66 6 21 10 11
+Op.69 No.2 2 15 10 24
+B.49 3 51 8 17
+Sums 76 224 71 167
+4.2.3 Testing
+During the testing phase, the learned SVM classiﬁer takes a
+new input sample that has not been seen before and assigns
+it an output label. Figure 2 illustrates the process of the
+testing phase in an intuitive way. The sensor data repre-
+senting the pianist’s pedalling movement were processed as
+discussed in Section 4.2.1 in order to be segmented accord-
+ing to the detected pedalling onset and oﬀset time. For each
+segment, the classiﬁer received the Gaussian parameters ( µ
+and σ) as features and outputted the label of the recog-
+nised pedalling technique. Label number 1 to 4 are referred
+to as the quarter, half, three-quarters and full pedal. We
+saved the pedal onset and oﬀset time and the correspond-
+ing pedalling label to a ﬁle, which maintained synchronised
+time with the audio ﬁle and were used as the inputs of our
+visualisation application.
+4.3 Visualisation
+327
+Table 2: Performance evaluation of diﬀerent classiﬁcation methods.
+Methods Micro F1 Macro F1 Precision Recall
+Decision Trees 0.91 0.81 0.84 0.83
+Ada Boost 0.84 0.64 0.64 0.70
+Random Forest 0.91 0.77 0.79 0.80
+k-Nearest Neighbours 0.92 0.81 0.82 0.83
+Gaussian Naive Bayes 0.91 0.78 0.85 0.80
+Support Vector Machines 0.93 0.82 0.86 0.84
+audio.bin pedal.csv
+pedal-result.csv
+onset offset features
+σ0μ0
+σ1μ1
+σ2μ2
+σ3μ3
+3.5631.811
+3.749 5.178
+5.335 6.912
+7.106 8.505
+onset/offset 
+detection
+feature extraction
+audio.wav
+onset offset pedal
+3.5631.811
+3.749 5.178
+5.335 6.912
+7.106 8.505
+3
+1
+2
+1
+storage
+SVM classiﬁer
+Figure 2: Results from the testing phase.
+A score following Matlab implementation was employed as
+part of our visualisation application. This score following
+implementation can align a given musical score with an au-
+dio recording of a performance of the same piece. Asyn-
+chronies between the piano melody and the accompaniment
+were handled by a multi-dimensional variant of dynamic
+time warping (DTW) algorithm [22] in order to obtain bet-
+ter alignments.
+In our case, the pedalling classiﬁcation results were aligned
+with the audio recording. Hence they can also be presented
+synchronously in the score using the customised notations.
+Figure 3 displays the screen shot of our visualisation appli-
+cation. This graphical user interface (GUI) requires user to
+select a music score ﬁrst. After importing the audio record-
+ing and the corresponding pedalling results of the same
+piece, they can be displayed by clicking the Play/Pause but-
+ton. In the GUI, blue circles imply what notes in the score
+are being played according to the audio. Star means pedal
+onset while green square means oﬀset. The more dark red
+and lower a star is, the deeper the sustain pedal was pressed.
+5. CONCLUSIONS AND FUTURE WORKS
+This paper presented Piano Pedaller, a new measurement
+system for classiﬁcation and visualisation of piano pedalling
+techniques. It can be installed on any piano pedal which al-
+lows pedalling gesture and piano sound to be recorded in
+a non-intrusive environment. A SVM algorithm was em-
+ployed as the classiﬁer. Then the classiﬁcation was done by
+ﬁrstly detecting the onset and oﬀset time of pedalling and
+then labelling the gesture into quarter, half, three-quarters
+or full pedalling technique. The visualisation was achieved
+using a score following system. This aligns the musical score
+to both the classiﬁcation results of pedalling techniques and
+the audio recording of the same piece.
+It has shown that the measurement system enables the
+piano pedalling gesture to be tracked accurately enough for
+SVM-based classiﬁcation. Since diﬀerent pianists have var-
+ious understandings of partial pedal which could also be
+changed with the performance venue, the pianist needs to
+train the system beforehand in a concrete concert-like situ-
+ation. How to develop a generalised software incorporating
+the training phase in order to classify the pedalling tech-
+niques in diﬀerent contexts remains as a limitation in this
+study. In our future works, Piano Pedaller could be applied
+to the following scenarios:
+•Pedalling detection from the audio domain: Automatic
+acquisition from audio recordings is necessary in spe-
+cial environments where installing sensors on instru-
+ment is not possible. Our measurement system can
+be used to capture the ground truth dataset for the
+study of pedalling techniques detection from the au-
+dio alone. The classiﬁcation could contribute to this
+dataset by providing onset and oﬀset time plus the
+category of a pedalling technique.
+•Real-time application : The analysis is made oﬄine
+so that our visualisation application allows player to
+review the pedalling techniques used in a recording.
+This could serve as a pedagogy application. If we con-
+sider how a technique is executed during the perfor-
+mance, a real-time application is needed. This could
+also be used to trigger other visual eﬀects in the per-
+formance as pedalling itself is related to music phrases.
+6. ACKNOWLEDGMENTS
+This work is supported by Centre for Doctoral Training
+in Media and Arts Technology (EPSRC and AHRC Grant
+EP/L01632X/1) and EPSRC Grant EP/L019981/1 “Fusing
+Audio and Semantic Technologies for Intelligent Music Pro-
+duction and Consumption (FAST-IMPACt)”. Beici Liang is
+funded by the China Scholarship Council (CSC). We would
+like to thank Siying Wang for her score following Matlab
+implementation.
+7. REFERENCES
+[1] Piano bar. Computer Music Journal , 29(1):104–114,
+2005.
+[2] M. Bernays and C. Traube. Investigating pianists’
+individuality in the performance of ﬁve timbral
+nuances through patterns of articulation, touch,
+dynamics, and pedaling. Individuality in music
+performance, page 35, 2014.
+[3] W. Brent. The gesturally extended piano. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression (NIME) , 2012.
+[4] B. Caramiaux and A. Tanaka. Machine learning of
+musical gestures. In Proceedings of the International
+Conference on New Interfaces for Musical Expression
+(NIME), pages 513–518, 2013.
+328
+Figure 3: Screen shot of the visualisation application.
+[5] N. Gillian and S. Nicolls. A gesturally controlled
+improvisation system for piano. In Proceedings of the
+International Conference on Live Interfaces ,
+number 3, 2012.
+[6] W. Goebl, S. Dixon, G. De Poli, A. Friberg,
+R. Bresin, and G. Widmer. Sense in expressive music
+performance: Data acquisition, computational
+studies, and models. Sound to sense-sense to sound:
+A state of the art in sound and music computing ,
+pages 195–242, 2008.
+[7] A. Hadjakos, E. Aitenbichler, and M. M ¨uhlh¨auser.
+The elbow piano: Soniﬁcation of piano playing
+movements. In Proceedings of the International
+Conference on New Interfaces for Musical Expression
+(NIME), pages 285–288, 2008.
+[8] A. Hadjakos and M. M ¨uhlh¨auser. Analysis of piano
+playing movements spanning multiple touches. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression (NIME) , pages
+335–338, 2010.
+[9] P. Le Huray. Authenticity in performance:
+eighteenth-century case studies. CUP Archive, 1990.
+[10] H. M. Lehtonen. Analysis and parametric synthesis of
+the piano sound . PhD thesis, Helsinki University of
+Technology, 2005.
+[11] H. M. Lehtonen, H. Penttinen, J. Rauhala, and
+V. V¨alim¨aki. Analysis and modeling of piano
+sustain-pedal eﬀects. The Journal of the Acoustical
+Society of America, 122(3):1787–1797, 2007.
+[12] A. McPherson. Portable measurement and mapping
+of continuous piano gesture. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression (NIME), pages 152–157, 2013.
+[13] A. McPherson and Y. Kim. Piano technique as a case
+study in expressive gestural interaction. In Music and
+Human-Computer Interaction, pages 123–138.
+Springer, 2013.
+[14] A. McPherson and V. Zappi. An environment for
+submillisecond-latency audio and sensor processing on
+beaglebone black. In Proceedings of 138th
+International Audio Engineering Society (AES)
+Convention. Audio Engineering Society, 2015.
+[15] K. Pandia, S. Ravindran, R. Cole, G. Kovacs, and
+L. Giovangrandi. Motion artifact cancellation to
+obtain heart sounds from a single chest-worn
+accelerometer. In IEEE International Conference on
+Acoustics, Speech and Signal Processing (ICASSP),
+pages 590–593. IEEE, 2010.
+[16] F. Pedregosa, G. Varoquaux, A. Gramfort, V. Michel,
+B. Thirion, O. Grisel, M. Blondel, P. Prettenhofer,
+R. Weiss, V. Dubourg, J. Vanderplas, A. Passos,
+D. Cournapeau, M. Brucher, M. Perrot, and
+E. Duchesnay. Scikit-learn: Machine learning in
+Python. Journal of Machine Learning Research ,
+12:2825–2830, 2011.
+[17] W. H. Press, B. P. Flannery, S. A. Teukolsky, W. T.
+Vetterling, and P. B. Kramer. Numerical recipes: the
+art of scientiﬁc computing . AIP, 1987.
+[18] S. P. Rosenblum. Pedaling the piano: A brief survey
+from the eighteenth century to the present.
+Performance Practice Review, 6(2):8, 1993.
+[19] D. Rowland. A history of pianoforte pedalling .
+Cambridge University Press, 2004.
+[20] D. R. Sinn. Playing Beyond the Notes: A Pianist’s
+Guide to Musical Interpretation . Oxford University
+Press, 2013.
+[21] A. J. Smola and B. Sch ¨olkopf. A tutorial on support
+vector regression. Statistics and computing ,
+14(3):199–222, 2004.
+[22] S. Wang, S. Ewert, and S. Dixon. Compensating for
+asynchronies between musical voices in
+score-performance alignment. In IEEE International
+Conference on Acoustics, Speech and Signal
+Processing (ICASSP), pages 589–593. IEEE, 2015.
+[23] Q. Yang and G. Essl. Visual associations in
+augmented keyboard performance. In Proceedings of
+the International Conference on New Interfaces for
+Musical Expression (NIME), 2013.
+[24] V. Zandt-Escobar, B. Caramiaux, A. Tanaka, et al.
+Piaf: A tool for augmented piano performance using
+gesture variation following. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression (NIME), 2014.
+329

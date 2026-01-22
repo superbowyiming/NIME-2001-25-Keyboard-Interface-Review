@@ -1,0 +1,595 @@
+A Closed-Loop Control System for Robotic Hi-hats
+Jason Long, Jim W. Murphy
+New Zealand School of Music
+Victoria University of Wellington
+Wellington, New Zealand
+jason.long@ecs.victoria.ac.nz,
+jim.w.murphy@gmail.com
+Dale A. Carnegie, Ajay Kapur
+School of Engineering and Computer Science
+Victoria University of Wellington
+Wellington, New Zealand
+dale.carnegie@vuw.ac.nz, ajay@karmetik.com
+ABSTRACT
+While most musical robots that are capable of playing the
+drum kit utilise a relatively simple striking motion, the hi-
+hat, with the additional degree of motion provided by its
+pedal, requires more involved control strategies in order
+to produce expressive performances on the instrument. A
+robotic hi-hat should be able to control not only the strik-
+ing, timing, and velocity to a high degree of precision, but
+also dynamically control the position of the two cymbals
+in a way that is consistent, reproducible and intuitive for
+composers and other musicians to use.
+This paper describes the creation of a new, multifaceted
+hi-hat control system that utilises a closed-loop distance
+sensing and calibration mechanism in conjunction with an
+embedded musical information retrieval system to continu-
+ously calibrate the hi-hat’s action both before and during a
+musical performance. This is achieved by combining exist-
+ing musical robotic devices with a newly created linear ac-
+tuation mechanism, custom ampliﬁcation, acquisition and
+DSP hardware, and embedded software algorithms.
+This new approach allows musicians to create expressive
+and reproducible musical performances with the instrument
+using consistent musical parameters, and the self-calibrating
+nature of the instrument lets users focus on creating music
+instead of maintaining equipment.
+Author Keywords
+Musical Robot, MIDI, Hi-hat, Closed-loop, Musical Infor-
+mation Retrieval, MIR, Embedded, Digital Signal Process-
+ing, DSP, Sensor
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing, I.2.9 [Artiﬁcial Intelligence] Robotics—
+Sensors, H.5.1 [Information Interfaces and Presentation] Au-
+dio input/output.
+1. INTRODUCTION
+Musical robots allow composers to create new musical expe-
+riences in the acoustic realm by utilizing various actuators
+under computer control to manipulate an array of sonorous
+objects. This allows music that is generated algorithmically
+in real-time, controlled by interactive systems, or otherwise
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’17,May 15-19, 2017, Aalborg University Copenhagen, Denmark.
+has demanding technical requirements such as strict syn-
+chronization, high performance speeds, long performance
+times or extreme rhythmic complexity to be realized on
+real-world acoustic instruments. While there exists a wide
+variety of robotic string, wind and other instruments, per-
+cussion instruments are the most numerous in the musical
+robotics ﬁeld, likely due to the relative simplicity of striking
+an object, in contrast with bowing a string for example.
+However, when automating the instruments of a standard
+drum kit, the action of the hi-hat presents a unique set of
+challenges due to its pedal requiring very precise and con-
+sistent control of its position while the hi-hat cymbals are
+struck. The default distance between the cymbals is manu-
+ally adjustable and often altered to suit the style of music
+or particular piece about to be played. Expert players are
+capable of quickly adapting to these adjustments and ma-
+nipulating the pressure applied to the pedal while striking
+the hi-hat to create expressive and dynamic rhythms that
+are often central to the drum kit performance. In order to
+replicate these capabilities, a robotic hi-hat should be able
+to automatically sense its own position, and also listen to
+its own strikes to ensure that its performance matches the
+desired result that it was programmed to achieve.
+This paper describes a system that was built to accom-
+plish these goals. It does so ﬁrstly, by providing a back-
+ground of robotic percussion and hi-hat actuation in order
+to place this research in context. Following that, the me-
+chanical design of the hi-hat striking, and pedal actuation
+devices are illustrated. The signal conditioning, ampliﬁca-
+tion and processing hardware is then described before the
+workings of the embedded software algorithms that drive
+the instrument are explained. Finally, conclusions about
+the instrument’s eﬀectiveness are drawn and ideas for fu-
+ture work are discussed.
+2. BACKGROUND
+From the earliest programmable ﬂute-playing automaton
+built in the 9 th century, through the giant programmable
+carillons of the middle ages and the sophisticated orchestri-
+ons of the 19th century, automatic musical instruments have
+a fascinating and varied history. Many early musical au-
+tomata were created for spiritual reasons and the devices
+of the mechanized music golden age of the 1800s helped to
+bring music to the masses [16]. However, after the turn of
+the 20th century, the reasons for their use shifted. Pioneer-
+ing composers such as Casella, Malipiero and Stravinsky
+wrote music speciﬁcally for the player piano, making use of
+its ability to play fast, demanding and complex music [15].
+These features are also exempliﬁed by Conlon Nancarrow’s
+extensive work for the instrument [4].
+The development of the transistor in the latter half of
+the 20 th century and the work of pioneering artists such
+as Trimpin [3] and Godfried Willem Raes [12] in the 1970s
+330
+spawned a new branch of musical automata: musical robotics.
+Through the use of electronic control and digital logic, the
+ﬁeld of musical robotics builds upon the ﬁeld of musical
+automata, adding new capabilities to the instruments such
+as real-time control, remote interactivity, precise synchro-
+nization, enhanced accuracy and a higher level of musical
+expression. [8] and [14] provide a more in-depth account of
+the history of musical robotics.
+In the 1980s and 1990s, the ﬁeld saw signiﬁcant growth
+with a number of companies such as Yamaha and B¨osendor-
+fer producing robotic musical instruments, and the number
+of artists entering the area increasing. In the last 15 years
+as building electronics has become more accessible, growth
+in the ﬁeld has accelerated, culminating in several exam-
+ples of musical robotics penetrating mainstream musical
+outlets and being featured as centerpieces in several widely
+circulated albums such as Pat Metheny’s Orchestrion [13],
+Squarepusher’s Music for Robots [7], and Aphex Twin’s
+Computer Controlled Acoustic Instruments Pt2[6].
+Most of these works prominently feature automated per-
+cussion instruments, and those instruments are actuated
+in a variety of diﬀerent ways from pneumatic and servo-
+based devices to solenoid-driven mechanisms. [11] provides
+descriptions of the most common types of robotic percus-
+sion mechanisms and their control methods, along with an
+analysis of the strengths and weaknesses of each type.
+For striking the instrument, robotic hi-hats tend to utilize
+similar mechanisms to other percussion instruments. How-
+ever, use of the hi-hat pedal can be described in three dis-
+tinct categories. Firstly, some ensembles such as Jazari’s [2],
+utilize a single position method wherein the position of the
+hi-hat is ﬁxed before a performance and remains unaltered
+throughout. Another common solution used in ensembles
+such as Moritz Simon Geist’s MR-808 is the on-oﬀ method,
+in which a large solenoid or other actuator is attached or ap-
+plied to the hi-hat pedal and is capable of producing an en-
+tirely open or entirely closed state, with no variable control
+between the two extremes [5]. The third category is robotic
+hi-hats that have continuous and variable control over the
+pedal mechanism during a performance. These devices are
+capable of the most expressive musical performances, but
+are also the most complex to implement in practice. The
+approach outlined in this paper is an attempt to improve
+upon these previous robotic hi-hat systems and provide a
+consistent, self-calibrating, intuitive to use and musically
+expressive automatic hi-hat.
+3. MECHANICAL DESIGN
+The mechanical design of the Closed-Loop Robotic Hi-hat
+consists of two main sections: the striking mechanism and
+the pedal mechanism. Each are mechanically independent
+from each other though their operations are synchronized
+by electronic control circuitry. Each section is described in
+turn below.
+Figure 1: The mechanism used to strike the hi-hat.
+3.1 Striking Mechanism
+Following the analyses described in [11], a rotary solenoid
+based striking mechanism was chosen for this instrument
+due to their good velocity control characteristics, high speed,
+adequate loudness, low levels of extraneous noise and sim-
+plicity of implementation. However, since the striking mech-
+anism is independent of the pedal, alternative strikers may
+be used. This striker consists of a Shindengen 48 mm rotary
+solenoid rated at 24 V, mechanically coupled to a standard
+drum stick via its rotating plate and an aluminium bracket
+as shown in Figure 1.
+The opposite side of the solenoid is attached to a larger
+L-shaped aluminium bracket which houses the device’s elec-
+trical socket and contains a microphone stand attachment
+for easy positioning of the unit. There is also a rubber stop-
+per attached to the L-bracket that provides an upper limit
+to the travel of the drum stick. This stopper prevents the
+solenoid from reaching its own limit and creating an un-
+wanted clicking sound. It also minimizes bouncing on the
+return after a strike, increasing the consistency of strikes of
+varying dynamics, especially during high speed sequences.
+3.2 Pedal Mechanism
+There are several methods of actuating the pedal mecha-
+nism of a hi-hat. If anthropomorphism is desired, as is the
+case with the Compressorhead [1] and Z-Machines [7] robot
+bands, a mechanical foot can be used to press on the hi-hat’s
+pedal. This allows the hi-hat to remain entirely unaltered
+and provides the audience with a familiar paradigm. How-
+ever, the force required to overcome the hi-hat’s internal
+spring is high, and both bands use pneumatic systems that
+have a high level of extraneous noise, and very high cost [11].
+Another method described by Moritz Simon Geist for his
+MR-808 ensemble utilizes a large solenoid in an on-oﬀ con-
+ﬁguration to actuate the hi-hat position [5]. To minimize
+the on time of the actuator and avoid overheating, Geist
+reverses the polarity of the hi-hat movement from default
+high, to default low. This conﬁguration assumes that the
+most common position for the hi-hat during most perfor-
+mances is low, and still requires up to 35 amps of current to
+power the large solenoid to lift the hi-hat. It also relies on
+the force of gravity to keep the hi-hat closed, limiting the
+tightness the instrument can achieve in the closed state.
+Other potential candidates for actuation include servo
+and stepper motors, both of which would be capable of pro-
+viding accurate control of the height of the pedal with an
+appropriate mechanical coupling, but both of which also
+generate a high level of extraneous noise which is undesir-
+able for performances of very dynamic musical material and
+quiet recording situations. There also exists a number of
+linear actuators such as voice coil actuators which provide
+built-in closed-loop positioning and quiet operation, but re-
+quire an investment of thousands of dollars for the actuators
+and corresponding control systems.
+With all of these considerations noted, it was decided
+that the most appropriate actuator for this application is
+the Ledex 196658-028 5EPM soft-shift solenoid. These are
+solenoid actuators that are designed to deliver a relatively
+linear force response proportional to the current delivered to
+them. This allows the soft-shift actuator to provide a very
+quiet linear positioning capability, though without built-in
+position sensing. While it does not cover every conceivable
+use-case, the chosen actuator delivers a 10 mm range of
+movement that is capable of positioning the hi-hat from
+fully closed with pressure applied, to fully open with the
+two cymbals not making contact with each other.
+In this design, the hi-hat is used without the instrument’s
+original pedal, but leaving the pedal’s base frame intact to
+331
+Figure 2: The mechanism used to control the hi-hat
+height. See section 3.2 for explanation.
+mount the replacement mechanism on. A diagram which
+illustrates the replacement control mechanism is presented
+in Figure 2. The cymbal-pulling shaft that was connected
+to the pedal is instead directly mechanically coupled to the
+soft-shift solenoid by way of a tapped aluminium bracket.
+The solenoid’s plunger is also tapped to accept an M3 screw,
+ﬁrmly attaching it to the aluminium bracket.
+The hi-hat’s internal spring requires signiﬁcant power to
+overcome, even when conﬁgured for minimum tension, so in
+this design it is disabled entirely. Instead, a new spring is
+included between the soft-shift solenoid and the aluminium
+bracket to replace the default action. The new spring is
+chosen to have suﬃcient strength to allow the hi-hat to re-
+tain a responsive default-open conﬁguration, while being
+low enough for the actuator to overcome it and apply ade-
+quate pressure to the hi-hat in the closed position.
+In order to provide position feedback for this system, a
+neodymium magnet is glued to the lower end of the solenoid’s
+plunger. Below the magnet, an Allegro Microsystems A1301
+Continuous-Time Ratiometric Linear Hall-Eﬀect Sensor1 IC
+is mounted. The strong magnetic ﬁeld created by the mag-
+net induces a voltage in the Hall eﬀect sensor’s output that
+is directly proportional to the position of the the solenoid’s
+plunger, thereby providing the electronic control systems
+with information about the actuator’s height.
+The entire mechanism is held in place by a 3D printed
+structure. The structure attaches to the soft-shift solenoid
+by its mounting screws, and provides a platform in order
+to position the Hall eﬀect sensor below the unit. It also
+attaches to the hi-hat’s base frame to keep the structure
+ﬁrmly in place.
+1Datasheet: http://www.allegromicro.com/~/media/
+Files/Datasheets/A1301-2-Datasheet.ashx
+4. THE ELECTRONICS
+The electronic systems of the Closed-Loop Robotic Hi-hat
+comprises several sections. Firstly a solenoid control board
+receives MIDI signals and converts them to pulses to drive
+the striking mechanism. This board also communicates
+with a digital signal processing board by way of a 3.3 V
+UART. The DSP board utilizes a 2-channel in and out au-
+dio CODEC to control the pedal mechanism by way of a
+separate DC ampliﬁer, receives position information from
+the Hall eﬀect sensor via a signal conditioning circuit, and
+receives audio from a microphone near the hi-hat by way
+of a custom preamp. A map of these connections is pre-
+sented in Figure 4, and each of these elements are described
+in further detail in the following subsections.
+Figure 3: The custom preamp used to condition the
+audio signal. Top: Behind a panel, Bottom: Bare
+circuit board.
+4.1 Custom Preamp
+In order to experiment with a variety of diﬀerent audio input
+devices, the custom preamp shown in Figure 3 was designed.
+The circuit is based around the Texas Instruments INA217
+Low-Noise, Low-Distortion Instrumentation Ampliﬁer IC,
+and was created to provide as much ﬂexibility as possible
+with regards to input devices and to deliver a high quality
+audio signal with low levels of extraneous noise.
+The preamp makes use of a TRS / XLR Neutrik input
+and can take balanced and unbalanced audio from a wide
+range of sound sources. A high impedance (Hi-Z) switch
+is included to provide support for magnetic pickups, coils,
+piezoelectric discs, and other high impedance sources. A
+20 dB pad is also provided to aid with gain staging for
+sources with higher levels. There is a single potentiometer
+that dictates the level of gain applied, accompanied by a
+green analogue signal LED indicator, and a red hard clip-
+ping indicator that is tuned just below the clipping level
+of the DSP Board’s ADC. A 3-position bias switch is also
+provided, allowing the preamp to switch between conﬁgu-
+rations for dynamic microphones, electret or plug-in-power
+(PiP) microphones with a 5 V bias, or condenser micro-
+phones with a 48 V phantom power bias.
+4.2 DSP Board
+In order to create an accurate, high resolution, high sample-
+rate audio processing and closed-loop control system, the
+custom DSP board shown in Figure 5 was built. The pri-
+mary processor on the board is an Analog Devices Blackﬁn
+BF592 DSP, clocked at 400 MHz. This chip was chosen
+due to its high-speed audio processing capabilities coupled
+with its selection of peripherals including UART, SPI, I 2C,
+high-speed serial ports (SPORTs), timers and DMA.
+A Wolfson WM8731 stereo audio CODEC is included on-
+board, which provides up to 24 bit resolution at up to 96 kHz
+332
+Figure 4: The electronic connections that make up the closed-loop hi-hat control system.
+sample rates, controllable by I2C, and communicating with
+the Blackﬁn via I 2S digital audio streams. There is also
+analogue audio conditioning circuitry on-board to feed the
+audio CODEC, and the board is ﬁtted with surface mount
+trimmer potentiometers, and green and red LEDs for each
+input channel to aid in correctly conﬁguring the gain. MIDI
+In, Out and Thru circuitry, 16 Mb of Serial Flash Em-
+bedded Memory (M25P16-VMN6TP), and 4-channel SPI
+(ADC124S101) and I 2C (MAX11613) ADCs are also in-
+cluded on-board.
+The DSP board carries out several functions. Firstly, it
+provides a high speed and accurate control signal to the soft-
+shift solenoid-based hi-hat positioning mechanism. This po-
+sitioning signal is provided at audio rate directly from the
+WM8731 CODEC and is DC biased. Secondly, the DSP
+board also receives real-time position information from the
+Hall-eﬀect sensor allowing it to carry out closed loop po-
+sitioning as described in section 5.1. Thirdly, the board
+analyses an audio feed of how the hi-hat sounds in real-time,
+providing additional information to the system as described
+in section 5.2.
+4.3 Robotic Percussion Controller
+The solenoid controller PCB shown in the lower right of Fig-
+ure 4 is a generic circuit-board designed to provide highly
+accurate control signals to several of the most common types
+of actuators used in musical robots. It utilises a hybrid
+microcontroller-FPGA system, and is capable of deliver-
+ing timed pulses to solenoids with lengths accurate to the
+nanosecond. This allows robotic percussion mechanisms
+such as that used with this Closed-Loop Robotic Hi-hat
+to strike with very consistent velocities, which signiﬁcantly
+aids automatic calibration systems. This board is the re-
+sult of earlier research and a publication that describes the
+workings of it in greater detail can be found in [10].
+4.4 Signal Conditioning Circuits
+Interfacing the DSP board with the pedal mechanism re-
+quires circuitry to buﬀer, scale and bias the signals. Fig-
+Figure 5: The embedded DSP board which carries
+out the closed loop positioning and musical infor-
+mation retrieval functions.
+ure 6 presents the schematics of the two conditioning cir-
+cuits used in this system, one for mapping the Hall eﬀect
+sensor’s output to the DSP board’s ADC (left), and one
+for scaling and amplifying the DSP board’s DAC output to
+control the soft-shift solenoid (right).
+The ﬁrst circuit receives a voltage from the Allegro A1301
+Hall eﬀect sensor proportional to the distance between the
+sensor and the neodymium magnet attached to the pedal
+mechanism. The sensor is powered by 5 V, has a quies-
+cent voltage of 2.5 V, and the presence of a south-polarity
+or north-polarity magnetic ﬁeld proportionally increases or
+decreases the output voltage respectively. By utilising a
+TLV274 opamp with rail-to-rail output swing in an invert-
+ing ampliﬁer conﬁguration, in conjunction with trimmer po-
+tentiometers controlling the gain and bias of the device, this
+signal can be scaled to range from ground to 5 V. A voltage
+divider on the output of the circuit scales this to the ground
+to 3.3 V range expected by the DSP board’s 12 bit ADC.
+The control of actuators such as soft-shift solenoids is of-
+333
+Figure 6: Signal conditioning circuits. Left: From Hall eﬀect sensor to ADC, Right: From DAC to soft-shift
+solenoid.
+ten carried out by applying pulse-width modulation (PWM)
+signals to the actuators via a power transistor, MOSFET
+or other driver. However, while PWM was trialed in this
+application, modulation rates in the audio range created
+undesirable audible artifacts to emanate from the actua-
+tor, and modulation rates above the audible range induced
+high levels of electromagnetic interference (EMI) in nearby
+circuits, most notably the Hall eﬀect sensor output. As a
+result, an alternative system shown on the right of Figure 6
+was created that utilises the LM3886 OvertureTM 68 Watt
+High-Performance Audio Power Ampliﬁer IC to drive the
+actuator with an analogue signal directly.
+This right-hand circuit also utilises the TLV274 in a simi-
+lar conﬁguration to the left one, in order to prepare the sig-
+nal from the audio DAC for direct DC ampliﬁcation. The
+LM3886, supplied with power rails of ±24 V to correspond
+with the soft-shift solenoid’s 24 V rating, is utilised in a
+DC-coupled conﬁguration and ampliﬁes the signal by a fac-
+tor of approximately 20. The resulting higher-power signal
+is then applied directly to the solenoid’s terminals.
+5. THE FIRMW ARE
+The goal of this work is to create a robotic hi-hat system
+that can automatically self-calibrate in real-time, and can
+be consistently controlled in a way intuitive to musicians.
+The ﬁrmware of the DSP board is designed to achieve these
+goals by carrying out 3 main functions: Implementing a
+closed-loop positioning system, conducting Musical Infor-
+mation Retrieval (MIR) analyses on incoming audio, and
+continuously calibrating the latency, velocity and envelope
+length of strikes. Each of these functions are described in
+turn below.
+5.1 Closed-loop Positioning
+The most straightforward way to control the pedal mecha-
+nism would be to set a value at the DAC and assume that
+given the relatively linear nature of the soft-shift solenoid,
+that value would correspond to a hi-hat height. Unfortu-
+nately, though the soft-shift solenoid has a much more man-
+ageable response than a standard push/pull solenoid, the
+resulting response is far from being linear. In addition, the
+compression of the mechanism’s spring, the default position
+of the hi-hat and the physical inertia of the system all re-
+sult in the system being highly inaccurate when controlled
+in such a way.
+In order to improve on this situation, the position in-
+formation fed to the DSP board’s ADC is fed into a
+Proportional-Integral-Derivative (PID) algorithm. This al-
+lows the ﬁrmware to set a target height, rather than a volt-
+age level. The algorithm sees the diﬀerence between the
+target and current positions, and along with information
+about the previous states and the current rate of change,
+outputs a voltage that will bring the actuator as close as
+possible to the target height.
+Since a hi-hat’s default height is manually adjustable, the
+absolute position each time the unit is set up is likely to
+vary signiﬁcantly. To account for this, the ﬁrmware per-
+forms a short initialization routine on start-up (and at any
+time when commanded to) that sends the soft-shift solenoid
+minimum and then maximum power, logs the minimum and
+maximum height values, and uses them to scale subsequent
+positioning.
+5.2 Musical Information Retrieval System
+Though the positioning system can place the hi-hat between
+the initialized extremes, this still does not provide musi-
+cians controlling the unit with information about what the
+musical result will be at a given height. This is why an
+embedded MIR system was implemented in the ﬁrmware.
+As the primary musical result of a hi-hat being opened and
+closed is changes in the length of the sound’s envelope, the
+goal of the system is to allow the user to specify the desired
+length of envelope, and for the robotic hi-hat to strike the
+instrument with the cymbal at a height that produces that
+envelope length. In practice, the system is receiving MIDI
+Control Change (CC) messages, mapped linearly from the
+shortest to longest desired envelope lengths. These values
+may be presented to the user in an interface that displays
+these envelope length values in seconds explicitly.
+To extract the envelope length information from the in-
+coming audio, the algorithm undertakes several processes.
+1. Since the audible activity of a hi-hat is predominantly
+present in the higher end of the audible spectrum, a
+simple hi-pass ﬁlter is applied to remove any unre-
+lated low frequency activity that may be present in
+the audio.
+2. An envelope signal is then created by averaging the
+last 1024 values of the audio stream.
+3. After a MIDI Note On message which corresponds to
+the striker of the robotic hi-hat is received, the algo-
+rithm expects a strike to follow soon after. When a
+sudden onset is observed on the averaged envelope sig-
+nal, the algorithm starts a timer which measures the
+length of the envelope.
+4. When the envelope drops below a certain threshold
+value, the timer is stopped, and the length of the en-
+velope is recorded.
+334
+The system populates a table of height values that cor-
+respond with the desired envelope lengths (user’s sent CC
+values) and interpolates between the measured values to
+generate a curve that creates a linear relationship between
+the two. The algorithm automatically and continuously up-
+dates the calibration table when new, eligible envelope val-
+ues are received, but because of the 2-dimensional nature
+of the velocity of strikes and the position of the hi-hat, un-
+interrupted strikes of the same velocity may be few and far
+between. Because of this, it is best to carry out a short ini-
+tialization of the unit on start-up, sending spaced out strikes
+to the hi-hat at full velocity, at several diﬀerent heights.
+5.3 Continuous Calibration
+In addition to the initialization of the hi-hat pedal mecha-
+nism height and envelope lengths, the DSP board can also
+record the latency of each strike by measuring the length of
+time between MIDI Note On messages and note onsets, and
+record the loudness of each strike by noting the amplitude
+of the transient following an onset. The implementation
+of these techniques is based on previous work done for the
+Closed-Loop Robotic Glockenspiel instrument, described in
+detail in [9].
+When latency compensation is enabled, the instrument
+is also able to keep a table of the latencies of strikes at
+every velocity value and compensate for them, creating a
+ﬁxed latency for the instrument. This can then be compen-
+sated for using the latency compensation function featured
+in most digital sequencers. The recorded amplitude values
+can also be used to compare the observed values with an
+ideal velocity curve in order to create a more consistent and
+musical response for the system. Both of these capabilities
+are also based on work done for the Closed-Loop Robotic
+Glockenspiel.
+6. CONCLUSIONS AND FUTURE WORK
+This paper has presented a robotic hi-hat system that uti-
+lizes a new closed-loop control system coupled with an em-
+bedded MIR algorithm to provide musicians and composers
+with a consistent, accurate instrument with which to create
+dynamic and expressive musical performances. The While
+the instrument does achieve the stated goals, there are many
+areas for future work to be undertaken. To aid in prototyp-
+ing and experimentation, the system currently consists of
+several separate pieces of electronic hardware, and setup
+time is not optimal. Further development will see the sys-
+tem integrated within a single portable enclosure, with all of
+the necessary circuitry consolidated. In addition, while the
+continuous calibration and PID algorithms do fulﬁll their
+intended purposes, there is also scope for optimization and
+reﬁnement of the software in order to deliver a more high
+performance and user friendly system. Lastly, a full char-
+acterization of the system’s characteristics complete with
+comparisons of the accuracy with and without the use of
+closed-loop positioning and MIR algorithms is underway
+and will aid in understanding and revealing additional av-
+enues for reﬁnement.
+It is hoped that outlining these closed-loop and MIR con-
+trol systems for robotic hi-hats will inspire other musical
+roboticists to develop their robotic hi-hat systems beyond
+ﬁxed-position and 2-state on/oﬀ conﬁgurations. Doing so
+opens up a new world of expression to the instrument, and
+these developments bring us ever closer to a goal of human-
+level robotic musicianship on the hi-hat and in robotic per-
+cussion in general.
+7. REFERENCES
+[1] Compressorhead. /http://compressorhead.rocks/,
+accessed January 26th 2017.
+[2] P. Flanagan. Jazari.
+http://jazarimusic.com/video/, accessed January
+26th 2017.
+[3] A. Focke, editor. Trimpin: Contraptions for Art and
+Sound. Marquand Books, Seattle, Washington, 2011.
+[4] K. Gann. The Music of Conlon Nancarrow.
+Cambridge University Press, 2006.
+[5] M. S. Geist. The mr-808 robotic hihat.
+http://learning.sonicrobots.com/2016/08/27/
+the-mr-808-robotic-hihat/ , accessed January 26th
+2017.
+[6] R. D. James. Computer Controlled Acoustic
+Instruments Pt2. Warp Records, United Kingdom,
+2015.
+[7] T. Jenkinson. Music for Robots. Warp Records,
+United Kingdom, 2014.
+[8] A. Kapur. A history of robotic musical instruments.
+In Proceedings of the International Computer Music
+Conference. ICMC, September 2005.
+[9] J. Long, A. Kapur, and D. Carnegie. The closed-loop
+robotic glockenspiel: Improving musical robots using
+embedded musical information retrieval. In
+Proceedings of the International Conference on New
+Musical Interfaces for Musical Expression. NIME,
+July 2016.
+[10] J. Long, J. W. Murphy, D. Carnegie, and A. Kapur.
+Improving the accuracy of musical
+robots with programmable logic circuits. In
+Proceedings of the Electronics New Zealand
+Conference. ENZCon, November 2016.
+[11] J. Long, J. W. Murphy, A. Kapur, and D. Carnegie.
+A methodology for evaluating robotic striking
+mechanisms for musical contexts. In Proceedings of
+the International Conference on New Musical
+Interfaces for Musical Expression. NIME, June 2015.
+[12] L. Maes, G.-W. Raes, and T. Rogers. The man and
+machine robot orchestra at logos. Computer Music
+Journal, 35(4):28–48, 2011.
+[13] P. Matheny. Orchestrion. Nonesuch Records, New
+York, 2010.
+[14] J. W. Murphy, D. A. Carnegie, and A. Kapur.
+Musical robotics in a loudspeaker world:
+Developments in alternative approaches to
+localization and spatialization. Leonardo Music
+Journal, 22:41–48, December 2012.
+[15] T. Patteson. Instruments for New Music: Sound,
+Technology, and Modernism. University of California
+Press, California, 2015.
+[16] A. Reblitz and Q. Bowers. The Golden Age of
+Automatic Musical Instruments: Remarkable Music
+Machines and their Stories. Mechanical Music Press,
+2001.
+335

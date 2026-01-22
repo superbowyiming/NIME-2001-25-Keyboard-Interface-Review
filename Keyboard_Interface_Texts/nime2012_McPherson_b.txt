@@ -1,0 +1,665 @@
+Techniques and Circuits for Electromagnetic Instrument
+Actuation
+Andrew McPherson
+Centre for Digital Music, School of EECS
+Queen Mary University of London
+Mile End Road, London E1 4NS, United Kingdom
+andrewm@eecs.qmul.ac.uk
+ABSTRACT
+There is growing interest in the ﬁeld of augmented musical
+instruments, which extend traditional acoustic instruments
+using new sensors and actuators. Several designs use elec-
+tromagnetic actuation to induce vibrations in the acoustic
+mechanism, manipulating the traditional sound of the in-
+strument without external speakers. This paper presents
+techniques and guidelines for the use of electromagnetic ac-
+tuation in augmented instruments, including actuator de-
+sign and selection, interfacing with the instrument, and cir-
+cuits for driving the actuators. The material in this pa-
+per forms the basis of the magnetic resonator piano, an
+electromagnetically-augmented acoustic grand piano now in
+its second design iteration. In addition to discussing appli-
+cations to the piano, this paper aims to provide a toolbox
+to accelerate the design of new hybrid acoustic-electronic
+instruments.
+Keywords
+augmented instruments, electromagnetic actuation, circuit
+design, hardware
+1. INTRODUCTION
+Several recent augmented instruments have been invented
+which use electromagnetic actuation to transform the sound
+of traditional acoustic instruments. The Electromagnetically-
+Prepared Piano [1, 3] and the Magnetic Resonator Piano
+[11, 12] each use electromagnets inside a grand piano to
+induce vibrations in the strings independently of the percus-
+sive hammer mechanism. The Electromagnetically-Sustained
+Rhodes Piano [16] applies a similar technique to the vibrat-
+ing metal tines of a Fender Rhodes. The EMvibe [4] uses
+electromagnetic actuators to create inﬁnite sustain and con-
+tinuous timbre-shaping in vibraphone bars. The handheld
+Ebow [8] for electric guitar uses feedback between a pickup
+and an electromagnetic actuator to produce continuous vi-
+brations in guitar strings; Berdahl [2] has extended these
+concepts to allow active damping of guitar strings. A good
+general overview of “actuated instruments” can be found in
+[13].
+Each instrument is based on the same fundamental tech-
+nology: a solenoid electromagnet consisting of multiple turns
+of wire around a ferromagnetic core. Electromagnets have
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’12,May 21 – 23, 2012, University of Michigan, Ann Arbor.
+Copyright remains with the author(s).
+been used for well over a century, but they prove remark-
+ably adaptable to the challenges of modern acoustic/digital
+instrument design. This paper will present techniques and
+design guidelines for creators of new electromagnetically-
+actuated instruments. The material presented here partly
+reﬂects the author’s own experience developing multiple
+generations of the magnetic resonator piano, but the tech-
+niques are broadly applicable to many acoustic instruments.
+2. THEORY OF OPERATION
+In this paper, an electromagnetic actuator (actuator for
+short) is deﬁned to be a solenoid-conﬁguration electromag-
+net which consists of multiple turns of wire around a cen-
+tral core made of iron, steel or other ferromagnetic material.
+The magnetic ﬂux density Ba within a solenoid actuator is
+proportional to its current i:
+Ba(t) = µN
+ℓ i(t) (1)
+where N is the number of turns of wire, µis the permeabil-
+ity of the core, and ℓ is the length of the solenoid [7]. In
+the context of musical instrument design, we use actuators
+to exert time-varying force on an acoustic body, so we are
+particularly interested in relationship between ﬂux density
+Ba and force. We will consider two cases that commonly
+occur in augmented instruments.
+2.1 Force on a Magnetized Object
+In the ﬁrst case, consider using an actuator to drive a per-
+manent magnet attached to the instrument (Figure 1). Per-
+manent magnets are useful in situations where the instru-
+ment itself is not made of a ferromagnetic material: for ex-
+ample, in the EMvibe, the aluminum bars of the vibraphone
+do not respond to magnetic ﬁelds, so permanent magnets
+are aﬃxed to each bar [4].
+Instrument
+Actuator
+Distance r
+Flux density B
+Length L
+Current I
+T o amplifier
+Area A
+N turns
+Magnet
+Figure 1: Actuation of an instrument through an
+attached permanent magnet.
+A complete model of the force between two magnetized
+objects is complex, depending on the shape, orientation
+and magnetization of each object and the distance between
+them. For our purposes, Coulomb’s Law, though it does
+not accurately model the underlying physical processes for
+real magnets, provides a starting point [7]. It gives the force
+between two magnetic poles spacedr meters apart:
+F = µm1m2
+4πr2 (2)
+where m1 and m2 are the pole strengths in Ampere-meters
+and µ is the permeability of the intervening material (gen-
+erally µ0 = 4π10−7N/A2 for air).
+Classically, a permanent magnet is modeled with point
+magnetic charges on either end. A solenoid electromag-
+net can be represented similarly, with the pole strengthme
+given as a function of current I, number of turns N, length
+ℓ and area A:
+me = NIA
+ℓ (3)
+We thus arrive at the force between a permanent magnet
+with pole strength mp and an electromagnet:
+F = mp
+µNIA
+4πℓr2 (4)
+It is worth repeating that this is a simpliﬁed approxima-
+tion of real-world systems. However, for purposes of musi-
+cal instrument actuation, it demonstrates several important
+results. First, force is linearly proportional to current and
+number of turns (and hence to ﬂux density Ba), and in-
+versely proportional to the square of the distance between
+actuator and permanent magnet. It also suggests that coils
+with larger area and shorter length will produce a stronger
+force for the same current.
+Since the goal is to induce vibrations in a musical instru-
+ment, the minimum distance r will be constrained by the
+need for the instrument to vibrate without contacting the
+actuator. Equation 4 appears to argue for actuator design
+favoring the largest possible number of turns, but we will
+see shortly that this design choice comes with a cost.
+2.2 Force on a Ferromagnetic Object
+String
+Actuator
+Distance r
+Flux density B
+Length L
+Current I
+T o amplifier
+Area A (string-magnet interaction)
+N turns
+Figure 2: Electromagnetic actuation of unmagne-
+tized ferromagnetic string.
+Figure 2 shows the case of an actuator driving a steel
+instrument string. This is the conﬁguration used in the
+magnetic resonator piano [11]. An important distinction
+from the previous case is that the string is not magnetically
+polarized. However, steel is ferromagnetic, with a perme-
+ability µ≫µ0 signiﬁcantly larger than that of free space.
+The complete system of actuator and string can be seen
+as a magnetic circuit containing two air gaps of lengthr(the
+distance between actuator and string). The system will try
+to minimize the total stored magnetic energy, and the force
+Fs on the string can be written as the derivative of stored
+energy with respect to distance [15, p. 508]:
+Fs = −∂Wm
+∂r (5)
+where the stored energy is a function of the ﬁeld strength
+Hgap in the gaps and the area Aof each area of interaction:
+Wm = 2[1
+2µ0(Hgap)2Ar] (6)
+Assuming a very high permeability core, [15] shows that
+the ﬁeld strength in the gaps can be written as a function
+of number of turns N, current I and distance r:
+Hgap = NI
+2r (7)
+which gives
+Wm = µ0N2I2A
+4r (8)
+and thus the force (the negative sign indicating direction):
+Fs = −∂Wm
+∂r = −µ0N2I2A
+4r2 (9)
+This is again an idealized system, but it shows that ig-
+noring core saturation eﬀects, the force between actuator
+and string is proportional to thesquare of the current. To
+see the implications of this, let us rewrite Equation 9 for a
+time-varying currenti(t) = Icos(ωt):
+|Fs(t)|= i(t)2 µ0N2A
+4r2 = I2 cos(ωt)2 µ0N2A
+4r2 (10)
+|Fs(t)|= I2 1 + cos(2ωt)
+2
+µ0N2A
+4r2 (11)
+This result shows that applying an AC actuator current
+will result in a frequency-doubling eﬀect on the string. In-
+tuitively, this can be seen as the result of both positive and
+negative half-waves attracting the string, since ferromag-
+netic objects are attracted to a magnetic ﬁeld regardless of
+polarity. For augmented instrument designers, two solutions
+are possible. One is to use permanent magnets placed im-
+mediately next to the actuator to create an oﬀsetting ﬁeld as
+Berdahl does with the Electromagnetically-Prepared Piano
+[1]. The other is to drive the actuator with a single-ended
+current (always positive or always negative):
+i(t) = Ioff + Isig cos(ωt) (12)
+i(t)2 = (Ioff )2 + 2Ioff Isig cos(ωt) + (Isig)2 cos(ωt)2 (13)
+i(t)2 ≈(Ioff )2 + 2Ioff Isig cos(ωt), when Ioff ≫Isig (14)
+The greater the oﬀsetting current Ioff , the more linear
+the resulting system. Musically speaking, we have found
+that perfect linearity is not necessary, and excessive oﬀset
+current results in wasted power and heating of the actua-
+tor. The magnetic resonator piano uses Ioff slightly greater
+than Isig: in other words, the troughs of the signal ap-
+proach ground but never go negative (Figure 7). A circuit
+to achieve this result is presented in Section 3.2.
+2.3 Actuator Design
+Given the preceding discussion, how should the augmented
+instrument designer choose an actuator? For the same cur-
+rent, more turns of wire will produce a stronger ﬁeld (hence
+more force). However, for musical signals, we need to be
+able to modulate the current at audio frequencies, and changes
+in current are limited by actuator inductance L [14]:
+L= µN2A
+ℓ (15)
+∂I
+∂t = V
+L = Vℓ
+µN2A (16)
+where A is the area of the solenoid. Equation 4 shows that
+∂F
+∂t = mp
+V
+4πr2N (17)
+In other words, the goal of strong force for a given cur-
+rent and extended high-frequency performance are opposed.
+Actuator selection should thus take into account the spe-
+ciﬁc musical situation (the frequency range needed) and the
+available ampliﬁer output voltage swing V.
+2.4 Lorentz Force Actuation
+For metal-stringed instruments, an alternative approach ex-
+ists to solenoid electromagnetic actuators. TheLorentz force
+describes the force on a charged particle due to a magnetic
+ﬁeld. A special case of the Lorentz force gives the force on
+a current-carrying wire from a magnetic ﬁeld:
+F = IL ×B (18)
+where F, L and B are vector quantities representing the
+force, length of the wire as it interacts with the magnet,
+and magnetic ﬁeld, andI is the current. To use Lorentz
+force actuation in a musical instrument (Figure 3), strong
+permanent magnets are placed next to the string and cur-
+rent is passed through the string itself. Alvin Lucier’s 1977
+pieceMusic on a Long Thin Wire 1 uses this form of actu-
+ation. The Lorentz conﬁguration can also be used to mea-
+sure string vibrations by monitoring current induced in the
+string; this technique has been used for detailed studies of
+the violin [10] and the piano [6].
+StringMagnets
+Flux density B
+Length L
+Current I
+T o amplifier
+Figure 3: Lorentz force actuation of a musical in-
+strument string.
+In comparison to solenoid electromagnetic actuation, Lorentz
+actuation can have much better linearity and better high-
+frequency performance since the string lacks the inductance
+of a solenoid actuator. However, the maximum force exerted
+on the string is limited by the amount of current that can be
+passed through it: informal experiments with Lorentz actu-
+ation on steel guitar strings showed that large currents heat
+the string and cause its pitch to drop. String materials with
+higher conductivity, such as brass, may be better suited to
+this form of actuation, but in general, amplitude limitations
+mean that it is best used with ampliﬁed instruments.
+2.5 Case Study: Magnetic Resonator Piano
+The magnetic resonator piano (Figure 9) uses electromag-
+netic actuators to drive unmagnetized steel piano strings.
+Lorentz force actuation is impossible on the piano because
+the frame electrically connects both ends of all strings. The
+ﬁrst generation magnetic resonator piano used hand-wound
+actuators: 600 turns of 30AWG copper wire on a 3/8” steel
+threaded rod. Actuators were approximately 0.6” in length,
+0.8” in diameter, and had a resistance of 9Ω and an induc-
+tance of 20mH.
+We recently built a second-generation instrument, one of
+the goals being to produce a design that can be replicated
+in larger quantity. Prefabricated actuators were thus neces-
+sary. Several actuators were evaluated from Magnetic Sen-
+sor Systems2. The variables available to the designer are
+1http://www.lovely.com/albumnotes/notes1011.html
+2http://www.solenoidcity.com
+overall size, number of turns and wire gauge, with two of
+these parameters determining the third.
+We found that small-diameter (0.38”) actuators performed
+well on the highest strings of the piano (frequencies above
+2kHz) but that the total available power was limited be-
+fore the actuators overheated. Moreover, the ﬁeld from the
+smallest actuators was too localized to simultaneously ac-
+tivate the three strings of a given piano note. The best
+compromise between size, power and high-frequency perfor-
+mance was found to be an actuator of 0.82” diameter (0.77”
+length). Within this size, we evaluated multiple choices of
+wire gauge. The performance did not vary as strongly with
+wire gauge as with size, and we settled on 28AWG as a com-
+promise between number of turns and low inductance. The
+actuators in the current magnetic resonator piano have an
+average resistance of 5.3Ω and an inductance of 19mH.
+2.6 Recommendations
+Even the highly simpliﬁed models above show that many
+factors aﬀect actuator design. With the caveat that ex-
+perimentation is always important, we oﬀer the following
+suggestions:
+•Actuator size usually dictates power handling, regard-
+less of wire gauge. Choose a size ﬁrst based on re-
+quired output level, geometry and cost, then explore
+winding parameters (wire gauge vs. number of turns).
+•Choose winding parameters based on ampliﬁer capa-
+bilities, especially maximum output voltage swing. Fewer
+turns require less voltage swing but higher current to
+achieve the same performance. Also consider the min-
+imum load impedance the ampliﬁer can drive, espe-
+cially when using ampliﬁers intended for speakers.
+•Within reasonable limits, small variations in actuator
+design (e.g. 20% change in size, 2AWG in winding)
+do not appear to signiﬁcantly aﬀect musical results.
+•Lorentz actuation can be useful where high-frequency
+performance is more important than overall ampli-
+tude, and it is the only option for non-ferromagnetic
+strings (e.g. brass). None of these forms of actuation
+will work with non-conductive strings.
+•When a permanent magnet is used, actuator force
+also depends on its strength. Neodymium (rare-earth)
+magnets provide the highest ﬁeld strength per unit
+mass; low mass minimizes any alteration to the in-
+strument’s natural resonance.
+3. CIRCUITS
+Just as important as the actuator design is how it is driven.
+This section presents circuits designed speciﬁcally for elec-
+tromagnetic manipulation of acoustic instruments.
+3.1 Power Ampliﬁer
+Actuators require signiﬁcant amounts of power. While some
+actuators can be driven with commercial audio ampliﬁers,
+not all have suitable impedance to be used this way. Driving
+a large number of actuators with a collection of pre-made
+ampliﬁers can also become bulky and expensive. Moreover,
+most modern audio ampliﬁers are voltage ampliﬁers: for
+most of the audio range, the output voltage is proportional
+to the input voltage.3 Equation 1, however, shows that the
+ﬂux density of an actuator (and hence its force) is propor-
+tional to thecurrent through its windings.
+3Current ampliﬁcation is occasionally used in an audio con-
+text. See, for example, http://www.firstwatt.com/pdf/
+art_cs_amps.pdf (accessed 04/2012).
+Figure 4: Transconductance ampliﬁer for driving
+electromagnetic actuators.
+Figure 4 shows a schematic for an ampliﬁer designed for
+electromagnetic actuation. It is a transconductance ampli-
+ﬁer: the output current is proportional to the input voltage.
+This ampliﬁer design, repeated 88 times, powers the latest
+version of the magnetic resonator piano.
+Current-output ampliﬁers are used extensively in haptics
+for the same reason they are valuable here: output actuator
+force (or motor torque) is linearly proportional to current
+[5]. Haptic systems often require strict feedback control but
+lower bandwidth than audio systems [9].
+3.1.1 Operation
+The heart of Figure 4 is a National Semiconductor LM1876
+integrated two-channel power ampliﬁer. Many similar am-
+pliﬁer chips have become available in recent years, with
+varying speciﬁcations on output power, supply voltage, and
+number of channels. These chips oﬀer short-circuit, over-
+current and thermal protection, and many oﬀer mute and
+low-power standby modes as well. These features make
+them highly robust in live performance where wires can
+come loose and unexpected signals can arrive at the inputs.
+The transconductance design works as follows: current
+through the actuator produces a voltage across resistor Rsense.
+IC2A, a standard op-amp in a diﬀerential ampliﬁer conﬁgu-
+ration4, ampliﬁes this voltage by the ratio R 5/R4.The gain
+of IC1A is set quite high (R 3/R2 = 122), which means that
+for ﬁnite output voltage, the output of IC2A should be ap-
+proximately equal to the input on pin 8 of IC1A (exactly
+equal as R3/R2 approaches inﬁnity). Therefore,
+Vin ≈Vref = R5
+R4
+(IoutRsense) (19)
+Iout
+Vin
+≈ R4
+R5Rsense
+(20)
+3.1.2 High-Frequency Performance and Stability
+Equation 16 demonstrates that voltage swing, and not total
+output power, determines the maximum change in current
+(slew rate). The LM1876 is speciﬁed for supply rails up to
+±32V, with an output swing within 3V of each rail. Other
+integrated ampliﬁers are rated for even higher supply volt-
+ages. The magnetic resonator piano uses±28V rails.
+R2 and R 3 are necessary to limit the maximum gain
+of the LM1876. Electromagnetic actuators are inductors,
+4The diﬀerential conﬁguration is used so that power and
+signal grounds can be separated; voltages induced in the
+power ground by other ampliﬁers will be canceled out.
+with increasing impedance with respect to frequency; as fre-
+quency increases, it will take an ever-greater voltage swing
+to achieve the same current output. The maximum gain of
+IC1A is given as:
+Gmax = 1 + R3
+R2 (21)
+Every actuator has both resistance and inductance. At
+DC, only resistance is relevant. From Equation 20 we can
+ﬁnd the DC voltage gain of IC1A:
+GDC = (Vout
+Vin
+)DC ≈R4(Ra + Rsense)
+R5Rsense
+(22)
+where Ra is the actuator resistance. By comparing Equa-
+tions 21 and 22, we ﬁnd the maximum boost, or the extent
+to which the gain increases with frequency (Figure 5).
+Normally, the actuator acts as a lowpass ﬁlter with corner
+frequency R a/2πLa. The ampliﬁer acts a shelving ﬁrst-
+order highpass ﬁlter, with the result that theeﬀective corner
+frequency of the actuator is pushed upwards:
+frolloff = Gmax
+GDC
+Ra
+2πLa
+(23)
+For the magnetic resonator piano, the actuators have a nat-
+ural corner frequency of 1/(2π(L/R)) = 44Hz; with the
+component values given, the gain at DC is 3.0 and the max-
+imum gain is 122. This produces a theoretical closed-loop
+corner frequency of 1800Hz (i.e. output transconductance
+is ﬂat until 1800Hz). In practice the corner frequency is
+measured closer to 3000Hz, which suggests that the appar-
+ent inductance of the actuator drops at higher frequencies,
+most likely due to losses in the steel core.
+101 102 103 104 105 106 107
+20
+40
+60
+80
+100
+120Voltage gain (dB)
+Frequency (Hz)
+Figure 5: Voltage gain for open-loop (blue, short
+dashes) and inverse feedback path (black, long
+dashes). The closed loop voltage gain (solid red) is
+the minimum of the two. Where the curves inter-
+sect, the total phase oﬀset must be less than 180◦.
+The stability criterion is shown in Figure 5. The open-
+loop gain is derived from the LM1876 datasheet, showing
+standard dominant-pole compensation. At the point where
+the open-loop gain of IC1A intersects the (inverse) gain of
+the feedback path, the total phase shift must be less than
+180◦. This requires that the feedback gain be approximately
+ﬂat before the point of intersection, placing an upper bound
+on the ratio R3/R2 which is dependent on the speciﬁc prop-
+erties of the actuator. The given component values produce
+a stable design for most electromagnetic actuators, but not
+for low-impedance purely resistive loads (e.g. Section 2.4)
+where artiﬁcial high-frequency rolloﬀ must be added.
+3.1.3 Current Monitoring
+A useful feature of this ampliﬁer design is that the output
+of IC2A (Vref ) provides a voltage proportional to the actua-
+tor current, even in cases where IC1A saturates or distorts.
+Additionally, by connecting R 2 to ground rather than to
+the output of IC2A, the ampliﬁer can be converted into a
+voltage-output (low output impedance) design while retain-
+ing current monitoring capability.
+Current monitoring is useful for interference cancellation.
+When magnetic actuators and magnetic pickups are used
+simultaneously, the actuator signal can bleed directly into
+the pickup. By subtracting a scaled version of Vref , this
+interference can be signiﬁcantly attenuated. However, core
+saturation and hysteresis eﬀects prevent Vref from being an
+exact measure of the magnetic ﬂux density in Equation 1.
+3.1.4 Construction Notes
+Schematics and board layouts are available from the author
+online.5 The roles of R2-R7 have been previously discussed.
+R1 and C 1 form an optional low-pass ﬁlter on the input
+signal to reduce the output swing from high-frequency noise.
+1% resistors should be used, particularly for R 4-R7 and (if
+possible) Rsense. R sense should be rated for suﬃcient power
+to handle the maximum possible load current. As with all
+ampliﬁer designs, proper supply bypassing and heatsinking
+are required.
+Traditional or switching power supply designs are possi-
+ble for the rails of IC1. If the rails exceed ±15V, a separate
+supply is required for IC2. Both IC1 and IC2 are dual am-
+pliﬁer parts, so a complete design consists of two ampliﬁers.
+3.2 Polarity and Offset Adjustment
+Section 2.2 showed that driving (unmagnetized) ferromag-
+netic objects requires a single-ended output current. The
+ampliﬁer in Section 3.1 can be used for either bipolar or
+single-ended signals, as there is no DC blocking capacitor
+at the input. The circuit in Figure 6 provides a compre-
+hensive means of adjusting the oﬀset and polarity (phase
+inversion) of an input signal.
+Figure 6: Circuit for selecting single- or dual-
+polarity inputs. Single-polarity signals are useful
+for driving unmagnetized ferromagnetic objects.
+3.2.1 Single-Ended Mode
+When SW1 is closed, the output is single-ended: positive
+on signal ‘out’, negative on ‘out
+invert’. The troughs of
+the shifted waveform approach but do not cross ground, as
+shown in Figure 7. This is a superior conﬁguration to a ﬁxed
+voltage oﬀset because the average DC value is never any
+higher than needed, conserving output power (and heat).
+5http://www.eecs.qmul.ac.uk/~andrewm/
+0 0.2 0.4 0.6 0.8 1−2
+−1
+0
+1
+2
+3
+Time (s)
+Voltage (V)
+ 
+ 
+Input
+Level−Shifter Out
+Figure 7: Output of level-shifter circuit.
+IC1A and IC1B form a precision peak detector with de-
+cay time set by the product R4C2. R 3 limits inrush current
+to C2 and avoids op-amp instability. IC1D mixes the orig-
+inal and peak-detected signals, meaning the troughs of the
+waveform will always stay above ground. Optional R6 adds
+a small voltage oﬀset ( Ioff in Equation 12). Since IC1D
+is an inverting ampliﬁer, IC1C recovers the original non-
+inverted (but still level-shifted) signal.
+3.2.2 Dual-Ended Mode
+When SW1 is open, the peak detector is disconnected from
+IC1C. IC1C and IC1D now act as simple inverting buﬀers.
+SW1 can be implemented as a physical switch or an analog
+switch IC (e.g. 74AHC1G66).
+Figure 8: Signal routing from DAC channels to am-
+pliﬁers. Two shift registers support 3 multiplexers
+(3rd not shown) and blocks can be daisy-chained to
+support an arbitrary number of actuators.
+3.3 Multi-Actuator Signal Routing
+Each actuator requires its own ampliﬁer. However, for poly-
+phonic instruments such as the piano, it is not feasible to
+have an audio output channel for every string. Figure 8
+shows a circuit which dynamically routes input signals to
+ampliﬁers. Each ampliﬁer takes its input from a 16-channel
+multiplexer. The control inputs of the multiplexers, as well
+as the standby/mute pins on the ampliﬁers, are driven from
+the outputs of a chain of shift registers. In this way, a micro-
+controller can easily maintain a routing matrix between up
+to 16 inputs and an indeﬁnite number of output ampliﬁers.
+The circuit is tailored to work with the ampliﬁer of Sec-
+tion 3.1. The logic is powered from ±5V to allow dual-
+ended signals to pass (the audio inputs must be within the
+multiplexer supply rails). P-channel MOSFETs are used to
+convert standard 0-5V logic to this format. Schmitt-trigger
+buﬀers (IC1) are used to provide clean edges on slow-rising
+or noisy data lines. If multiple ampliﬁer boards are daisy-
+chained through long cables, Schmitt-trigger buﬀers at the
+input of each board are recommended.
+4. PUTTING THE PIECES TOGETHER:
+THE MAGNETIC RESONATOR PIANO
+Figure 9: The magnetic resonator piano, showing
+electromagnetic ampliﬁers over each string. Ampli-
+ﬁers are inside the piano behind the actuators.
+The magnetic resonator piano, an electromagnetically-
+augmented grand piano, was ﬁrst designed in 2009 [11, 12].
+It allows the performer to continuously shape the string vi-
+brations for every note, with extended techniques including
+inﬁnite sustain, crescendos, pitch bends, harmonics and new
+timbres. The material presented here reﬂects a complete re-
+design of the hardware. This redesign was fundamentally
+musicalin motivation: composers and performers requested
+features that could only be addressed by hardware changes.
+Requests included:
+1. Louder sound, especially in the bass: though the in-
+strument was already quite loud, it had diﬃculty com-
+peting with the traditional piano when playedforte
+or fortissimo. Making the instrument louder required
+higher-power ampliﬁers.
+2. Brighter sound and upper harmonics: musicians
+wanted the timbre of the electromagnetic sound to
+more closely match the timbre of the traditional piano,
+which contains many upper partials. The instrument
+can also play individual harmonics on each string, but
+the upper harmonics were quite soft. Addressing both
+requests required a greater current slew rate and thus
+an ampliﬁer with a larger voltage swing.
+3. Faster speaking time: the actuators produce tones
+that speak more slowly than hammer-struck notes.
+Though this is inherent in the nature of electromag-
+netic actuation, faster response was achieved through
+a combination of higher-power ampliﬁers and a level-
+shifting circuit (Section 3.2) with a rapid attack time
+(deﬁned by R3C2).
+4. 88-note coverage: the original instrument covered
+48 strings. To cover the complete range of the piano,
+both ampliﬁers and actuators needed to be machine-
+produceable in quantity, which guided their design.
+Figure 9 shows a picture of the current MRP design,
+which places ampliﬁers next to the electromagnets inside the
+piano. In addition to the electronic improvements described
+above, a rapidly-adjustable bracket allows the horizontal
+and vertical position of each actuator to be changed and
+locked using a single wing nut, greatly reducing setup time
+in an 88 note conﬁguration. The instrument was recently
+used in performances of new music by six Philadelphia-area
+composers; further musical discussion can be found in [11],
+and videos are available online (see previous footnote).
+5. CONCLUSION
+This paper has presented a basic theory of electromagnetic
+actuator design and several circuits intended for use in acous-
+tic instrument actuation. The techniques presented form
+the basis of the magnetic resonator piano, but they are
+broadly applicable to any augmented instrument situation.
+It is hoped that these ideas will accelerate the process of cre-
+ating new augmented instruments by providing a procedure
+and toolkit for designing actuation systems.
+6. REFERENCES
+[1] E. Berdahl, S. Backer, and J. Smith. If I had a
+hammer: Design and theory of an electromagnetically
+prepared piano. In Proc. ICMC 2005.
+[2] E. Berdahl, G. Niemeyer, and J. Smith. Active
+control of a vibrating string. In Proc. Acoustics ’08.
+[3] P. Bloland. The electromagnetically-prepared piano
+and its compositional implications. In Proc. ICMC
+2007.
+[4] C. Britt, J. Snyder, and A. McPherson. The EMvibe:
+An electromagnetically actuated vibraphone. In Proc.
+NIME, 2012.
+[5] M. C. ¸ Cavu¸ so˘ glu, D. Feygin, and F. Tendick. A
+critical study of the mechanical and electrical
+properties of the PHANToM haptic interface and
+improvements for high performance control. Presence,
+11(5), 2002.
+[6] D. E. Hall. The hammer and the string. In
+A. Askenfelt, editor, Five Lectures on the Acoustics of
+the Piano. 1990.
+[7] P. Hammond. Electromagnetism for Engineers.
+Pergamon Press, Oxford, UK, third edition, 1986.
+[8] G. Heet. String instrument vibration initiator and
+sustainer. U.S. Pat. 4,075,921, 1978.
+[9] K. Kuchenbecker, J. Fiene, and G. Niemeyer.
+Improving contact realism through event-based haptic
+feedback. IEEE TVCG, 12(2), 2006.
+[10] M. Mathews and J. Kohut. Electronic simulation of
+violin resonances. JASA, 53(6), 1973.
+[11] A. McPherson. The magnetic resonator piano:
+Electronic augmentation of an acoustic grand piano.
+Journal of New Music Research , 39(3):189–202, 2010.
+[12] A. McPherson and Y. Kim. Augmenting the acoustic
+piano with electromagnetic string actuation and
+continuous key position sensing. In Proc. NIME, 2010.
+[13] D. Overholt, E. Berdahl, and R. Hamilton.
+Advancements in actuated musical instruments.
+Organised Sound, 16(2):154–165, 2011.
+[14] M. A. Plonus. Applied Electromagnetics.
+McGraw-Hill, New York, USA, 1978.
+[15] N. N. Rao. Elements of Engineering Electromagnets .
+Prentice Hall, Upper Saddle River, NJ, USA, ﬁfth
+edition, 2000.
+[16] G. Shear and M. Wright. The electromagnetically
+sustained Rhodes piano. In Proc. NIME, 2011.

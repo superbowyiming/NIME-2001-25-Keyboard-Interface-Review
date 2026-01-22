@@ -1,0 +1,375 @@
+Sonic Touch: A Haptic Toolkit for Fast Vibrotactile
+Prototyping
+Oren Ronen
+IDMIL - CIRMMT
+McGill University
+Montreal, Quebec, Canada
+oren.ronen@mail.mcgill.ca
+Marcelo M. Wanderley
+IDMIL - CIRMMT
+McGill University
+Montreal, Quebec, Canada
+marcelo.wanderley@mcgill.ca
+ABSTRACT
+In the realm of Digital Musical Instruments (DMIs), tac-
+tile feedback typically inherent in acoustic instruments is
+notably absent, creating a gap in the sensory experience
+of musicians. Previous works typically aimed at bridging
+this gap by designing haptic effects using trial-and-error
+strategies. This paper introduces Sonic Touch, a toolkit
+developed in Max/MSP that facilitates the rapid prototyp-
+ing of audio-driven vibrotactile haptic effects. The toolkit
+allows users to design a variety of haptic effects by ma-
+nipulating parameters like wave type, vibration duration,
+frequency, repetition, and envelope, then store and man-
+age them in buffers for output. The toolkit’s architecture
+is grounded in a modular, building-block approach, accessi-
+ble through a simple graphical user interface. Practical use
+of this toolkit is demonstrated through two examples, first
+designing a haptic tremolo effect, and second augmenting a
+Touch´ e controller with vibrotactile feedback.
+CCS Concepts
+•Human-centered computing → User interface toolkits;•Applied
+computing → Sound and music computing;
+1. INTRODUCTION
+Acoustic instruments provide musicians with a tight cou-
+pling between auditory and haptic sensations, from the string
+vibration on a guitar to the resonating body of an instru-
+ment. DMIs lack this physical coupling, and whilst atten-
+tion given to input gesture to audio synthesis output layer,
+haptic output is often seen as a secondary function or over-
+looked entirely. “Haptic” and “tactile” feedback in this con-
+text of this paper is referred to as vibrotactile stimulation,
+a distinction from force-feedback devices [1].
+Bringing haptic feedback to the forefront of a DMI expe-
+rience starts first with the design of the haptic effects them-
+selves. The haptic feedback of a DMI can greatly impact the
+feel of the instrument [2], therefore rapid experimentation
+is key in defining what haptic effect ‘feels right’.
+This need for rapid experimentation led to the develop-
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’24, 4–6 September, Utrecht, The Netherlands.
+ment of the Sonic Touch haptic toolkit in Max/MSP1. This
+toolkit addresses both considerations above, allowing for
+both the rapid design of haptic effects with simple control
+parameters, and the easy mapping between control data in-
+put and haptic output within the same patch.
+The decision to use Max/MSP as the development plat-
+form was twofold: firstly, for its widespread use amongst
+DMI designers, allowing them to integrate haptic feedback
+into their projects easily, and secondly, to provide a reliable,
+future-proof solution to the ongoing problem of technology
+depreciation. The toolkit was built using only vanilla ob-
+jects with the belief that the toolkit would benefit from
+Max/MSP’s continued updates and support, keeping it rel-
+evant and functional as software and hardware advance.
+To showcase the toolkit’s potential, a project was con-
+ceived to enhance an existing DMI with vibrotactile feed-
+back. The Touch´ e Controller by Expressive E was chosen
+with the intention of adding a haptic dimension to its al-
+ready rich gestural input design.
+2. RELATED WORK
+The role of tactile feedback is significant in both the acoustic
+and digital instrument-playing experience. Early research
+found that tactile feedback in the fingertips of a Cellist’s
+hand was used to perceive time and length of articulations
+through amplitude and spectral content of the vibrations
+[3]. These findings were applied to a brass physical model,
+HosePlayer, using a voice coil to provide tactile feedback for
+the model’s lip tension parameter.
+The designers of the Viblotar DMI [4] took a similar ap-
+proach, using vibrotactile feedback to replicate the resonat-
+ing body of an acoustic instrument. Performers of the in-
+strument stated a higher degree of enjoyment and attention
+with vibrotactile feedback.
+Further research investigated the role of vibrotactile feed-
+back in the perceived quality of the device and playing expe-
+rience [5]. Facilitated through the force-sensitive multitouch
+HSoundplane interface, vibrotactile feedback increased the
+perceived expressiveness of the interface and the enjoyment
+of playing.
+The TECHTILE toolkit [6] provides a notable example
+of how tactile feedback can be employed for educational
+and creative purposes. Although the toolkit is primarily
+aimed at non-musical applications, the easy-to-use design
+philosophy underlying the TECHTILE toolkit parallels our
+own toolkit design.
+Research on wearable haptic device, such as the VR/TX
+system for open-air controllers [1], details the perceptual
+significance of haptic effect design. In a similar focus, the
+Vibropixels project [7] provided users with the ability to
+set the envelope and the oscillator parameters of individu-
+1https://cycling74.com/products/max
+Figure 1: Audio-driven vibrotactile modules. Left to right: Oscillator, Envelope, Automation, Buffer
+ally controllable vibrotactile actuator devices embedded in
+a garment.
+Haptic feedback was further being utilised to overcome
+barriers for visually and hearing impaired people in appli-
+cations ranging from peak metering to parameter type dif-
+ferentiation [8]. Moreover, actuators placed in audience’s
+seating and footrests have improved the live music expe-
+rience and stream separation for people with hearing loss
+devices [9].
+In the VR community, the Stereohaptics toolkit intro-
+duced a VR-focused haptic framework that uses off-the-shelf
+audio-based tools to create haptic media [10]. In another
+study, the developers of the “Haptic Palette” controller pro-
+posed a system allowing users to dynamically reconfigure
+the haptic feedback of virtual objects based on their mate-
+rial properties [11].
+3. SONIC TOUCH TOOLKIT
+While the field has seen considerable advancements in the
+application of tactile feedback within specific DMI designs
+and broader interactive systems, the Sonic Touch toolkit
+diverges by emphasizing the design of the feedback effects
+themselves. The toolkit is designed to provide a versatile
+framework that can be adapted to a wide range of DMIs for
+designers and researchers to experiment with and prototype
+vibrotactile effects rapidly.
+3.1 Functionality & Features
+The toolkit is built around a modular architecture, offering
+a set of building blocks for free experimentation. The fol-
+lowing four modules (Figure 1) are pre-defined for the easy
+design and capture of the haptic effect:
+• Oscillator: The oscillator module generates basic wave-
+forms that form the foundation of the haptic signal.
+Users can select the type of waveform and adjust the
+frequency. These wave types can be used to create
+different haptic textures [1]. These modules can be
+chained to create more complex haptic waveforms.
+• Envelope: The envelope module includes a number
+of pre-defined envelopes such as ADSR, ASR, expo-
+nential decay, and also the ability to draw a custom
+envelope. The defined envelope is multiplied by the
+incoming signal on the trigger event.
+• Automation: The automation module offers the ability
+to create dynamic variations in the haptic feedback.
+It allows for the programming of changes over a set
+duration, modulating parameters such as amplitude
+or frequency.
+• Buffer: A critical component of the toolkit is the buffer
+module, allowing users to copy the contents of the
+editing buffer for easy re-use, event triggering, as well
+as the ability to save the haptic effect to disk.
+Each haptic effect is defined by a number of modifiable
+parameters, including event length, amplitude, number of
+repetitions, and delay between repetitions. The “Trigger
+Record” button captures the haptic waveform into the edit-
+ing buffer for a user-defined duration in milliseconds. As the
+record∼ object captures the signal, the editing buffer visu-
+ally updates to display the waveform, providing a real-time
+representation of the haptic effect being created.
+Once recorded to a buffer, these haptic effects can be out-
+putted through to a specified audio-out channel, typically
+connecting to a voice coil or similar actuator to create the
+physical sensation of vibration [12, 13].
+4. APPLICATIONS
+The section details two use cases of the haptic toolkit, first
+in the implementation of auditory effects such as tremolo,
+and second in enriching the interaction with the existing
+Touch´ e controller.
+Figure 2: Tactile tremolo created with the haptic toolkit.
+4.1 Tremolo Effect
+Whilst the vibrotactile system is not as sensitive to ampli-
+tude modulation as the auditory system [14], it is suggested
+that the tactile equivalent of tremolo can be achieved by
+modulating the amplitude of the vibrotactile signal [15].
+A tactile tremolo effect is created simply using the haptic
+toolkit as seen in Figure 2. A 250Hz sine wave [16] is passed
+through an exponential decay envelope. The amplitude of
+the signal is modulated using the automation object over
+a one-second period between values 0 and 1. The resulting
+signal is displayed in the editing buffer for immediate output
+through the connected vibrotactile device.
+4.2 Haptically Augmented Touché Controller
+Figure 3: Touch´ e controller retrofitted with voice coil at-
+tached to underside of faceplate.
+The Touch´ e, typically employed alongside hardware or
+software synthesizers, is a touch-sensitive device designed
+for expressive musical interaction 2. The controller distin-
+guishes itself from typical MIDI controllers by offering highly
+responsive, 2-DoF continuous positional sensitivity rather
+than discrete buttons or keys.
+Our goal was to make the Touch´ e controller feel like a
+standalone instrument through experimentation with vibro-
+tactile feedback effects. To achieve this, a HiAX13C02 voice
+coil was chosen due its small footprint design and low cost
+(∼$5USD), and glued to the underside of the face plate
+(Figure 3) and connected directly into the audio jack of a
+laptop without the need of an amplifier. MIDI data from
+the Touch´ e was handled in the Sonic Touch patch.
+4.2.1 Digital Haptic Guiro
+Fitted with the ability to provide haptic feedback, the next
+step was to define the concept and gestural mappings of the
+instrument. The concept of the instrument was based on
+a wooden frog guiro, a Latin American percussive instru-
+ment played by dragging a stick along the notches on the
+wooden frog’s back to produce a ratchet “croaking” sound.
+However, unlike the haptic feedback from physical ridges,
+pressing down on the Touch´ e controller does not provide
+tactile cues to indicate the exact position along the axis of
+motion, presenting an ideal opportunity for precise design
+of vibrotactile feedback.
+Figure 4: Spacing of ridges of a physical frog guiro mapped
+to MIDI values.
+The haptic toolkit allows for easy design of short (100ms)
+haptic effects to represent the physical ridges on the guiro.
+These“haptic ridges”are then mapped along the MIDI value
+range from a users downward press of the Touch´ e faceplate
+Figure 4. As the user presses deeper, the ridges are felt
+2https://www.expressivee.com/1-touche
+more closely together, simulating an increase in tactile ’res-
+olution’ that corresponds to the depth of the press. This
+approach mirrors the responsive dynamics of a velocity-
+sensitive keyboard but through the sense of touch rather
+than sound.
+Whilst the voice coil on the underside of the Touch´ e face-
+plate is primarily used for haptic effects, it can also be uti-
+lized for audio output. This is achieved within the haptic
+toolkit patch using a poly ∼ object to trigger samples of a
+wooden frog guiro at the ridge points. The tactile feed-
+back provides a physical dimension to the digital interac-
+tion, with the combined haptic and auditory result more
+closely resembling that of the physical acoustic instrument.
+4.2.2 Ridge Detection
+Figure 5: Peak detection with haptic amplitude modulation
+Rovan & Hayward [1] suggested the effectiveness of ex-
+pressing a zone-boundary crossing event by varying the am-
+plitude of noise and a cosine envelope. Demonstrating this
+continuous model on the Touch´ e controller is simple. Figure
+5 illustrates a continuous haptic signal, where the amplitude
+of a sine wave increases as it nears a ridge, peaking at the
+ridge itself. A similar strategy was utilized in the implemen-
+tation of a vibrotactile metronome, which aided musicians
+in anticipating the next beat [17]. In the Touch´ e, this haptic
+effect offers a spatial awareness of the ridges’ positioning,
+giving the user an intuitive feel for the landscape of the
+controller’s surface as they interact with it.
+5. DISCUSSION
+One limitation of the haptic toolkit is the need for a user
+to trigger the recording of the haptic effect into a static
+buffer. However, this can be addressed by bypassing the
+editing buffer and routing a continuous signal directly to
+the DAC, enabling dynamic control over the haptic effect.
+For example, musicians could control the tremolo speed in
+real-time using a MIDI controller’s modulation wheel or an
+OSC-enabled touch surface. This opens up possibilities for
+real-time tactile expression, aligning the toolkit closer to
+the tactical nature of acoustic instruments.
+Furthermore, development is underway to create a fully
+editable library of vibrotactile effects, allowing users to in-
+tegrate haptic feedback into their DMIs without extensive
+configuration. Categories might include haptics based on
+types of instruments (e.g., plucked string, percussive hit),
+or specific tactile textures (e.g., smooth, rough).
+Whilst a formal user evaluation of the toolkit has not yet
+been performed, informal feedback from instrument design-
+ers and musicians has been positive. Feedback highlighted
+its simple and intuitive UI, and useful capability to store
+multiple haptic effects for experimentation. When vibrotac-
+tile feedback was added to the Touch´ e, users became much
+more engaged with the simple instrument, taking time“feel”
+the individual haptic ridges of the digital guiro.
+6. CONCLUSION
+This paper presented a toolkit for the easy creation of audio-
+driven vibrotactile effects, addressing the often overlooked
+aspect of haptic feedback in DMI design. The toolkit’s
+user-friendly, modular design within Max/MSP makes it
+accessible to those without haptic design experience. Its
+versatility is demonstrated through two use cases: the tac-
+tile tremolo effect and guiro-inspired implementation with
+the Touch´ e controller. These examples hopefully encour-
+age DMI designers to experiment with vibrotactile feedback
+in their own projects. A video demonstration of the Sonic
+Touch toolkit can be found at the linkhttps://vimeo.com/
+910935568, and can be downloaded from its github reposi-
+tory at https://github.com/IDMIL/Haptic-Toolkit.
+7. ETHICAL STATEMENT
+The authors affirm that this research was conducted without
+any conflicts of interest. Informal feedback was collected
+from volunteer participants to enhance toolkit usability. No
+formal human subjects research was conducted.
+8. ACKNOWLEDGEMENTS
+Part of this work was supported by a Natural Sciences and
+Engineering Research Council of Canada Discovery Grant
+to the 2nd Author.
+9. REFERENCES
+[1] J. Rovan and V. Hayward, “Typology of Tactile
+Sounds and their Synthesis in Gesture-driven
+Computer Music Performance,” Trends in Gestural
+Control of Music, pp. 297–320, 2000.
+[2] P. R. Cook, “Haptics,” in Music, Cognition, and
+Computerized Sound: An Introduction to
+Psychoacoustics, p. 229, The MIT Press, 1999.
+[3] C. Chafe, “Tactile Audio Feedback,” in Proceedings of
+the International Computer Music Conference,
+pp. 76–76, 1993.
+[4] M. T. Marshall and M. M. Wanderley, “Examining
+the Effects of Embedded Vibrotactile Feedback on the
+Feel of a Digital Musical Instrument,” in Proceedings
+of the International Conference on New Interfaces for
+Musical Expression, pp. 399–404, 2011.
+[5] S. Papetti, H. J ¨arvel¨ainen, and S. Schiesser,
+“Interactive Vibrotactile Feedback Enhances the
+Perceived Quality of a Surface for Musical Expression
+and the Playing Experience,” IEEE Transactions on
+Haptics, vol. 14, no. 3, pp. 635–645, 2021.
+[6] K. Minamizawa, Y. Kakehi, M. Nakatani, S. Mihara,
+and S. Tachi, “TECHTILE Toolkit: A Prototyping
+Tool for Design and Edducation of haptic media,” in
+Proceedings of the 2012 Virtual Reality International
+Conference, pp. 1–2, 2012.
+[7] I. Hattwick, I. Franco, and M. M. Wanderley, “The
+Vibropixels: A Scalable Wireless Tactile Display
+System,” in Human Interface and the Management of
+Information: Information, Knowledge and Interaction
+Design: 19th International Conference, HCI
+International 2017, Vancouver, BC, Canada, July
+9–14, 2017, Proceedings, Part I 19, pp. 517–528,
+Springer, 2017.
+[8] J. Harrison, A. Lucas, J. Cunningham, A. P.
+McPherson, and F. Schroeder, “Exploring the
+Opportunities of Haptic Technology in the Practice of
+Visually Impaired and Blind Sound Creatives,” in
+Arts, vol. 12, p. 154, MDPI, 2023.
+[9] R. Paisa, D. Cavdir, F. Ganis, P. Williams, L. M.
+Percy-Smith, and S. Serafin, “Design and Evaluation
+of a Multisensory Concert for Cochlear Implant
+Users,” in Arts, vol. 12, p. 149, MDPI, 2023.
+[10] A. Israr, S. Zhao, K. McIntosh, Z. Schwemler,
+A. Fritz, J. Mars, J. Bedford, C. Frisson, I. Huerta,
+M. Kosek, et al., “Stereohaptics: a haptic interaction
+toolkit for tangible virtual experiences,” in ACM
+SIGGRAPH 2016 Studio, pp. 1–57, 2016.
+[11] D. Degraen, A. Reindl, A. Makhsadov, A. Zenner,
+and A. Kr¨uger, “Envisioning Haptic Design for
+Immersive Virtual Environments,” in Companion
+Publication of the 2020 ACM Designing Interactive
+Systems Conference, pp. 287–291, 2020.
+[12] S. Choi and K. J. Kuchenbecker, “Vibrotactile
+Display: Perception, Technology, and Applications,”
+Proceedings of the IEEE, vol. 101, no. 9,
+pp. 2093–2104, 2012.
+[13] M. Schumacher, M. Giordano, M. M. Wanderley, and
+S. Ferguson, “Vibrotactile Notification for Live
+Electronics Performance: A Prototype System,” in
+Proceedings of the International Symposium on
+Computer Music Multidisciplinary Research
+(CMMR), pp. 516–525, 2013.
+[14] J. M. Weisenberger, “Sensitivity to
+Amplitude-modulated Vibrotactile Signals,” The
+Journal of the Acoustical Society of America, vol. 80,
+no. 6, pp. 1707–1715, 1986.
+[15] E. E. L. Gunther, Skinscape: A Tool for Composition
+in the Tactile Modality. PhD thesis, Massachusetts
+Institute of Technology, 2001.
+[16] R. T. Verrillo, “Vibration Sensation in Humans,”
+Music Perception, vol. 9, no. 3, pp. 281–302, 1992.
+[17] P. Ignoto, I. Hattwick, and M. M. Wanderley,
+“Development of a Vibrotactile Metronome to Assist
+in Conducting Contemporary Classical Music,” in
+Advances in Human Factors in Robots and Unmanned
+Systems (J. Chen, ed.), (Cham), pp. 248–258,
+Springer International Publishing, 2018.

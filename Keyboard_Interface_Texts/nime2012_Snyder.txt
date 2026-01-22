@@ -1,0 +1,472 @@
+The JD-1: an Implementation of a Hybrid 
+Keyboard/Sequencer Controller for Analog Synthesizers 
+ 
+ 
+Jeff Snyder 
+Princeton University 
+310 Woolworth Center 
+Princeton, NJ 08544 
+josnyder@princeton.edu
+Andrew McPherson 
+Centre for Digital Music 
+Queen Mary University of London 
+London, United Kingdom 
+andrewm@eecs.qmul.ac.uk
+ABSTRACT 
+This paper presents the JD-1, a digital controller for analog 
+modular synthesizers. The JD-1 features a capacitive touch-
+sensing keyboard that responds to continuous variations in 
+finger contact, high-accuracy polyphonic control-voltage 
+outputs, a built-in sequencer, and digital interfaces for 
+connection to MIDI and OSC devices. Design goals include 
+interoperability with a wide range of synthesizers, very high-
+resolution pitch control, and intuitive control of the sequencer 
+from the keyboard. 
+ 
+Keywords 
+keyboard, sequencer, analog synthesizer, capacitive touch 
+sensing 
+1. INTRODUCTION 
+Despite advances in digital synthesis, many musicians still 
+prefer the sound and interface of classic analog synthesizers 
+developed from the mid-1960s to the early 1980s. Current 
+trends in commercial electronic music reflect this preference, 
+from analog modeling in software synthesizers, to the recent 
+releases of new hybrid analog/digital synthesizers by Buchla 
+and Associates1 and Moog Music Inc.2, to a growing market for 
+modern analog modular synthesizers that are modeled off of the 
+extensible systems of the 1960s and 1970s, including 
+manufacturers such as Doepfer, MOTM, and Wiard. 
+ Advantages of analog modular synthesizers include near-zero 
+latency, complete lack of aliasing effects, and a user interface 
+that gives each user parameter a dedicated physical control.  
+ Disadvantages of analog modular synthesizers include tuning 
+instability, high cost when compared with software-based 
+systems, lack of repeatability and preset storage, and difficulty 
+communicating with modern digital systems.  
+ This paper presents the JD-1, a digital controller for analog 
+synthesizers that combines a touch keyboard with a built-in 
+sequencer. Details of the hardware and implementation are 
+discussed, along with our motivations behind the design, and 
+our approach to the challenges of building a controller that is 
+compatible with several different standards. Our design retains 
+the advantages of analog modular synthesizers while alleviating 
+some of their disadvantages, while also allowing 
+interoperability with modern digital systems. 
+2. EXISTING INSTRUMENTS 
+The primary historical precedent for our work is to be found in 
+touch controllers and sequencers from the 1960s and 1970s, 
+which have either become scarce or have no capability for 
+digital communication, and our aim is to emulate and extend 
+this technology. The primary model for the JD-1 
+keyboard/sequencer is the TKB, designed by Serge Tcherepnin 
+in the 1970s, and still commercially available today from 
+Sound Transform Systems 3. The innovation of the TKB lies in 
+its combination of the touch keyboard and analog sequencer 
+paradigms. When used as a keyboard, the voltages associated 
+with knobs above each key are selected by touching the 
+capacitive sensing keys.  
+ Though there had been precedents for both capacitive touch 
+sensing and sequential voltage control, Don Buchla 4 pioneered 
+the application of both the touch keyboard and the analog 
+sequencer to modular synthesizers. The model 112 touch 
+interface introduced the concept of arbitrary voltages, set by 
+knobs, which could be selected by capacitive touch plates, and 
+also allowed for the touch plates to send a varying voltage 
+derived from the added capacitance of the musician’s finger as 
+it covers more surface area on the touch-plate. At around the 
+same time, Buchla developed the first analog sequencer, in 
+which voltages set by knobs could be stepped through via a 
+clock pulse. Moog followed soon thereafter with his own 
+version of the analog sequencer, and the design paradigm is still 
+present in vestigial form in modern drum machine software. 
+Serge Tcherepnin made an important contribution to the 
+controller genre in the mid-1970s with the introduction of the 
+TKB, which combined the capacitive touch-sensing keyboard 
+idea with the analog sequencer. The TKB allowed for more 
+control possibilities in a smaller space, since the knobs could 
+now serve as both sequencer stage voltages (voltages that are 
+output when a sequencer clock steps to them) and key-
+associated voltages (voltages that are output when the user 
+touches a particular key). 
+  More recently, research has continued into capacitive touch 
+sensing as a viable technology for extending the keyboard or 
+keyboard-like controllers. The Manta, by Jeff Snyder [1], uses 
+capacitive touch sensing to achieve continuous control data 
+related to surface area covered by a finger on discrete sensors 
+laid out in a hexagonal grid. The Touchkeys [2], by Andrew 
+McPherson, applies capacitive sensing technology to traditional 
+piano keys to achieve additional control information from 
+finger position and centroid mass. Other recent inventions that 
+extend the touch keyboard concept include the Hakken 
+Continuum by Lippold Haken, who has developed a successful 
+touch keyboard that senses both finger position and finger 
+depth, using a design involving Hall effect sensors [3]. 
+ 
+                                                                                                       
+1 http://www.buchla.com/ 
+2 http://www.moogmusic.com/ 
+3 http://www.serge-fans.com/ 
+4 http://www.synthmuseum.com/buchla/buc10001.html 
+ 
+Permission to make digital or har d copies of all or part of this work for 
+personal or classroom use is granted without fee provided that copies are 
+not made or distributed for profit or commercial advantage and that 
+copies bear this notice and the full citation on the first page. To copy 
+otherwise, to republish, to post on servers or to redistribute to lists, 
+requires prior specific permission and/or a fee. 
+NIME’12, May 21-23, 2012, University of Michigan, Ann Arbor. 
+Copyright remains with the author(s). 
+ 
+3. DESIGN 
+3.1 Overview 
+The JD-1 (Figure 1) is a controller that integrates traditional 
+touch keyboard functionality with analog sequencer 
+functionality, and extends these paradigms with sophisticated 
+digital control and modern interfacing technology. The right 
+side of the JD-1 presents the touch keyboard and knob banks, 
+and the left side of the controller presents an analog jo ystick, a 
+user interface for operational modes and settings, analog 
+control voltage outputs, and digital interface ports. 
+ 
+Figure 2: Side view of JD -1 key construction. 
+ 
+3.2 The Keyboard 
+The keyboard of the JD-1 (Figure 2) is made up of 32 CNC-
+milled aluminum keys, arranged in a traditional diatonic 
+piano/organ layout. The keys are fixed in place and do not 
+move; they act as capacitive touch sensors, and each sensor 
+outputs a value proportional to the surface area covered by the 
+musician’s finger on a key. Our early prototypes of the JD-1 
+keyboard followed more traditional capacitive sensor design, in 
+which the sensors are etched into a PCB as a flat, 
+undifferentiated surface. While this works well for generalized, 
+tile-like layouts like the Manta or Buchla 112  controller, a flat 
+layout was found to be unsuitable for the traditional diatonic 
+layout, since it loses the ergonomic advantages afforded by the 
+raised flats and sharps on a standard musical keyboard. After 
+experimentation, it was found that 3mm of heigh t difference 
+between the accidentals and naturals was enough for musicians 
+to more accurately play scales with many flats or sharps. 
+Another advantage of the JD-1 key design over a flat PCB 
+capacitive sensing interface is the tactile distinction between al l 
+of the keys. The physical gaps between the keys make the 
+keyboard easier to play without visual feedback.  
+ Each key is mechanically and electrically connected by two 
+screws, which screw through the circuit board from below and 
+into threaded holes in the keys. The keyboards have been 
+anodized for scratch resistance, aesthetic appeal, and color 
+coding, so the threaded holes are plugged before the 
+anodization process to maintain electrical conductivity. The 
+keys are anodized in a color scheme commonly call ed 
+“reverse”, in which the naturals are black and the accidentals 
+are lighter, clear anodized aluminum in the case of the JD -1. 
+This is done as a visual reference to the harpsichords and 
+organs of the 16th and 17 th centuries, to give an attractive 
+styling to the instrument.  
+ The span size of the keyboard is 158 mm for the octave, 
+slightly smaller that a modern piano (which is usually 165 mm), 
+and more in line with what is often called the French keyboard 
+span, in reference to the key size of 18 th century French 
+harpsichords [4]. This was done to conserve panel space, and 
+also as another playful reference to keyboard history. 
+3.3 Analog Synthesizer Outputs 
+The JD-1 has both continuous voltage outputs and gate outputs, 
+both of which are necessary to control analog synthesizers. 
+ 
+3.3.1 Continuous Voltage Outputs 
+A primary goal of the JD-1 is to allow highly accurate control 
+of pitch, ideally within one cent (1/100 th of a semitone) 
+precision. The JD-1 has 16 continuous analog control voltage 
+(CV) outputs, including four with 16-bit resolution and twelve 
+with 12-bit resolution.  The 16-bit outputs are intended as pitch 
+control voltages, and the 12-bit outputs are intended for other 
+parameters where accuracy is not as critical.  
+ Since the JD-1 was designed to allow the control of various 
+synthesizer brands, the CV outputs can be scaled to support 
+various synthesizer standards. The most prevalent analog CV 
+standards for pitch control are 1V/oct, 1.2V/oct and Hz/V. 
+1V/oct, in which a change in the input voltage by one volt 
+causes a change in frequency of one octave, is the standard 
+adopted by Robert Moog, and followed by many synthesizer 
+builders in the 1970s and almost all modern modular 
+synthesizer manufacturers5. 1.2V per octave is the standard set 
+by Don Buchla, chosen so that 100mv is equal to 100 cents. 
+The third standard is what is often called Hz/V. In this standard, 
+followed by Korg and Yamaha, the linear-to-exponential 
+scaling is not done inside the oscillator, and therefore the 
+control voltage sent to the oscillator has to implement an 
+exponential curve to produce a perceptually linear rise in pitch. 
+ In terms of the 1V/oct standard, 16-bit resolution for a 
+standard 10V range would theoretically provide 0.183 cents 
+resolution over 10 octaves. For 1.2V/oct, 16-bit resolution 
+theoretically provides an even better 0.153 -cent resolution 
+range. By contrast, a 12-bit resolution DAC would theoretically 
+provide 2.92 cents resolution for 1V/oct scaling. If applied to 
+the Hz/V standard, resolution would vary over the range of the 
+oscillator, with the lowest resolution falling in the lower 
+frequencies.  Most synthesizers expect pitch control voltages 
+from 0V to 10V, but some, including Serge Modular, use -5V 
+to 5V, and others use 0V to 5V for many non-pitch parameters. 
+                                                                 
+5 http://en.wikipedia.org/wiki/CV/Gate 
+ 
+Figure 1: The JD -1 keyboard/sequencer controller.  
+ 
+ Whether the analog oscillator receiving the voltage is capable 
+of a high level of pitch accuracy is beyond the control of the 
+JD-1, or any analog synthesizer controller, but our design goal 
+was to be at least as accurate as the best analog oscillator 
+designs. As for commercial manufacturers, both Buchla and 
+Wiard state tuning resolution within +/-5 cents over 8 octaves, 
+the extremes of which would be noticeable in a just intonation 
+setting; other manufacturers do not state a tuning resolution for 
+their oscillator modules. Any inaccuracy or non-linearity in the 
+JD-1 would cause even more error in VCO tuning, so our 
+design works to minimize these errors. The most critical 
+specifications for the DAC IC are offset voltage and 
+nonlinearity; frequency domain performance is not important. 
+The circuit that follows the DAC output adds a low pass filter 
+sufficient to remove high-frequency noise and zipper noise 
+without causing perceptible slew, which would be heard as 
+portamento, and also scales the voltage with a gain of two, 
+using precision resistors to avoid gain error. 
+ Our results have been promising. When the JD -1 controls 
+VCOs built from Ian Fritz’s sawtooth-core circuit 6, which is 
+specifically designed for tuning accuracy and low temperature 
+drift, just intonation intervals that sound very accurate to the ear 
+are possible over the range from approximately C1 to C7. Tests 
+with oscillators following Ray Wilson’s design 7 (which is 
+based on the same Terry Mikulic Electronotes VCO design [5] 
+as the Ian Fritz) show acceptable but less precise tuning results. 
+ 
+3.3.2 Gate and Trigger Outputs 
+Gate Controls are another type of voltage control used by 
+analog synthesizers, usually to trigger envelopes or switch 
+signals. As with continuous voltage control, there are several 
+competing standards. Most manufacturers use a two-state gate 
+control, in which there is an off state and an on state. In the 
+standard used by Moog, often called “S -Triggered”, a “high” 
+voltage (nominally 5V) represents the off state, and a “low” 
+voltage (nominally 0V) represents the on state. The inverse of 
+this, in which 0V is off and 5V is on, is standard on many 
+synthesizers made by other brands, and is often called “V -
+Triggered”. Buchla synthesizers follow an alternate standard 
+with three states, called “Gate+Trigger”, where a 12V pulse 
+signals an event, after which the gate voltage quickly drops to 
+7V until a release action occurs to drop the voltage down to 0V. 
+The JD-1 has eight gate outputs, all of which are capable of 
+conforming to all three of these gate s tandards, depending on 
+the mode settings chosen by the user.  
+3.4 User Modes and Controls 
+There are several user modes and controls that are accesible via 
+buttons, potentiometers, and rotary encoders on the left side of 
+the panel. LED indicators and a 3x16 LCD display provide user 
+feedback. Descriptions of the user controls follow. 
+  
+3.4.1 Keyboard Mode 
+A button labeled keyboard/sequencer allows the user to switch 
+between a keyboard-style mode and a sequencer-style mode.  
+ When Keyboard Mode is active, the JD-1 only outputs analog 
+voltages when keys are touched on the keyboard. Polyphonic 
+handling is chosen with a rotary encoder that allows for 5 
+modes: monophonic retrigger, monophonic legato, dual-voice 
+polyphony, four-voice polyphony, and no polyphony handling 
+(equivalent to full 32-note polyphony). The polyphonic 
+restrictions are useful for interfacing with analog synthesizers 
+                                                                 
+6 http://home.comcast.net/~ijfritz/sy_cir2 
+7 http://www.musicfromouterspace.com/analogsynth_new/ 
+VCO20090724REV0/VCO20090724REV0.html 
+where the number of voices is limited, and the mode without 
+polyphony handling is useful when the JD -1 is used as a MIDI 
+or OSC controller for software and therefore polyphony 
+handling is not necessary. Tri-color LEDs above the keyboard 
+light red to indicate which pitches are currently assigned to 
+polyphony voices. For each active polyphony voice, there are 
+four continuous analog voltage outputs, and two gate outputs. 
+ One of the 16-bit DAC channels outputs the “pitch” data, 
+which relates to the chromatic pitch selected on the keyboard. 
+This voltage is in twelve-tone equal temperament by default, 
+but can be further adjusted to other scales  stored in memory. 
+These alternate scales are selectable by navigating the LCD.  
+ One of the 12-bit DAC channels outputs a voltage 
+proportional to the amount of surface area covered by a finger 
+on the touch key; this voltage is continuously updated every 
+four milliseconds while the key is touched. This output can be 
+scaled down from full range with a dedicated potentiometer. 
+ Two more 12-bit DAC channel outputs the voltages set by the 
+two knobs above the touched key. The ouputs are labeled A and 
+B, corresponding with labels on the knob banks—the upper 
+bank is A, the lower is B. These voltages are also continually 
+updated every four milliseconds, so they respond to changes 
+that occur while the key is touched, and each output has a 
+dedicated knob for proportional scaling. Like all other analog 
+outputs on the JD-1, these can be used to control any parameter 
+of an analog synth, including pitch, filter cutoff, or amplitude. 
+ One of the gate channels outputs a gate-on event when the 
+key is touched, and a gate-off event when the key is released. 
+Another gate channel outputs a short gate-on event when the 
+key is touched, which is quickly followed by a gate-off event—
+traditionally called a “trigger” voltage. The actual voltages of 
+these events are controlled by internal modes that can be 
+changed by the user between S-Trigger, V-Trigger, and Buchla-
+style Gate+Trigger.  
+  
+3.4.2. Sequencer Mode 
+When the JD-1 is switched to Sequencer Mode, touching a key 
+no longer triggers an output. Instead, output is triggered by a 
+clock pulse, either from the internal clock in the 
+microcontroller, or from an external trigger voltage. At each 
+clock pulse, a new sequencer stage is selected and the 
+associated pair of potentiometers determines the voltages at the 
+A and B analog outputs.  The tri-color LED associated with the 
+currently selected sequencer stage lights up for performer 
+feedback, though the color of the LED depends on the current 
+sequencer mode. The voltage for the pitch assocated with the 
+currently selected sequencer stage is also output from the 16-bit 
+DAC channel. The maximum continuous sensor reading for 
+surface area on the keys (including all touched keys) is output 
+as a voltage on the surface area voltage output.  
+ In sequencer mode, there are two sub-modes, which 
+determine how the touch keyboard interacts with the sequencer 
+functionality. In the first sub-mode, called Range Mode, 
+touching two keys on the keyboard will restrict the sequencer to 
+only step between the two stages associated with the touched 
+keys, which light green for performer feedback. This range 
+restriction remains in place after the musician’s fingers leave 
+the keys. In the second sub-mode, called Quantize Mode, the 
+sequencer does not clock unless at least one key is touched. 
+When at least one key is touched, the sequencer will only step 
+to stages that are currently touched by the musician, and the 
+LEDs above the touched keys light red for performer feedback. 
+When used in conjunction with the “pitch” control voltage 
+output, the functionality of Quantize Mode is  very similar to a 
+classic keyboard arpeggiator.  
+ The choice of the next step is determined by a rotary encoder. 
+This control chooses between the following modes: left-to-
+right, right-to-left, back-and-forth, and random.  
+ There several additional feature s that give further control 
+over the sequencer functionality. A skip -step value allows the 
+user to adjust the percentage of clock pulses that result in a 
+sequencer step – allowing for an adjustable proportion of 
+randomly skipped steps. When the internal clock is used, user 
+parameters accesible from knobs on the panel include a speed 
+control and a randomness control, which allows for varying 
+levels of randomness in the duration between clock pulses. 
+ 
+3.4.3 The Joystick 
+An spring-return analog joystick reports its X and Y location as 
+analog voltages between 0V and 5V, and is also sensed by the 
+main microcontroller and converted for MIDI and OSC output. 
+Each analog output for the joystick can be scaled down from 
+full scale by a potentiometer. 
+ 
+3.4.4 Additional Controls 
+Octave Up and Octave Down buttons allow the user to 
+immediately transpose the pitch out up an down by on octave, 
+and the current octave is indicated by nearby LEDs.  
+ A Transpose rotary encoder allows for transposition up and 
+down by up to twelve semitones. When a tuning system other 
+than equal temperament is used, the size of the semitones is 
+adjusted according to the pitch class in the current tuning 
+system. The current transposition is indicated on the LCD 
+screen, and any transposition other than zero causes a 
+“transpose on” LED to light above the rotary encoder.  
+ There are two buttons that set the functionality of the A and B 
+knob banks, called Independent and Combined. When the 
+Independent button is pressed, the A and B knob banks are 
+treated separately, and output independent voltages. When the 
+Combined button is pressed, the B knob bank acts as a set of 
+fine tune knobs for the A knob bank, allowing for higher 
+resolution if the user wishes to use these knobs for pitch.  
+ The LCD menu allows the user to select between 1V/Oct 
+control voltages and 1.2V/Oct control voltages, as well as 
+allowing the choice of gate style to adapt to different 
+synthesizer standards. It also affords the ability to fine tune the 
+pitch control voltage scaling, so that synthesizers that don’t 
+achieve a linear response can be acommodated. While storage 
+of knob settings is currently not implemented in the firmware, it 
+is completely possible with the current hardware design, and 
+will eventually be navigable via the LCD menu.  
+3.5 Digital Interfaces 
+In addition to the analog control voltage outputs, there are three 
+digital communication protocols implemented on the JD -1: 
+MIDI, USB, and Ethernet. 
+ MIDI connectivity is provided via two standard 5 -pin DIN 
+jacks, one for MIDI In and one for MIDI Out. The MIDI In port 
+allows for direct MIDI control of the analog outputs, making 
+the JD-1 also function as a MIDI-to-CV converter. The MIDI 
+In port also allows for clocking of the sequencer using MIDI 
+note-on messages. The MIDI Out port sends data that matches 
+the behavior of the analog control voltage outputs, with MIDI 
+notes that reflect note-on and note-off events, and MIDI 
+continuous controller values that represent the continuous 
+surface area outputs and the state of the A and B knob banks . 
+When polyphony handling is set to two-voice or four-voice, the 
+MIDI Out port sends the data for the polyphony voices on 
+separate MIDI channels. When polyphony handling is turned 
+off, the MIDI Out port sends individual data on 16 different 
+MIDI channels, with up to 16-note polyphony.  
+ USB connectivity is limited to embedded host mode, 
+meaning that the JD-1 cannot be used as a USB device sending 
+data to a computer. Currently, the USB port is only used for 
+firmware updates using a USB flash drive, but it could also 
+allow for the JD-1 to understand other USB devices, such as a 
+Manta controller, HID joystick, or USB MIDI-keyboard. 
+ The Ethernet port is to allow the JD-1 to send and receive 
+Open Sound Control (OSC) messages when connected to a 
+computer or a network [6]. Each of the analog control voltage 
+outputs can be independently controlled from a network to their 
+full resolution, and the JD-1 keyboard and sequencer 
+information is sent out as OSC messages as well. When 
+polyphony mode is turned off, the JD-1 sends fully polyphonic 
+data over OSC, allowing for a computer to get continuously 
+updated information about the state of all the keys and knobs.  
+4. FUTURE WORK 
+While the hardware is built and functional, there are several 
+features that the hardware design makes possible that have not 
+yet been implemented in the firmware.  
+ The design could benefit from the type of velocity detection 
+algorithm employed on the Manta controller, which estimates 
+attack velocity on an immobile capacitive touch sensor by 
+applying a trained machine learning algorithm to successive 
+sensor readings. In fact, the data collected is more suited to the 
+task, since the scan rate is 4ms rather than 6 -8ms, as on the 
+Manta, and the large surface area of the metal keys allows the 
+JD-1 to sense a finger approaching the key at a distance of a 
+quarter inch, information that could be used in the velocity 
+detection algorithm to speed up response and accuracy.  
+ User programmability of the JD-1 could be significantly 
+improved. One particularly useful feature that the hardware 
+makes possible is the ability to save and recall the states of the 
+A and B knob bank. An EEPROM IC was included in the 
+hardware design to enable a large amount of saved knob 
+settings, but the firmware doesn’t yet support this feature. Also, 
+while the JD-1 currently implements six preset tuning system 
+options, the instrument would ideally be programmable over 
+OSC, enabling the user to enter their own tuning tables, or load 
+them in using Scala format files8.  
+5. ACKNOWLEDGMENTS 
+Thanks to Dan Trueman, Jesus Diaz, George Mordecai, Chris 
+Zrada and Barry Runner. 
+6. REFERENCES 
+[1] Snyder, J. The Snyderphonics Manta Controller, a Novel 
+USB Touch Controller. In Proceedings of New Interfaces 
+for Musical Expression (NIME ‘12) (Oslo, Norway, May 
+30-June 1, 2012) 413-416. 
+[2] McPherson, A. In Proceedings of the 8th Sound and Music 
+Computing Conference (SMC 2011), Padova, Italy. 
+[3] Haken, L., Tellmann, E., Wolfe, P. “An Indiscrete Music 
+Keyboard,” Computer Music Journal, Vol. 22, No. 1, pp. 
+30-48, 1998.   
+[4] Ripin, E. Early Keyboard Instruments, London: 
+Macmillan, 1989. 
+[5] Mikulic, T. "New Design Ideas for Voltage-Controlled 
+Oscillators" Electronotes, Vol. 8, No. 62, Feb. 1976, pp 
+13-15. 
+[6]  Wright, M., Freed, A., "Open Sound Control: A New 
+Protocol for Communicating with Sound Synthesizers", In 
+Proc. International Computer Music Conference, 1997.
+                                                                 
+8 http://www.huygens-fokker.org/scala/scl_format.html 

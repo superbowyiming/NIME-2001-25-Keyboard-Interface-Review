@@ -1,0 +1,544 @@
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+Real-time Adaptive Control of Modal Synthesis
+Reynald Hoskinson
+Department of Computer
+Science
+University of British Columbia
+Vancouver, Canada
+reynald@cs.ubc.ca
+Kees van den Doel
+Department of Computer
+Science
+University of British Columbia
+Vancouver, Canada
+kvdoel@cs.ubc.ca
+Sidney Fels
+Department of Electrical and
+Computer Engineering
+University of British Columbia
+Vancouver, Canada
+ssfels@cece.ubc.ca
+ABSTRACT
+We describe the design and implementation of an adaptive
+system to map control parameters to modal audio synthesis
+parameters in real-time. The modal parameters describe the
+linear response of a virtual vibrating solid, which is played
+as a musical instrument by a separate interface. The sys-
+temu ses a three layer feedforward backpropagation neural
+network which is trained by a discrete set of input-output
+examples. After trai ning, the network extends the training
+set, which functions as the speciﬁcation by example of the
+controller, to a continuous mapping allowing the real-time
+morphing of synthetic sound models.
+We have implemented a prototype application using a con-
+troller which collects data from a hand-drawn digital pic-
+ture. The virtual instrument consists of a bank of modal
+resonators whose frequencies, dampings, and gains are the
+parameters we control. We train the system by providing
+pictorial representations of physical objects such as a bell or
+al a m p ,and associate high quality modal models obtained
+from measurements on real objects with these inputs. Af-
+ter training, the user can draw pict ures interactively and
+“play” modal modelsw h i c hprovide interesting (though un-
+realistic) interpolations of the models from the training set
+in real-time.
+1. INTRODUCTION
+Musical instruments are usually selected before a perfor-
+mance and then played in real-time. Occasionally a versa-
+tile performer may play several instruments during a piece,
+sometimes even simultaneously. However, switching instru-
+ments is usually not considered to be part of the performance
+skills of the artist but taken more or less for granted.
+This metaphor has been propagated to digital instruments
+which have elaborate real-time controllers (keyboard, MIDI
+wind-controller, drum pad, etc.) for playing the instrument,
+but simple switches to select the instruments or “presets”.
+Physical musical instruments allow a limited amount of
+real-time modiﬁcation of the instrument’s behavior, and in
+the 20th century music composers have moved some of these
+controls into the performance area. For example requiring a
+cello player to retune a string while playing, can extend the
+scope of the instrument.
+Synthetic digital instruments using real-time audio syn-
+thesis [26] oﬀer the possibility to make the virtual instru-
+ment completely ﬂexible and, by changing the synthesis pa-
+rameters in real-time, allow themorphing of diﬀerent instru-
+ments into each other. This gives the performer the ability
+to control the nature of the instrument itself in real-time but
+posest he challenge of ﬁnding intuitive and natural interfaces
+to control these “design parameters”.
+In this paper we des cribe a software system which at-
+tempts to provide a generic framework to construct real-time
+controllers for digital synthesis algorithms. Our system uses
+ab ackpropagation neural network to map the control vari-
+ables, which the performer directly controls, to the synthesis
+variables in a conﬁgurable and adaptive way. This is done
+by training the network on a set of input-output pairs which
+describe some of the desired properties of the mapping. This
+can be thought of as deﬁning a collection of instrument pre-
+sets which are speciﬁed by input variables of the performers
+choice. Once the network is trained, areal-time control map
+is generated which generalizes the training set to a continu-
+ous map allowing continuous control. Because of the neural
+network’s ability to detect features, we believe this mapping
+is able to generalize the performer’s intent in some sense,
+rather than just provide somea r b i trary interpolation.
+1.1 Related Work
+There have been several attempts to create adaptive map-
+pings between gesture and sound. Most notably, [13] used
+neural networks to map hand g estures to speech formant
+amplitudes and frequencies, which were excited by a diﬀer-
+ent controller. The neural networks allowed the system to
+learn the relationship between the speaker’s mental model
+space and the actual sound space. The speaker thus needed
+only to work in the relatively easy articulatory space instead
+of formant space.
+Ac o m b ination of neural networksand fuzzy logic software
+intended for real-time musical instruments control written
+in the MAX real-time programming environment was de-
+scribed in [15]. An adaptive conductor follower based on
+neural networks was described in [16].
+Of course, many hand-crafted systems to help facilitate
+learning the mapping between gesture and music have been
+attempted. For example, refer to [25, 12] for a description
+of a number oft h e s edevices. These mappings strategies all
+depend upon the intuition of the designer. Several common
+strategies have been developed to make themapping easy to
+learna nd understand. One typical strategy is to instrument
+ap r e - e x i s t i n ga c o u stic instrument such as a cello [17] or sax-
+ophone [1]. This approach has the advantage of constraining
+the player’s gesture space to a predeﬁned, already learned
+space. Unfort unately, the output space may not have any
+obvious relationship to the gestures. Another technique uses
+objects that already have clear aﬀordances [21] for control
+but are not necessarily based on acoustical instruments [2].
+Objects such as a coﬀee mug can be instrumented and in-
+teractions with them mapped to sounds. While the map-
+ping may not be clear at the outset, the fun of the interface
+form encourages a player to begin making sounds and ex-
+ploring the interface. Other strategies include the use of
+NIME03-99
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+metaphors [12].
+In all the situ ations above, an adaptive system may be
+helpful in improving the transparency of the mapping. By
+carefully choosing the objective space and letting an adap-
+tive algorithm match this to the player’s mental model of the
+gesture-to-sound mapping, improvements should be possi-
+ble. The role that the mapping plays in determining whether
+am u s i c a linterface is expressive is very complex [23]. The
+adaptive interface is one technique to help make new inter-
+faces for musical expression.
+1.2 Overview
+Our prototype system has been applied to generate a con-
+trol strategy for modal synthesis using hand-drawn greyscale
+pictures. Several pictures are associated with physical mod-
+els of the objects t hey are intended to d epict, which are
+linear modal models whose parameters were obtained by ﬁt-
+ting them to sound recordingsof real objects. Modal mod-
+els of “everyday” objects such as lamps, kettles, coﬀee cups,
+etc. require anywhere from 4 to 100 modes for high quality
+sounds, which results in 12 − 300 synthesis parameters to
+control, which is a very large space. This space contains the
+linear sound behavior of every imaginable rigid body, from
+wooden tables to the liberty bell, to the sound of an oddly
+shaped piece of scrap metal l ying on some junkyard! Be-
+cause of the large size of the sound space it is not possible
+to manually design thec o u pling of every synthesis param-
+eter to some physical controller, and the need for a more
+automated approach to control such as that proposed in
+this paper becomes apparent.
+Because there are so many synthesis parameters, we need
+ac o n t rol space which is large enough to reach a substantial
+portion of the possible sound models. The greyscale level
+of the pixels of an image provide this large control space.
+After training the network on the examples, we deploy the
+trained network in a real-timeapplication where the user can
+interactively draw a picture and have the modal parameters
+change in real-time. This simple interface requires no special
+hardware and is easy tow o r kw i t h ,e ven for non-musicians,
+and therefore allows us to use it as a good testbed applica-
+tion for our controller design. We believe it also results in
+an very entertaining soniﬁed drawing application.
+The modal model can be excited by any means (or could
+be embedded in a more complic ated synthesis patch) and
+for testing purposes we use impulses, noise excitations and
+a live data stream from a contact mike [4] which allows a
+more direct interaction with the virtual object.
+The remainder of this paper is organized as follows. In
+Section 2 we describe and justify our control model and es-
+tablish some notation. In Section 3 we describe our instru-
+ment model and design and summarize modal synthesis. In
+Section 4 we describe our prototype application and results
+obtained, and conclusions and directions for future work are
+presented in Section 5.
+2. THE CONTROL MAP
+To articulate the problem we ﬁnd it useful to describe the
+mapping in a somewhat abstract manner. Let us denote the
+continuous synthesis parameters describing a virtual instru-
+ments by an N-dimensional vector θ = {θ1,...,θ N },w h i c h
+we can visualize as a point in “instrument space” Θ. This
+space consists of all possible virtual instruments that can be
+modeled by changing parameters of a synthesis algorithm.
+A“ p r e set” of an algorithm corresponds to a single point in
+Θ. We can visualize a conventional synthesizer with preset
+buttons as consisting of a cloud of points in Θ which we can
+navigate with buttons (or some other discrete interface).
+Ac o n t i n uous interface to instrument selection allows the
+performer to navi gate smoothly between the presets and
+for example morph a woodblock into a gong while playing.
+However, its is not clear howto move from one preset to
+the other in the most natural way. Naively one could inter-
+polatelinearly in parameter space but this is arbitrary and
+does not “sound linear”.
+For example, let us morph the sound of a bell into the
+sound of a desk lamp by a linear trajectory in modal space
+(consisting of the frequencies, dampings, and gains), and
+control this with asingle parameter λ which runs from 0
+(a metal desk lamp) to 1 (a church bell). An interactive
+application whichruns in most web browsers demonstrat-
+ing this can be found on the web [6]. If we start at 1 and
+decrease λ,w eﬁ r s th e a rt h eb e l lgoing out of tune. Some-
+where around λ =0 .9t h eb e l lc h a racter is lost and from 0.9
+to around 0.1i ts ounds like “some metal object”, but the
+character of the sound remains fairly constant until we come
+close to the lamp, around λ =0 .1w h e nthe sound appears
+to rapidly “come into focus” and morph into the sound of a
+desk lamp. This somewhat subjective description illustrates
+the fact that though the trajectory is linear in parameter
+space and we move uniformly from one point to the other,
+what we hear doesnot sound linear and uniform at all.
+Another challenge in designing interfaces is to provide ges-
+tural metaphors which are na tural to the performer. Con-
+trolling motion in Θadaptively allows the performers to cus-
+tomize the mapping according to their own peculiarities and
+wishes within the sames y s t e m .Ac o ntrol interface is a con-
+tinuous mapping
+κ : C− → Θ
+from a control space C to the instrument model space Θ.
+The K-dimensional space C consists of all possible settings
+of the control variablesc = {c1,...,c K }.T h e s ec o n t r o lv a r i -
+ables are obtained from sensors such as Cybergloves, posi-
+tion trackers, etc. and are c ontrolled by the performer in
+real-time.
+Presetsa re input conﬁgurations (points in C)w h i c ha r e
+mapped to ﬁxed instruments. The preset conﬁguration ρ is
+deﬁned by specifyingM pairs ρ = {{c1, θ1},..., {cM , θM }},
+where ci ∈C and θi ∈ Θ. It is a discrete mapping ρ
+from C to Θ. We shal ln o tate the preset control set by
+Cp = {c1,..., cM },a n dt h ep r eset instrument set by Θp =
+{θ1,..., θM }.S e eF i g u r e1f o rt h enotation.
+An a t u ral framework for constructing the continuous map-
+ping κ as a generalization oft h ediscrete mapping ρ is a 3
+layer backpropagation feedforward neural network [19] with
+K inputs and N outputs which, appropriately scaled, pro-
+vides the mapping κ.T h epreset conﬁguration ρ provides a
+set of M training examples, and training the network on this
+set results in the desired mapping κ.A ni m p o r t ant feature
+of neural networks is their ability to detect and generalize
+features [19]. This is very relevant as the preset mapρ cap-
+tures the performer’s metaphorf o rc o n t r o l .T hec o n t inuous
+interpolation of the preset conﬁguration can incorporate fea-
+tures which are detected during the training phase by the
+neural net and generalize them. The preset conﬁguration
+can also be seen as the speciﬁcation by example of the de-
+sired behavior of the controller.
+NIME03-100
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+Control Space C Instrument Space Θ
+κ
+ρ
+c1
+cM
+pM
+p1
+Cp Θp
+Figure 1: Control space C and instrument spaceΘ.
+The discrete preset mapping ρ is generalized to the
+continuous mapping κ by training a 3 layer back-
+propagation neural network onρ.
+3. MODAL INSTRUMENT SPACE
+Ag ood physically motivated synthesis model for vibrat-
+ing rigid bodies is modal synthesis [28, 14, 20, 3, 8, 9, 7,
+22]. Modal synthesis models a vibrating object by a bank of
+damped harmonic oscillators which are excited by an exter-
+nals timulus. See Fig. 2 for an illustration. The frequencies
+and dampings of the oscillators are determined by the ge-
+ometry and material properties (such as elasticity) of the
+object and the coupling gainsare determined by the loca-
+tion of the force applied to the object. The impulse response
+p(t)o ft h em odal model with L modes is given by
+p(t)=
+LX
+n=1
+an exp(−dnt)s i n ( 2πfnt), (1)
+for t ≥ 0a n di sz e r of o rt< 0, where p(t)d e n o tes the audio
+signal as a function of time. The modal parameters are
+the frequenciesfn,t h edampings dn,a n dt he gains an.T h e
+frequencies and dampings are pure object properties whereas
+the gains also dependon the location of the interaction point
+on the surface of the object. The model ignores phase eﬀects.
+We create sound models with the FoleyAutomatic [7] sys-
+tem, which a llows the creation of realistic sound models
+based on modal synthesis as well as various contact force
+models which include striking, scraping, sliding, and rolling.
+The FoleyAutomatic system is freely available from the web
+as part of the JASS system [10, 5], a Java based real-time
+audio synthesis toolkit. The modal models can be acquired
+by parameter ﬁtting to recorded sounds using the techniques
+described in [24]. Pre liminary user studies [11] have shown
+that impact sounds constructed with this technique are in-
+distinguishable from the real sound.
+4. INTERACTIVE DRAWING
+We have a pplied our adaptive co ntroller framework to
+an interactive drawing application which allows the user to
+draw pictures on a square window. The picture is down-
+sampled to 16×16 greyscale pixels with values in the range
+0 − 1. Thep ixelsa re taken as inputs to a neural net with
+256 input units, 32 or 128 hidden units, and 60 output units,
+allowing for modal models of 20 modes.
+The neural network was designed using the Java Object-
+Oriented Neural Engine (JOONE), an open-source neural
+net package implemented in Java [18]. JOONE provides a
+Figure 2: Modal synthesis of the sound made by
+hitting a bar with a hammer. The hammer force
+is modeled by a contact force model, and send to a
+bank of resonators, which is the modal model of the
+bar. Each resonator has a characteristic frequency,
+damping, and gain and the outputs of the resonators
+are summed and rendered.
+graphical environment to design multilayer neural networks,
+train them, and export trained networks into real-time ap-
+plications. All of the neurons are implemented as sigmoid
+functions y =1 /(1 + e−x). The learning rate is set to 0 .8,
+and the momentum factor 0.3.
+The 60 outputs of the net are numbers in the range 0−1.
+They mapped to the 60 modal synthesis parameters deﬁned
+in Equation 1, for L =2 0m o d e s . For optimum training of
+the neural net, the range 0 − 1s h ould be mapped as uni-
+formly as possible to perceptually relevant parameters. For
+instance, frequencies are perceived on a roughly logarithmic
+scale, so we would like a linearc h ange in outputs to produce
+al ogarithmic change in frequency. The three types of modal
+parameters are handled separately in order to best take into
+account the perceptual characteristics of the sounds.
+For frequencies, we convert to the Bark scale [27], designed
+to uniformly cover the human auditory range. It can be ex-
+pressed as z =[ 2 6.81/(1 + 1960/f)] − 0.53, with f the fre-
+quency in Hz.T h er e s u l tz is then scaled to between 0 and 1.
+For damping, the conversion is given by (loge(d +1 .0))/5.0.
+It covers dampings of up to roughly 150/s,t h em o s theav-
+ily damped modest h a toccur in the speciﬁc physical mod-
+els we have used. Gains are converted to decibels, and we
+allow a range of 160 dB,e n ough for most (non-lethal) ap-
+plications. The conversion is given by 1 + dB(a)/160, with
+dB(a)=2 0 l o g10(a)t h edecibel level in the range −160dB
+to 0dB.
+The preset conﬁguration consists of four hand-drawn pic-
+tures depicted in Figure 3. The outputs corresponding to
+the images are modal models obtained from parameter ﬁt-
+ting to recorded sounds of the objects depicted, using the
+20 most important modes selected by a perceptual criterion
+as described in [11], which result in very realistic sounds.
+Two neural networks were created, one with 32 hidden
+NIME03-101
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+Figure 3: The four input images to the neural net,
+depicting a bell, a kettle, a wooden table, and a desk
+lamp.
+units and one with 128 hidden units. Both were trained
+until the error in frequencies was below 10 cents (one tenth
+of a semitone). Errors in the dampings and gains are per-
+ceptually much less noticeable, which is why we use the fre-
+quencies as a convergence criterion.
+Convergence required about 200 iterations, less than one
+minute on a desktop computer with 733 MHz dual Pentium
+III processors. In Figure 4 we show the average error of the
+output as a function of the number of training epochs.
+Qualitatively, we listened to the sounds at various stages
+in the training, obtained by using a picture from the training
+seta si nput. After 100 training epochs the results were rec-
+ognizable as the target sounds but quite distorted, whereas
+the sound was indistinguishable from the target at 200 train-
+ing epochs.
+After training, we tested our real-time drawing applica-
+tion with fully converged netsc o n t a i ning 32a n d128 hidden
+nodes, using various excitations. We did not notice any qual-
+itative diﬀerences in the behavior of the nets, though there
+were clear diﬀerences between them in sound for pictures we
+drew which did not resemble any in the training set. The
+interface allows us to load any of the pictures in the training
+set and theninteractively draw over them. Though the pre-
+set conﬁguration with just four presets is very minimal, we
+were surprised by the richness of the interface. For example,
+if we start with the bell, when its lower or upper portions are
+erased, the sound changes dramatically and rapidly loses its
+bell-like character. But if we erase parts of the picture start-
+ing from the middle, the pitch of the bell seems to change,
+and it is almost possible to etcho u tas hape inside the bell
+such that the modes remain in tune and the bell character
+of the sound ispreserved.
+If the picture is completely erased or completely black, we
+do not get a silent model, but rather something which we
+can only describe as“ n on-descript”. When we draw random
+shapes,t hey sound just like that, like random sounds. It is
+only when features of the input images appear in the drawing
+that the sounds become “interesting”.
+We ﬁnd it very hard to describe the experience with the
+interface, and intend to convert the application into a Java
+applet and make it available ont h ew e bt oi n t e r a c tw i t h
+through a standard web-browser.
+5. CONCLUSIONS
+This paper has described the design of a general frame-
+work to control audio synthesis algorithms with many con-
+tinuous parameters. The controller maps an input space,
+whichi st he space in which the performer manipulates input
+devices, into the parameter sp ace of a synthesis algorithm
+using a neural network.
+The behavior of the controller is speciﬁed by example by
+specifying a discrete set of input-output pairs, which we have
+called the “preset co nﬁguration”. These examples capture
+the performers intent and a neural network can possibly
+extract enough features from the examples to generalize it
+to a “natural” continuous mapping.
+Our implementation consists ofa ni n t e r a c t ive drawing ap-
+plication, with the drawing functioning as the controller.
+Through aneural network the drawing application is con-
+trolling parameters of a modal synthesis algorithm. The
+neural network is trained on as e to fi mages with associ-
+ated sound models. A real-time synthesis kernel then allows
+the user to “play” this modal synthesis algorithm by various
+means. When one of the training examples is drawn, the ex-
+act sound model is reproduced, but when a picture outside
+the training set is drawn the result is not a-priory known,
+but determined by the neural network’s interpolation. Of
+course, if we draw a realistic image of a real object not in
+the training set, the resulting sound model will not be re-
+alistic, as the modes will depe nd on the internal structure
+and other material properties not contained in an image.
+However, the interpolated models are musically rich and in-
+teresting, drawing on features of the objects in the training
+set.
+Our implementation is in an e arly stage of development
+and there are several issues which we will address in the
+near future. First we will extend the training set to include
+more images to allow the neural net to extract meaningful
+features. Many similar drawings of the same object should
+be included in the training set, which can probably achieved
+by adding noise to the input set. It would be interesting
+to verify if translation and ro tation invariance can easily
+be learned byi n c luding translated and rotated examples in
+the training set. Next we will incorporate a webcam into
+the current implementation as an input device, which will
+provide a veryinteresting live controller. We are also very
+interested in applying the controller to live performance, or
+as a base of an interactive acoustic installation.
+6. REFERENCES
+[1] M. Burtner. Noisegate 67 for Metasaxophone:
+Composition and Performance Consideration of a New
+Computer Music Controller. In Second International
+Conference on New Interfaces for Musical
+Expression(NIME02),p ages 71–76, Dublin, Ireland,
+2002.
+[2] P. Cook. Principles for Designing Computer Music
+Controllers. In First Workshop on New Interfaces for
+Musical Expression (NIME01), ACM Special Interest
+Group on Computer-Human Interfaces,S e attle, USA,
+2001.
+NIME03-102
+Proceedings of the 2003 Conference on New Interfaces for Musical Expression (NIME-03), Montreal, Canada
+Figure 4: Convergence graphs of two neural nets we tested. Each has 256 inputs. The ﬁrst, with 128 hidden
+shows convergence at under 200 iterations. The second, with 32 hidden nodes, shows convergence a little
+later, but is still acceptable at the 200-iteration mark.
+[3] P. R. Cook. Physically informed sonic modeling
+(PhISM): Percussive synthesis. In Proceedings of the
+InternationalC o mputer Music Conference,p ages
+228–231, Hong Kong, 1996.
+[4] K. v. d.D o e l .Sound Synthesis for Virtual Reality and
+Computer Games.P h Dt h e s i s,U n i v e r s i tyo fB r i t i s h
+Columbia, 1998.
+[5] K. v. d. Doel. JASS Website,
+http://www.cs.ubc.ca/˜kvdoel/jass, 2003.
+[6] K. v. d. Doel. JASS Website, Morph Example,
+http://www.cs.ubc.ca/˜kvdoel/jass/morph2/morph2.html,
+2003.
+[7] K. v. d. Doel, P. G. Kry, and D. K. Pai.
+FoleyAutomatic: Physically-based Sound Eﬀects for
+Interactive Simulation and Animation. In Computer
+Graphics (ACM SIGGRAPH 01 Conference
+Proceedings),L os Angeles, 2001.
+[8] K. v. d. Doel and D. K. Pai. Synthesis of Shape
+Dependent Sounds with Physical Modeling. In
+Proceedings of the International Conference on
+Auditory Display 1996,P alo Alto, 1996.
+[9]K .v .d .D oela nd D. K. Pai. The Sounds of Physical
+Shapes. Presence,7 (4):382–395, 1998.
+[10] K. v. d. Doel and D. K .P a i .J ASS: A Java Audio
+Synthesis System for Programmers. In Proceedings of
+the International Conference on Auditory Display
+2001,H elsinki, Finland, 2001.
+[11] K. v. d. Doel, D. K. Pai, T. Adam, L. Kortchmar, and
+K. Pichora-Fuller. Measurements of Perceptual
+Quality of Contact Sound Models. In Proceedings of
+the International Conference on Auditory Display
+2002,K yoto,J apan, 2002.
+[12] S. Fels, A.G add, and A. Mulder. Mapping
+transparency through metaphor: towards more
+expressive musicali n s t ruments. In Organized Sound,
+page to appear. Cambridge Press, 2003.
+[13] S. S. Fels and G. E. Hinton. Glove-TalkII: A neural
+network interface which maps gestures to parallel
+formant speech synthesizer controls. IEEE
+Transactions on Neural Networks,9 (1):205 – 212,
+1998.
+[14] W. W. Gaver. Synthesizing auditory icons. In
+Proceedings of the ACM INTERCHI1993,p ages
+228–235, 1993.
+[15] M. Lee, G. Garnett, and D. Wessel. An Adaptive
+Conductor Follower. In Proceedings of the
+InternationalC o mputer Music Conference,p ages
+172–175, San Jose, CA, 1993.
+[16] M. Lee and D. Wessel. Neuro-Fuzzy Systems for
+Adaptive Control of Musical Processes. In Proceedings
+of the International Computer Music Conference,
+Tokyo, Japan, 1993.
+[17] T. Machover. Hyperinstruments: A Composer’s
+Approach to the Evolution of Intelligent Musical
+Instruments. In Organized Sound,p ages 67–76, San
+Francisco, 1991, Cyberarts.
+[18] P. Marrone. JOONE Website,
+http://joone.sourceforge.net, 2003.
+[19] J. L. McClelland, D. E. Rumelhart, and the PDP
+Research Group. Parallel distributed processing:
+Explorations in the microstructure of cognition.
+Volume 1,v olume 1. MIT Press, Cambridge, 1986.
+[20] J. D. Morrisona n dJ . - M.A d r i en. Mosaic: A
+framework for modal synthesis. Computer Music
+Journal, 17(1), 1993.
+[21] D. Norman. The Design of Everyday Things.
+Currency/Doubleday, 1990.
+[22] J. F. O’Brien, C. Chen, and C. M. Gatchalian.
+Synthesizing Sounds from Rigid-Body Simulations. In
+SIGGRAPH 02, 2002.
+[23] N. Orio, N. Schnell, and M. Wanderley. Input Devices
+for Musical Expression: Borrowing Tools from HCI. In
+First Workshop on New Interfaces for Musical
+Expression (NIME01), ACM Special Interest Group
+on Computer-Human Interfaces,S eattle, USA, 2001.
+[24] D. K. Pai, K. v. d. Doel, D. L. James, J. Lang, J. E.
+Lloyd, J. L. Richmond, and S. H. Yau. Scanning
+physical interaction behavior of 3D objects. In
+Computer Graphics (ACM SIGGRAPH 01 Conference
+Proceedings),L os Angeles, 2001.
+[25] J. Paradiso. Electronic music interfaces: new ways to
+play. IEEE Spectrum Magazine, 34(12):18–30, 1997.
+[26] J. O. Smith. Physical modeling synthesis update.
+Computer Music Journal, 20(2):44–56, 1996.
+[27] H. Traunmuller. Analytical expressions for the
+tonotopic sensory scale. J. Acoust. Soc. Am.,
+88:97–100, 1990.
+[28] J. Wawrzynek. VLSI models for real-time music
+synthesis. In M. Mathews and J. Pierce, editors,
+Current Directions in Computer Music Research.M I T
+Press, 1989.
+NIME03-103

@@ -1,0 +1,589 @@
+Triplexer: An Expression Pedal with New Degrees of
+Freedom
+Steven N. Leib
+University of Illinois at Chicago
+steven.n.leib@gmail.com
+Anıl Çamcı
+University of Michigan
+acamci@umich.edu
+ABSTRACT
+We introduce theTriplexer, a novel foot controller that gives
+the performer 3 degrees of freedom over the control of var-
+ious eﬀects parameters. With the Triplexer, we aim to ex-
+pand the performer’s control space by augmenting the ca-
+pabilities of the common expression pedal that is found in
+most eﬀects rigs. Using industrial-grade weight-detection
+sensors and widely-adopted communication protocols, the
+Triplexer oﬀers a ﬂexible platform that can be integrated
+into various performance setups and situations. In this pa-
+per, we detail the design of the Triplexer by describing its
+hardware, embedded signal processing, and mapping soft-
+ware implementations. We also oﬀer the results of a user
+study, which we conducted to evaluate the usability of our
+controller.
+Author Keywords
+Expression pedal; foot controller; 3 degrees of freedom; hard-
+ware; interface
+CCS Concepts
+•Human-centered computing →User interface de-
+sign; Sound-based input / output; •Applied com-
+puting →Sound and music computing;
+1. INTRODUCTION
+The expression pedal is a staple of many guitar eﬀects se-
+tups. It allows the performer to map a continuous one-
+dimensional control to various parameters on other pedals
+(e.g. delay time, reverb amount). Additionally, wah wah
+and volume pedals, which directly alter the audio signal,
+rely on the same interaction design.
+Given that the transfer of human weight through the foot
+can be applied with diﬀerent intensities and in multiple
+dimensions, foot control can be used with ﬁner precision
+to drive more than one parameter at a time. Although 3
+degrees-of-freedom interfaces have been gaining more trac-
+tion over the last decade, most of these new interfaces are
+geared for hand control, often in the form of augmented
+piano keyboards. With the Triplexer, we aim to oﬀer a sim-
+ilar 3 degrees-of-freedom interaction in the form factor of
+an expression pedal. To enable the performer to use the
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’18,June 3-6, 2018, Blacksburg, Virginia, USA.
+whole weight of their body as a means of musical expres-
+sion, we use extremely sensitive load cells and a series of sig-
+nal processing techniques to derive 3-dimensional pressure
+data. Using the ﬂexible output options on the Triplexer,
+this data can then be mapped to parameters in an eﬀects
+setup or software to manipulate various qualities of sound.
+In this paper, we oﬀer detailed descriptions of theTriplexer
+hardware and software. We then describe various use cases
+both in terms of the device’s integration into existing eﬀects
+setups, and also in terms of how the users can interact with
+it. Finally, we oﬀer the results of a user study, which we
+conducted with 10 musicians that have diﬀerent degrees of
+experience with expression pedals. We analyze these results
+to determine the usability of our interface, and how it can
+be improved to better suit the needs of performers.
+2. RELATED WORK
+There are numerous hardware interfaces which oﬀer multi-
+dimensional control. Many of these are designed for use
+with hands. For example, Wessel et al. describe interfaces
+composed of an array of 16 or 24 force-sensitive XYZ pads
+[11]. More recently, Roli has introduced the Seaboard 1,
+which expands upon the common piano interface with soft
+keys that are capable of tracking ﬁnger movements in three
+dimensions. Similarly, the Linnstrument 2 features a large
+array of pressure sensitive keys that also measure XY posi-
+tion.
+In addition to such hand-oriented interfaces, there are
+also controllers that aim to improve the common foot switch
+and expression pedal design. A popular example is Keith
+McMillen Instruments’ SoftStep 2 3, which is a multi-pad
+foot controller, where each pad is sensitive to changes in
+pressure and XY position relying on the manufacturer’s
+multi-touch controller design [6]. The controller has 10 pads
+that are in the shape of a plus sign that is slightly smaller
+than 2 inches in width. While this layout oﬀers a signiﬁcant
+number of control outputs that can be mapped to various
+parameters, the size of the pads limits the area onto which
+the foot can be placed.
+The Telonics FP-1004 is based on the common expression
+pedal with the addition of sensors to determine the angular
+position of the pedal. This way the user can choose between
+various taper characteristics for the volume curve to achieve
+ﬁner control over the pedal’s attenuation of input signals.
+The Pressure-Sensing Pedal[2] uses a force sensitive resis-
+tor (FSR) sandwiched between a piece of plywood and foam
+cut to the size of a foot. The pedal is designed for tracking
+taps for tempo adjustment. Rhythm’n’Shoes, by Papetti et
+1https://roli.com/seaboard
+2http://rogerlinndesign.com/linnstrument.html
+3https://keithmcmillen.com/products/softstep/
+4http://telonics.com/products/proaudio/fp-100.php
+263
+al. is a wearable system that involves sandals that are sim-
+ilarly equipped with FSRs. The output of these resistors
+are used to control physical modeling synthesis [8]. Actua-
+tors on the sandals provide tactile feedback to the performer
+while wireless transmitters are used for untethered connec-
+tion to a host computer. Each force sensor is sensitive to
+an upper limit of about 5 pounds, which is a typical draw-
+back for FSRs under conditions that require a wider range
+of responses to weight. Like the Pressure-Sensing Pedal,
+Rhythm’n’Shoes is optimized for tracking transient events.
+In another wearable design, Konvalovs et al. describe
+an apparatus that involve multiple motion sensors that can
+be attached to a shoe [4]. The apparatus detects speciﬁc
+foot gestures, which are used to switch eﬀects on or oﬀ.
+While tilting the foot forward and backward can be used
+to control a wah wah eﬀect, the primary use of the device
+is described as binary controls rather than those that are
+continuous. Based on a similar design, a patent ﬁling from
+2013 describes the use of various sensors in a shoe to track
+the movements of the performers foot [1]. The data gath-
+ered from these sensors are transferred wirelessly to a base
+unit, which maps these to various eﬀects parameters.
+Although several pressure and position sensitive foot con-
+trollers oﬀer physical interfaces similar to that of theTriplexer,
+these diﬀer in intended application and style of use. Some
+of these are geared towards tracking dance movements [10,
+3, 9], and so they oﬀer surfaces that are considerably larger
+than that of the Triplexer. The footPad [5] is a platform
+that is operated with both feet, and measures position, as
+well as tracking speciﬁc gestures. Its intended purpose is de-
+scribed as manipulating transport controls in digital audio
+workstations.
+3. TRIPLEXER
+To improve upon the single dimensionality of the common
+expression pedal, we designed the Triplexer, which is a foot
+controller that oﬀers 3 degrees of freedom. Using industrial-
+grade load cells placed on each corner of the pedal plat-
+form, the device is capable of sensing ﬁne movements on
+front-back (Y), left-right (X), and up-down (Z) axes. What
+sets apart the Triplexer from current oﬀerings in multi-
+dimensional foot control is its sensing mechanism that is
+designed to measure heavy loads. This implies that the per-
+former can use the whole weight of their body as a source of
+expression for detailed control of various eﬀects parameters
+as demonstrated in our video abstract. 5 In addition to foot
+gestures used with expression pedals, the user can also uti-
+lize leaning and swaying motions, which can naturally occur
+during a performance, for parameter control.
+The output of the Triplexer can be used to control other
+pedals or software: the embedded system supports two-
+way MIDI and Open Sound Control (OSC) [13] messaging
+as seen in Fig. 3. Since most modern DSP-based stomp-
+boxes implement MIDI communication, the Triplexer can
+easily be integrated into existing eﬀects setups. A built-
+in screen on the controller, as seen in Fig. 1 facilitates the
+mapping of MIDI messages without requiring a computer.
+Furthermore, a desktop application, seen in Fig. 6 allows
+the Triplexer to communicate with any software via USB.
+3.1 Hardware Design
+The Triplexer hardware consists of a custom 3D-printed
+and laser-cut enclosure, a Teensy microcontroller, custom
+circuitry for processing sensor signals, a physical user inter-
+face, MIDI input and output, and a power supply. A layout
+of this hardware is seen in Fig. 2.
+5https://vimeo.com/triplexer/video
+Figure 1 – The Triplexer with a semi-transparent image
+of a foot overlaid for illustration.
+3.1.1 Electronics
+To achieve 3 degrees of freedom with high pressure sensi-
+tivity, we used 4 button-style load cells located in each cor-
+ner of the enclosure. Load cells, which are widely used for
+weight measurement in various commercial and industrial
+applications, are capable of measuring much larger forces
+than an individual force sensitive resistor. The load cells
+used in the Triplexer are rated for 200kg each, so it can
+respond to a very large range of forces without a risk of
+overloading the sensors.
+Load cells work by forming a Wheatstone bridge with re-
+sistances that vary with strain on the sensor [7]. Because the
+resistances in the Wheatstone bridge change on the order of
+milliohms, the diﬀerential signal coming from the load cell
+is at a very low level. An instrumentation ampliﬁer is used
+to get this signal from the millivolt range into a range usable
+by the Teensy microcontroller’s analog-to-digital converter
+(ADC).
+The on-board user interface consists of a character LCD
+screen and several buttons, which allow the user to perform
+calibration and navigate a menu system for the conﬁgura-
+tion of various settings including control mappings, optional
+inversion of each axis, response curves and pedal sensitivity,
+and saving and loading settings from the bank in EEPROM.
+The MIDI circuitry was designed to comply with the
+MIDI electrical standard. It supports IN, THROUGH, and
+OUT connections, which makes the Triplexer easy to use
+in various MIDI setups with keyboards, eﬀects pedals, and
+other musical interfaces. Panel mount MIDI jacks are posi-
+tioned on the front edge of the electronics enclosure.
+Power is supplied using a 2.1mm barrel jack, which is
+common for eﬀects pedals. This way, the Triplexer can be
+integrated into existing pedal power systems, such as the
+264
+Figure 2– Triplexer hardware layout.
+Voodoo Labspower supplies6. Voltage is regulated down to
+5V for MIDI circuitry, per the MIDI standard, and 3.3V for
+the rest of the design. The entire circuit is custom-ﬁtted
+onto a 2-layer PCB.
+3.1.2 Enclosure
+The Triplexer has been designed with portability in mind.
+The enclosure, seen in Fig. 1, consists of two main sections,
+both attached to a base plate that forms the footprint of the
+device. The platform, custom built from a sheet of quarter
+inch 6061 aluminum, is 12” by 6”, with a layer of rubber
+padding on top. The height of the platform is 1”, which
+makes it much shallower than the common expression pedal.
+The platform rests on four load cells positioned near its cor-
+ners. These load cells are attached with machine screws to
+the base plate, which is also 6061 aluminum. This material
+was chosen to achieve a high level of durability under user
+weight.
+The electronics and on-board user interface are housed in
+a 3D-printed box ﬁxed on the bottom plate where the foot
+surface ends. MIDI, USB type B, and DC power jacks are
+all located on the far end of this box away from the user’s
+foot. The screen and the buttons are on the top surface of
+the box.
+3.2 Software Design
+3.2.1 Data Transmission and Processing
+The Triplexer’s embedded software implements a series of
+signal processing and data processing techniques, which trans-
+form the raw data from the load cells into useful OSC and
+MIDI messages. The overall latency from sensor input to
+the completion of USB data transmission is approximately 3
+ms, which is under the with the 10 ms latency requirement
+suggested by Wessel and Wright [12]. The signal ﬂow of
+this process is seen in Fig. 5. First, input values from each
+load cell are adjusted for individual zero-balance and sensi-
+tivity. These calibrated values are then used to calculate a
+center of mass value, which is used to derive raw X and Y
+positions. The data from individual cells are also summed
+6http://www.voodoolab.com/pedalpower_landing.html
+Figure 3– Triplexer input/output ports and some of their
+possible use cases.
+for the Z value, which reﬂects the total weight. The total
+weight can be adjusted for each user via a calibration pro-
+cess, which sets the maximum desired total weight. The
+calibration process can be initiated at any time using the
+physical UI of the controller.
+The calibrated and averaged X, Y, and Z values are used
+as indices into response curves for each axis. The user can
+adjust these curves for each axis using two parameters, each
+ranging from 0 to 100 with a step size of 1. The ﬁrst is a
+”sensitivity” parameter which controls the shape of the re-
+sponse. A value of 0 produces an exponential shape, a value
+of 50 produces a linear shape, and a value of 100 produces a
+logarithmic shape. The second curve parameter is ”width”,
+which allows the perceived dimensions of the platform to be
+adjusted in software to ﬁt a user’s foot size and style of use.
+Speciﬁcally, it adjusts the range in which indices result in
+outputs between zero (for low raw input values) and a max-
+imum value (for high raw input values). Indices outside this
+range all produce the maximum or minimum output value.
+A value of 0 results in a curve which uses about half of the
+available length along an axis, and a value of 100 uses all
+of the available length. Fig. 4 shows the range of possible
+response curve shapes.
+The processed signals are output as MIDI and OSC mes-
+sages. Since they are calculated as 16-bit integers, the least
+signiﬁcant 9 bits are discarded for MIDI output. The MIDI
+Figure 4– Left: Response curves, ranging from exponen-
+tial through linear to logarithmic shape; right: response
+area widths (blue: 0, red: 50, yellow: 100)
+265
+Figure 5 – Triplexer signal ﬂow from user interaction to
+MIDI/OSC output.
+and OSC messages are also output at the Triplexer’s full
+1 kHz over USB, but MIDI using the much slower conven-
+tional UART port is downsampled to avoid starving out
+other MIDI signals.
+If no force is applied to the platform, instead of going
+through the process described above, outputs are calculated
+from the most recent non-zero values. This allows the user
+to remove their foot and have the system maintain its state,
+which is similar to leaving an expression pedal at a partic-
+ular angle. A separate ring buﬀer keeps a history of values
+for this purpose. The user can achieve the eﬀect of zero
+total weight applied (i.e. a Z value of 0) by leaving the foot
+in light contact with the platform for a brief moment before
+removing it.
+3.2.2 Front-end User Interface
+The OSC capabilities of the Triplexer facilitates the exter-
+nal control of various device settings, as well as the mapping
+of the sensory data to software parameters. The performer
+can use any software that supports OSC to conﬁgure the
+device in real-time. To further facilitate this process, we
+designed a software using PureData, as seen in Fig. 6, that
+serves as both a device conﬁguration tool, and a mapping
+interface for routing messages between the Triplexer and
+other software.
+3.3 Applications
+In general, the Triplexer’s potential uses extend to any do-
+main where the 3D-parameter space or hands-free operation
+are of use. Its primary intended use is as an interface to con-
+trol external eﬀects. In this use case, the user’s hands may
+be occupied with playing an instrument while the feet are
+used to expressively control eﬀects parameters. The output
+ports on the device facilitate connection to other eﬀects ped-
+als or to a computer, while GUI available on the device or on
+a connected computer make it easy to conﬁgure and route
+as desired. We have tested several speciﬁc use cases. For
+example, a guitarist controlling pedals with MIDI inputs, or
+a keyboardist controlling synthesizer parameters by insert-
+ing the Triplexer between a standard MIDI controller and
+a synthesizer. Because USB MIDI and OSC are available,
+it is also simple to control eﬀects in computer software.
+The Triplexer can also be used as a stand-alone instru-
+ment. We have experimented with using it to control sound
+Figure 6 – User interface of the Triplexer mapping soft-
+ware built in PureData.
+generation in PureData by mapping its output to the ampli-
+tude envelope, quantized pitch and ﬁltering of a synthesized
+sound. We found the one-millisecond time resolution to be
+suﬃcient to provide a sense of smooth expression in this
+context, and the 3-dimensional foot control of sound gener-
+ation felt intuitive.
+In a similar application, we mapped the outputs of the
+Triplexer to various parameters of a granular synthesizer.
+We found the use of the whole weight of the body to control,
+for instance, the density of grains in a continuous cloud to
+create interesting gestural metaphors.
+3.3.1 Extended Techniques
+The platform can be used physically in a variety of ways.
+Perhaps the most obvious way is by placing a single foot
+on the platform, and leaving it there for continuous control.
+This mode of interaction is the most similar to how existing
+expression pedals are used.
+Another approach is to place both feet on the platform.
+This can be done while facing to the side, a method of use
+we refer to as ”skateboard” style. We found the pedal’s
+3D output in relation to the user’s swaying motions in this
+pose to yield intuitive results when mapped to eﬀects. The
+pose also makes it especially easy to reach anywhere within
+the continuous range of the left-right and front-back axes.
+The resulting gesture is similar to those performed on a
+Wii Balance Board, which also performs a center of mass
+calculation to facilitate ﬁtness applications within the Wii
+framework. 7
+If ongoing control is not desired, the Triplexer can be
+7http://wiifit.com/
+266
+used more as a switch. When it detects that no weight is
+applied to the platform, it stays in the same state as before
+weight was removed. As a result, the platform can be used
+as if it were a stompbox switch by stepping brieﬂy on the
+platform to achieve some combination of settings, and then
+removing the foot from its surface.
+4. USER STUDY
+We conducted a user study to evaluate 1) the usability of
+the Triplexer as a 3-degrees-of-freedom expression pedal,
+2) mapping strategies between eﬀects parameters and the
+Triplexer’s control axes, and 3) extended techniques for the
+Triplexer in various performance contexts. Every instance
+of the study was recorded audio-visually. We worked with
+a diverse group of musicians to assess various scenarios in
+which the device can be used to augment an existing setup,
+or facilitate novel use cases.
+4.1 Participants
+The study was conducted with 10 participants. Among the
+participants were 8 guitar players who had varying degrees
+of experience with eﬀects pedals ranging from not having
+used them at all to having professionally performed with
+pedals for several decades. Among the two remaining par-
+ticipants were a professional pianist and a violinist. The
+pianist had some experience with expression pedals, while
+the violinist had no experience using eﬀects of any kind.
+Each study lasted approximately 45 minutes.
+4.2 Method
+The participants were ﬁrst given a brief tutorial on the op-
+eration of the Triplexer. The following study consisted of
+three sections.
+In the ﬁrst section, the participants were presented with
+a set of pre-determined mappings between eﬀects parame-
+ters and control axes. These were ”distortion amount” on
+the front-back (Y) axis, ”tremolo depth” in the left-right
+(X) axis, and ”reverb amount” on the up-down (Z) axis.
+The choice of parameters in this section was made with the
+aim of having individual axes address separate (i.e. spec-
+tral, temporal, and spatial) qualities of sound that can be
+easily distinguished from one another. The users were ﬁrst
+introduced with the axes in isolation so as to allow them
+to gain a sense of the pedal’s response in individual axes.
+They were then asked to try two-axis combinations (i.e. X-
+Y, X-Z, and Y-Z). Finally, they were asked to perform with
+all three axes enabled. At the end of the ﬁrst section, they
+were asked to ﬁll out a brief survey.
+In the second section, the users were introduced to the
+Triplexer’s desktop software, which allows the mapping of
+axes to parameters as seen in Fig. 6. They were then asked
+to try out diﬀerent combinations of parameters on each
+axis, and perform with these settings. The available pa-
+rameters in this section included ”distortion amount”, ”delay
+feedback”, ”tremolo rate”, ”tremolo depth”, ”wah wah rate”,
+”wah wah depth”, ”chorus amount”, and ”reverb amount”.
+At the end of this section, the users were asked to ﬁll out
+another brief survey.
+In the third section of the study, the users were asked to
+explore extended techniques for using theTriplexer. Among
+these were some of the techniques we discussed under Sec-
+tion 3.3, such as mounting the pedal sideways with both
+feet using the ”skateboard” style, depressing the pedal non-
+uniformly (i.e. by partially mounting it), and tapping parts
+of the pedal of the surface. The users were also encouraged
+to try out any techniques that they could think of. The
+users were then asked to ﬁll out a ﬁnal survey.
+4.3 Results and Discussion
+In the ﬁrst section of the study, we were primarily inter-
+ested in monitoring the users’ general interaction with the
+Triplexer, to what extent they were able to control the in-
+dividual axes, and how this aﬀected their performance. In
+Fig. 7, it can be seen that the users rated the up-down axis
+the most comfortable to use, with left-right described as the
+least comfortable. When asked about which combination
+of two axes felt most natural, 6 of the 10 users responded
+”up-down and front-back”, 3 users said ”front-back and left-
+right”, and 1 user said ”up-down and left-right”.
+Figure 7– Responses to questions about how comfortable
+it was to control a parameter using an individual axis (i.e.
+either up-down, front-back, or left-right), with 0: not com-
+fortable at all, 5: very comfortable.
+In the second section, we were interested observing which
+eﬀects combinations they deemed to be most suitable for
+controlling within the 3D parameter space. Most users
+spent about 15 minutes experimenting with various map-
+pings. In the following survey, the users were asked to iden-
+tify the eﬀects that were best suited for the individual axes
+during 3D control. With the number of users indicated in
+parentheses, for the front-back axis the users listed tremolo
+(4), wah wah (3), distortion (1); for the up-down axis: re-
+verb (2), wah wah (2), delay (1), tremolo (1), chorus (1), dis-
+tortion (1); and for the left-right axis: tremolo (3), wah wah
+(2), distortion (1). Although there is no signiﬁcant trend
+in these responses, tremolo and wah wah eﬀects were the
+most frequent answers across all axes. Also interestingly,
+reverb and delay eﬀects were almost exclusively listed for
+the up-down axis. Although our sample size is fairly small,
+this result encourages further research into whether the em-
+bodied interaction involved in controlling the up-down axis
+with the user’s full weight has a kinesthetic relationship with
+the senses of prolongation and spatial expansion involved in
+reverb and delay eﬀects.
+One user primarily focused on controlling eﬀect rates on
+diﬀerent axes (e.g. tremolo rate on one and wah rate on the
+other) to create cross-eﬀect beatings. A violinist, who did
+not have previous experience with eﬀects pedals, said she
+was surprised by how natural the translation of her move-
+ments into eﬀect changes was. When the users were asked
+about what other eﬀects would be suitable to be controlled
+with the Triplexer but were not included in the study, the
+responses included volume, phaser, and ﬁlter.
+In the third section, we aimed to understand whether any
+of the extended techniques we outlined in Section 3.3, were
+considered by the users as viable methods of performing
+with the Triplexer. We were also curious to see what other
+methods the users would come up with. The ”skateboard”
+technique was overwhelmingly popular among the partici-
+pants. Users described that they were able to transfer the
+natural sway of their body during a performance to the con-
+trol of a parameter, which felt more natural than explicitly
+controlling a pedal.
+267
+In the survey that followed this section, in addition to
+expressing their thoughts on the extended techniques, the
+users were also asked to provide general comments and re-
+quests regarding the Triplexer in the form of linear-scale
+ratings and written responses. In response to a question
+about how the Triplexer could be integrated into the user’s
+existing setup or playing style, 3 users mentioned that it
+would best be used to augment their existing setups. 3
+users deemed suitable for more experimental uses such as
+continuous shaping of tone and texture. One user stated
+that it would be best for controlling time and space based
+eﬀects, while another mentioned that they would use it with
+eﬀect that would widen the sound of their acoustic guitar.
+Figure 8 – Responses to questions asking users to rate
+1) the sensitivity at which the Triplexer responded to user
+movements (0: not sensitive at all, 5: very sensitive); 2)
+how the user’s intents while performing with the Triplexer
+matched the results (0: did not match at all, 5: matched
+perfectly); 3) whether the user’s control over the Triplexer
+improved over time (0: strongly disagree, 5: strongly agree);
+and 4) how playable the Triplexer was overall (0: not
+playable at all, 5: very playable).
+One user who had professional experience working with
+people with disabilities argued that the Triplexer would po-
+tentially be more accessible than a conventional expression
+pedal for that population. Shifting weight on a platform
+could hypothetically be done in a variety of ways that would
+require less dexterity while, for instance, seated on a plat-
+form.
+5. FUTURE WORK AND CONCLUSIONS
+Based on the promising results of our user study, we have
+outlined several possible improvements for the Triplexer.
+The PureData tool that visualizes the user’s position on the
+pedal, seen in Fig.6, was initially designed as a debugging
+tool during software development. During our preliminary
+studies, it became apparent that some visual feedback is
+useful while using the Triplexer. This assumption was fur-
+ther conﬁrmed during the second part of the user study,
+where participants were allowed to use the visual monitor
+while choosing parameter mappings. All participants found
+the display helpful, and several suggested that a similar dis-
+play would be useful on the device itself. Accordingly, we
+elaborated a new design of the Triplexer that includes a
+graphical display instead of a character display, so that, in
+addition to the menu system being available when needed,
+it would also be possible to display the foot position on the
+pedal.
+The general preference among users towards controlling
+time and space based eﬀects has prompted us to conduct
+further research into the kinesthetic relationship between
+audio aﬀects and their embodied cognition. As a result of
+this, we hope to identify audio eﬀects combinations that can
+be built into the Triplexer so that it will also function as a
+stand-alone eﬀects pedal.
+The strong preference towards the ”skateboard”technique
+has encouraged us to explore diﬀerent mechanical designs
+including a longer platform which the users could more eas-
+ily mount with both feet standing sideways. We also intend
+to create calibration presets for diﬀerent poses, such as play-
+ing while sitting down. These presets will automatically set
+the response curve in a way that better suits the use case.
+We believe that theTriplexer improves upon the common
+expression pedal design in a way that signiﬁcantly expands
+the performer’s control space. It facilitates the integration
+of the user’s bodily expressions into performance practices
+with a form factor and connectivity options that ﬁt within
+existing eﬀects setups.
+6. REFERENCES
+[1] J. R. D’amours. Audio eﬀects controller for musicians,
+Dec. 17 2013. US Patent 8,609,973.
+[2] R. B. Dannenberg. New interfaces for popular music
+performance. In Proceedings of the 7th international
+conference on New interfaces for musical expression,
+pages 130–135. ACM, 2007.
+[3] R. Kondapalli and B.-Z. Sung. Daft datum-an
+interface for producing music through foot-based
+interaction. In NIME, pages 140–141, 2011.
+[4] K. Konovalovs, J. Zovnercuka, A. Adjorlu, and
+D. Overholt. A wearable
+foot-mounted/instrument-mounted eﬀect controller:
+Design and evaluation. In New Interfaces for Musical
+Expression 2017, pages 354–357, 2017.
+[5] C. Leider, D. Mann, D. Plazas, M. Battaglia, and
+R. Draper. The elbo and footpad: Toward
+personalized hardware for audio manipulation. In
+NIME, pages 147–148, 2009.
+[6] K. McMillen and D. E. McAnulty. Multi-touch pad
+controller, July 7 2015. US Patent 9,076,419.
+[7] I. Muller, R. M. de Brito, C. E. Pereira, and
+V. Brusamarello. Load cells in force sensing
+analysis–theory and a novel application. IEEE
+Instrumentation & Measurement Magazine, 13(1),
+2010.
+[8] S. Papetti, M. Civolani, and F. Fontana.
+Rhythm’n’shoes: a wearable foot tapping interface
+with audio-tactile feedback. In NIME, pages 473–476,
+2011.
+[9] J. Paradiso, C. Abler, K.-y. Hsiao, and M. Reynolds.
+The magic carpet: physical sensing for immersive
+environments. In CHI’97 Extended Abstracts on
+Human Factors in Computing Systems, pages
+277–278. ACM, 1997.
+[10] R. F. Pinkston. A touch sensitive dance ﬂoor/midi
+controller. The Journal of the Acoustical Society of
+America, 96(5):3302–3302, 1994.
+[11] D. Wessel, R. Avizienis, A. Freed, and M. Wright. A
+force sensitive multi-touch array supporting multiple
+2-d musical control structures. In Proceedings of the
+7th international conference on New interfaces for
+musical expression, pages 41–45. ACM, 2007.
+[12] D. Wessel and M. Wright. Problems and prospects for
+intimate musical control of computers. Computer
+music journal, 26(3):11–22, 2002.
+[13] M. Wright, A. Freed, et al. Open soundcontrol: A
+new protocol for communicating with sound
+synthesizers. In ICMC, 1997.
+268

@@ -1,0 +1,455 @@
+Hex Player—A Virtual Musical Controller
+Andrew J. Milne
+Computing Department
+The Open University
+Milton Keynes, UK
+andymilne@tonalcentre.org
+Anna Xambó
+Computing Department
+The Open University
+Milton Keynes, UK
+a.xambo@open.ac.uk
+Robin Laney
+Computing Department
+The Open University
+Milton Keynes, UK
+r.c.laney@open.ac.uk
+David B. Sharp
+Department of DDEM
+The Open University
+Milton Keynes, UK
+d.sharp@open.ac.uk
+Anthony Prechtl
+Independent Researcher
+California, USA
+aprechtl@gmail.com
+Simon Holland
+Computing Department
+The Open University
+Milton Keynes, UK
+s.holland@open.ac.uk
+ABSTRACT
+In this paper, we describe a playable musical interface for
+tablets and multi-touch tables. The interface is a general-
+ized keyboard, inspired by the Thummer, and consists of an
+array of virtual buttons. On a generalized keyboard, any
+given interval always has the same shape (and therefore ﬁn-
+gering); furthermore, the ﬁngering is consistent over a broad
+range of tunings. Compared to a physical generalized key-
+board, a virtual version has some advantages—notably, that
+the spatial location of the buttons can be transformed by
+shears and rotations, and their colouring can be changed to
+reﬂect their musical function in diﬀerent scales.
+We exploit these ﬂexibilities to facilitate the playing not
+just of conventional Western scales but also a wide variety of
+microtonal generalized diatonic scales known as moment of
+symmetry, or well-formed, scales. A user can choose such a
+scale, and the buttons are automatically arranged so their
+spatial height corresponds to their pitch, and buttons an
+octave apart are always vertically above each other. Fur-
+thermore, the most numerous scale steps run along rows,
+while buttons within the scale are light-coloured, and those
+outside are dark or removed.
+These features can aid beginners; for example, the chosen
+scale might be the diatonic, in which case the piano’s famil-
+iar white and black colouring of the seven diatonic and ﬁve
+chromatic notes is used, but only one scale ﬁngering need
+ever be learned (unlike a piano where every key needs a
+diﬀerent ﬁngering). Alternatively, it can assist advanced
+composers and musicians seeking to explore the universe of
+unfamiliar microtonal scales.
+Keywords
+generalized keyboard, isomorphic layout, multi-touch sur-
+face, tablet, musical interface design, iPad, microtonality
+1. INTRODUCTION
+Hex Player is a virtual musical controller. It is played by
+the ﬁngers and sends standard MIDI messages to control
+any software or hardware synthesizer. It is designed to
+make playing music easier without imposing a ceiling on
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’11,30 May–1 June 2011, Oslo, Norway.
+Copyright remains with the author(s).
+Figure 1: Hex Player on a tablet. The white/grey
+buttons are generalized diatonic/chromatic notes.
+expressiveness and creative possibilities. Hex Player lives
+on a multi-touch surface such as a tablet (e.g., iPad) or ta-
+ble (e.g., Evoluce or Microsoft Surface), and consists of a
+lattice (array) of hexagonal buttons (see Figure 1).
+Pressing any of these virtual buttons sends a MIDI note
+event to a software, or external hardware, synthesizer. The
+blank areas to the left and right of the buttons are a control
+surface that can be operated by the thumb or pinkie (little
+ﬁnger) of each hand; these can be used to control a number
+of expressive parameters such as timbre, volume, vibrato, or
+tuning, while the four ﬁngers (or three ﬁngers and thumb)
+play notes. This means that an expressive lead part (with
+pitch bends, and vibrato, etc.) can be played with one
+hand, and a bass line or chords with the other. Contrast
+this with a piano-style keyboard, where an expressive lead
+part typically requires two hands—one to play the notes, the
+other to operate the pitch-bend/modulation wheel/joystick.
+Hex Player’s note layouts and use of a thumb-operated
+controller are based upon the design of Thumtronic Inc.’s
+prototypical hardware instrument, the Thummer (http://
+thummer.com). The Thummer project is now open source
+and, in this paper, we describe how we have transferred
+many of the design features of the hardware Thummer to
+a software virtual interface, and how we have further ex-
+tended its capabilities in ways that would not be possible
+in a hardware device.
+Like the Thummer, Hex Player provides a generalized
+keyboard and uses an isomorphic note layout. Generalized
+keyboards have their keys, or buttons, arranged in a regu-
+lar (typically two-dimensional) lattice. Such keyboards date
+back at least as far as the nineteenth century; many exam-
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+244
+ples of which are given in [6]. On a generalized keyboard, it
+is possible to arrange pitches isomorphically, which ensures
+that the same interval, scale, or chord, always has the same
+geometrical shape regardless of transposition [2, 7]. Fur-
+thermore, intervals, scales, and chords (when categorized
+according to reasonable criteria) have the same geometrical
+shape over a wide range of tunings, thus enabling tuning to
+be altered without aﬀecting note layout [8].
+In this paper, we describe four novel extensions to the cur-
+rent theory of generalized keyboards and isomorphic note
+layouts: ﬁrstly, we introduce a class ofadjacent seconds
+note layouts, which generalize many of the useful proper-
+ties of the Wicki accordion button layout (the layout used
+by the Thummer) over a wide variety of microtonal scales;
+secondly, we describe how shears and rotations of the lay-
+outs ensure the pitch height of each button is shown by its
+spatial height, and that buttons an octave apart are ver-
+tically aligned; thirdly, we show how the amount of shear
+applied to the layout (and hence its tuning) can be dy-
+namically controlled while playing; fourthly, we show how
+alterable button colouration can be used to indicate gener-
+alized diatonic and chromatic scales (well-formed or MOS
+scales—formally deﬁned in Section 2.1.4).
+In the next section, we provide some of the music theo-
+retical and mathematical underpinnings required to under-
+stand these innovations. After that, we discuss some of the
+potential beneﬁts of an interface like Hex Player.
+2. GENERALIZED KEYBOARDS AND ISO-
+MORPHIC NOTE LAYOUTS
+Generalized keyboards with isomorphic layouts have a num-
+ber of properties that may facilitate the comprehension and
+playing of music.
+2.1 Basic Deﬁnitions
+Before proceeding to a full description of the interface and
+its properties, some formal deﬁnitions may be helpful.
+2.1.1 Generalized Keyboard
+As pictured in Figure 2, a generalized keyboard or button-
+lattice consists of a regular array of (real or virtual) buttons
+[7], each of which plays a musical tone. The buttons could
+be arranged in one-, two-, or three-dimensional space, but
+we will restrict this discussion to two-dimensional lattices
+(because these can be implemented on a surface).
+2.1.2 Two-dimensional Tuning System
+A two-dimensional tuning system is one that is generated
+from two intervals—a period (typically the octave), and
+a generator (typically a perfect ﬁfth). For example, the
+pentatonic scale can be generated by stacking four perfect
+ﬁfths (e.g., C–G–D–A–E) and reducing them by octaves so
+all tones lie within one octave (e.g., in pitch order, C, D,
+E, G, A); the diatonic scale can be generated by stacking
+six perfect ﬁfths (F–C–G–D–A–E–B) and reducing them
+by octaves (e.g., in pitch order, C, D, E, F, G, A, B); the
+chromatic scale by stacking eleven such ﬁfths (e.g., E♭–B♭–
+F–C–G–D–A–E–B–F♯–C♯–G♯) and reducing them (e.g., in
+pitch order, C, C ♯, D, E ♭, E, F, F ♯, G, G ♯, A, B ♭, B). The
+period and generator can, however, take any size (not just
+octave and ﬁfth), and diﬀerent sizes can generate unfamiliar
+scales that share a number of properties with the familiar
+pentatonic, diatonic, and chromatic.
+2.1.3 Isomorphic Layout
+An isomorphic layout is one in which the period and gener-
+ator of the tuning system are mapped to a spatial basis of
+Figure 2: An isomorphic note layout (the Wicki lay-
+out) on a virtual generalized keyboard.
+the button-lattice [8]. There are several possible bases, and
+hence several possible mappings (and each diﬀerent map-
+ping constitutes a diﬀerent note layout), but one of the most
+historically successful (at least in the case of the chromatic
+scale) can be found in the Wicki accordion button layout
+[13]. The key to understanding the Wicki mapping is to
+note how the period and generator (here octave and ﬁfth)
+are mapped spatially (see Figure 2—the arrows show the
+spatial vectors corresponding to the period and generator).
+2.1.4 Moment of Symmetry/Well-formed Scales
+A moment of symmetry(MOS) [14] or well-formed [4] scale
+is a generated scale containing exactly two step sizes that
+are distributed with maximal evenness. A generated scale
+is produced by repeatedly adding a generator interval (typ-
+ically a perfect ﬁfth) and then reducing all such intervals
+by repeatedly subtracting a period interval (typically the
+octave) so all intervals are smaller than the period.
+The number of times the generator can be stacked so as
+to produce just two step sizes depends on the ratio of the
+generator and period. For example, if the generator is 702
+cents and the period is 1200 cents (a generator/period ratio
+of 0.585), then well-formed scales are available with 3 tones
+(e.g., C, D, G), 5 tones (e.g., C, D, E, G, A), 7 tones (e.g.,
+C, D, E, F ♯, G, A, B), 12 tones (e.g., C, C ♯, D, D ♯, E, E♯,
+F♯, G, G♯, A, A♯, B), 17 tones, and so forth [4]. A diﬀerent
+generator/period ratio requires diﬀerent numbers of tones
+to produce a well-formed scale—when the generator is 316
+cents (a just intonation “minor third”) and the period is
+1200 cents, the following numbers of tones are well-formed:
+3, 4, 7, 11, 15, 19, and so forth. With no loss of generality,
+whenever the size of the period is not explicitly mentioned,
+it is assumed to be 1200 cents.
+MOS scales have a number of properties that are thought
+to give them æsthetic value. There is not space to discuss
+these properties in depth but, brieﬂy: every scale span—
+generic interval size—comes in exactly two speciﬁc interval
+sizes (Myhill’s property [5]); the two scale step sizes are
+evenly distributed throughout the period; within the pe-
+riod, every scale degree has a unique pattern of intervals
+surrounding it [1]—this may be necessary for any scale to
+support tonal functionality; when transposed by the gener-
+ator, the resulting scale shares all but one tone, facilitating
+modulation [1]; collectively, these features suggest a good
+compromise between the excessive simplicity of equal step
+scales and the complexity of completely irregular scales [3].
+An MOS, therefore, provides an eﬀective way to choose a
+scale (a set of notes) from any abstract 2-D tuning.
+2.2 General Properties of Isomorphic Layouts
+An isomorphic layout has a number of musically useful prop-
+erties discussed in the subsections below.
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+245
+2.2.1 Transpositional Invariance
+Any given interval, chord, or scale, has the same geomet-
+rical shape (and hence ﬁngering) regardless of its location
+(transposition) on the keyboard. So, a musician need learn
+the ﬁngering for a major scale, or harmonic minor scale, or
+third inversion of a dominant seventh chord, just once, and
+then apply that same shape to any key or root note. Com-
+pare this to the piano, where every diﬀerent major scale
+requires a diﬀerent pattern of notes to be memorized [8].
+2.2.2 Tuning Invariance
+The ﬁngering of a wide range of scales can remain invari-
+ant over a wide range of tunings. For example, the ﬁn-
+gering of diatonic/chromatic music will stay essentially in-
+variant when the generator has any size between 685.714
+and 720 cents. This continuum of tunings includes many
+notable tunings, such as 19-tone equal temperament (19-
+tet), various meantone tunings, 12- tet, Pythagorean, 17-
+tet and 22-tet, so consistent ﬁngering may facilitate the
+exploration of alternative tunings [8]. There are many dif-
+ferent tuning continua, each of which smoothly connects a
+wide variety of notable tunings [9].
+2.2.3 Pitch Axis
+Any isomorphic layout has a pitch axis, and the position
+of any button centre in relation to this axis indicates its
+pitch. The angle of this axis depends on the note layout
+(spatial mapping of the period and generator) used and the
+tuning ratio of the generator and period [9]. For example, in
+Figure 2, the pitch axis for a generator of 700 cents (which
+corresponds to a 12-tet tuning) is identiﬁed by the dashed
+white line—note how the distance, measured along this line,
+between D3 and E3 is two thirds of the distance between
+D3 and F3 (draw three lines between the pitch axis and D3,
+E3, and F3, such that all three lines are orthogonal to the
+pitch axis; the distance between the D3 and E3 lines is two
+thirds the distance between the D3 and F3 lines).
+2.2.4 Generator-Span Axis
+The generator-span axis is a novel concept introduced in
+this paper. Any isomorphic layout also has a generator-
+span axis, such that the distance between any two button
+centres, as measured on this axis, indicates the number of
+generators between them. For example, in Figure 2 the
+generator-span axis is shown with a black dashed line—the
+distance, measured on this axis, between D3 and A3 is half
+the distance of D3 and E3 (there is one ﬁfth between the
+former, and two ﬁfths between the latter).
+Assuming the period and generator are linearly indepen-
+dent, any two notes a period (octave) apart have zero gen-
+erator distance, hence the generator-span axis is orthogonal
+to the spatial mapping of the period.
+Pitch distance and generator distance are two important
+musical metrics. The importance of the former is obvious;
+one importance of the latter is that any given MOS scale
+always forms a strip running parallel with the octaves.
+3. HEX PLAYER
+In Hex Player, the pitch and generator-span axes are ori-
+ented, and a speciﬁc isomorphic layout is selected, so as to
+maximize certain useful criteria described below.
+3.1 Orthogonal Axes
+Due to their importance, we have endeavoured to make the
+pitch and generator-span axes easy to discern, visually and
+haptically. To do this, we use a novel approach: applying
+shear and rotation transforms of the lattice to make the
+pitch axis vertical and the generator-span axis horizontal,
+regardless of the isomorphic layout or tuning being used.
+The vertical pitch axis means it is easy to know, in advance
+of playing, the pitch of any button and that, as the hand
+plays an ascending scale, it moves gradually away from the
+body. Furthermore, the horizontal generator-span axis en-
+sures that notes an octave apart are vertically aligned.
+3.2 Adjacent Seconds Layouts
+Adjacent seconds layoutsare a novel concept, and general-
+ize, for any possible MOS scale, some of the useful features
+of the Wicki layout: a notable property of the Wicki layout,
+when used for the pentatonic and diatonic scales, is that the
+most numerous scale step (the whole-tone) runs along each
+row (in Figure 2, observe the scale runs C-D-E and F-G-
+A-B), while the least numerous scale step (“minor third” in
+the pentatonic, and semitone in the diatonic) is reached by
+a “carriage return” skip up to the next row (in Figure 2,
+observe the steps E-F and B-C).
+For the Wicki layout, this neat property breaks down for
+most other MOS scales. For example, Figure 3a shows the
+Wicki layout of the MOS scale with 4 large and 7 small
+steps (the generator is 320 cents)—the most numerous sec-
+onds now skip buttons, the scale’s pattern is more diﬃcult
+to make out, and is not spatially compact. However, by
+choosing an appropriate isomorphic layout, it is possible for
+any MOS scale to have the adjacent seconds property. In-
+deed, for the 120 diﬀerent possible MOS scales with nineteen
+or fewer tones, only 13 diﬀerent layouts are required.
+Figure 3b shows how an adjacent seconds layout for the 4
+large 7 small MOS scale gives a far more compact and easy
+to understand layout than the Wicki. In Hex Player, a user
+can ﬁrst choose an MOS scale (by inputting the number
+of large and small steps in the scale), and then click on
+“Optimize Layout” to switch to an adjacent seconds layout.
+3.3 Dynamic Tuning
+The horizontal generator-span axis ensures all MOS scales
+form a vertical strip of buttons. The space on either side
+can, therefore, be used as a control surface accessible to the
+thumb and pinkie; either of these ﬁngers can change the
+shear of the lattice, and send a correlated MIDI CC value,
+while the remaining ﬁngers are playing. The CC message
+can ensure the synth’s tuning matches that implied by the
+lattice’s shear.1 This opens up the possibility of players
+dynamically mimicking the expressive intonations used by
+advanced string and aerophone players. For example, the
+thumb can be used to move smoothly between meantone
+tunings that are ideal for sustained chords, and Pythagorean
+tunings suitable for expressive melodies [11].
+Outside of these familiar Western tunings, the performer
+can move dynamically, and smoothly, to non-Western tun-
+ings such as 5- tet (as used in Indonesian slendro [12]) or
+7-tet (as used in traditional Thai music [10]).
+These large thumb-/pinkie-operated control surface areas
+can also be mapped to any parameter, so may also control
+other pitch or timbral features (e.g., vibrato or brightness).
+3.4 Generalized Chromatic Embeddings
+Any MOS scale with m large steps and n small can be
+embedded in an MOS scale with 2m+n steps. For example,
+the pentatonic scale can be embedded within the diatonic
+scale, which can be embedded within the chromatic, and
+so on [4]. This provides a neat method to generalize the
+1Dynamic tuning changes such as these require the use of
+a Dynamic Tonality synthesizer such as TransFormSynth,
+The Viking, and 2032, which can be downloaded fromhttp:
+//www.dynamictonality.com.
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+246
+Figure 3: The scale degrees of the 4 large, 7 small steps MOS scale (the generator is 320 cents) in a) the
+Wicki layout, and b) an adjacent seconds layout. The horizontal lines show the pitch height of every button.
+“chromatic” embedding of any MOS scale. In Hex Player,
+when an MOS scale is chosen (by entering the number of
+large and small steps), it is automatically displayed as light-
+coloured buttons (in a central vertical band), surrounded by
+dark-coloured “chromatic” notes.
+This allows for scales of increasing complexity to be pre-
+sented to a beginner in a consistent fashion. For example,
+children are frequently taught the pentatonic scale (e.g., C,
+D, E, G, A) as a ﬁrst step in their musical education (e.g.,
+the Orﬀ and Kod´ aly methods). In Hex Player, the penta-
+tonic scale can be shown as a light coloured vertical strip of
+buttons, while the more challenging diatonic notes (in this
+case, F and B) are dark-coloured buttons on either side of
+this strip. When the student is ready, the diatonic scale can
+be shown as vertical strip of light-coloured buttons, with the
+more challenging chromatic tones shown in a dark colour ei-
+ther side. All of these representations are consistent—the
+same spatial shape always plays the same interval—but, as
+the scales become more complex, the strip just gets wider.
+4. CONCLUSIONS
+This paper presents a novel virtual musical interface de-
+signed to facilitate the playing of both familiar and unfa-
+miliar musics by musicians at all levels: from beginners to
+advanced microtonalists. We do this by combining many
+of the well-established advantages of generalized keyboards
+with some novel extensions.
+In summary, the interface allows a user to select any MOS
+scale, and its tuning, such that: a) all intervals have the
+same shape regardless of transposition; b) all intervals (cat-
+egorized by reasonable criteria) have the same shape over a
+wide range of tunings; c) the layout ensures the pitch axis
+and generator-span axis are vertical and horizontal, respec-
+tively, and so are visually and haptically salient and distinct;
+d) the most numerous scale steps run along rows, the less
+numerous are “carriage returns” up to the next row; e) the
+notes in the scale and the “chromatic” scale, within which
+it is embedded, are displayed as light- and dark-coloured
+buttons lying in a vertical strip at the centre of the dis-
+play; f) the space either side of the note strip can be used
+as a control surface, enabling the thumb or pinkie to dy-
+namically alter the tuning (and correspondingly change the
+shear of the lattice so as to reﬂect the resulting pitches of
+the buttons) while the remaining ﬁngers play.
+The dynamically changing shears, rotations, and button
+colourings are diﬃcult to implement in a hardware interface,
+hence the usefulness of the virtual realisations made possible
+by multi-touch surfaces. A drawback of current surfaces,
+however, is the lack of tactile feedback and velocity and
+pressure sensitivity. It is unknown, at this stage, to what
+extent this impacts upon their utility; we intend to explore
+these issues in future research.
+5. ACKNOWLEDGMENTS
+Thanks to Jim Plamondon for the original inspiration.
+6. REFERENCES
+[1] G. J. Balzano. The pitch set as a level of description
+for studying musical perception. In M. Clynes, editor,
+Music, Mind, and Brain. Plenum Press, New York,
+1982.
+[2] R. H. M. Bosanquet. Elementary Treatise on Musical
+Intervals and Temperament. Macmillan, London,
+1877.
+[3] N. Carey. Coherence and sameness in well-formed and
+pairwise well-formed scales. Journal of Mathematics
+and Music, 1(2):79–98, 2007.
+[4] N. Carey and D. Clampitt. Aspects of well-formed
+scales. Music Theory Spectrum, 11(2):187–206, 1989.
+[5] J. Clough, N. Engebretsen, and J. Kochavi. Scales,
+sets, and interval cycles: A taxonomy. Music Theory
+Spectrum, 21(1):74–104, 1999.
+[6] H. L. F. Helmholtz. On the Sensations of Tone as a
+Physiological Basis for the Theory of Music. Dover,
+New York, 1877.
+[7] D. Keislar. History and principles of microtonal
+keyboards. Computer Music Journal, 11(1):18–28,
+1987.
+[8] A. J. Milne, W. A. Sethares, and J. Plamondon.
+Isomorphic controllers and Dynamic Tuning:
+Invariant ﬁngering over a tuning continuum.
+Computer Music Journal, 31(4):15–32, 2007.
+[9] A. J. Milne, W. A. Sethares, and J. Plamondon.
+Tuning continua and keyboard layouts. Journal of
+Mathematics and Music, 2(1):1–19, 2008.
+[10] D. Morton. The music of Thailand. In E. May, editor,
+Music of Many Cultures, pages 63–82. University of
+California Press, Berkeley, CA, 1980.
+[11] J. Sundberg, A. Friberg, and L. Fryd´ en. Rules for
+automated performance of ensemble music.
+Contemporary Music Review, 3(1):89–109, 1989.
+[12] W. Surjodiningrat, P. J. Sudarjana, and A. Susanto.
+Tone Measurements of Outstanding Javanese
+Gamelan in Yogyakarta and Surakarta. Gadjah Mada
+University Press, Yogyakarta, Indonesia, 1993.
+[13] K. Wicki. Tastatur f ¨ur musikinstrumente, Oct. 1896.
+[14] E. Wilson. Letter to Chalmers pertaining to
+moments-of-symmetry/Tanabe cycle, 1975.
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+247

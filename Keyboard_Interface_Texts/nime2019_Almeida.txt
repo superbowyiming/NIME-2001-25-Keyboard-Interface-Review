@@ -1,0 +1,217 @@
+AMIGO: An Assistive Musical Instrument to Engage, 
+Learn and Create Music 
+  
+Isabela Corintha   
+University of Porto   
+University of Aveiro 
+ isabelaalmeida29@ua.pt
+ 
+           Giordano Cabral 
+Centro de Informática  
+UFPE 
+  grec@cin.ufpe.br  
+ 
+ 
+Gilberto Bernardes 
+INESC TEC &  
+University of Porto 
+gba@fe.up.pt 
+ 
+ABSTRACT 
+We present AMIGO, a real -time computer music system that 
+assists novice users in the composition process through guided 
+musical improvisation. The system consists of 1) a 
+computational analysis-generation algorithm, which not only 
+formalizes musical principles from examples, but also guides 
+the user in selecting note sequences; 2) a MIDI keyboard 
+controller with an integrated LED stripe, which provides visual 
+feedback to the user; and 3) a real -time music notation, which 
+displays the generated output. Ultimately, AMIGO allows the 
+intuitive creation of new musical structures and the acquisition 
+of Western music formalisms, such as musical notation. 
+ 
+Author Keywords 
+Interactivity, Machine learning, Machine improvisation, 
+Musical Notation. 
+ 
+CCS Concepts 
+• Applied computing  → Sound and music computing ; 
+Performing arts 
+ 
+1. INTRODUCTION 
+Existing generative music systems for educational purposes, 
+such as Andantino [7], are rooted in improvisational musical 
+practices, which have been greatly advocated by distinguished 
+20th century pedagogues (e.g., Dalcroze [3] and Swanwick [6]). 
+A complementary approach focus on the use of computational 
+tools to assist in the acquisition of formal principles from music 
+theory and practice. Flowkey and the Illuminating Piano [2, 4] 
+are representative examples, which use keyboards with lighted 
+keys to drive user actions (i.e., performance).  
+  AMIGO merges the aforementioned lines of research by 
+expanding the latter approach to the generation of novel 
+(improvised) musical structures beyond the reproduction of 
+existing music. In this context, AMIGO is not planned to be an 
+autonomous self-taught system, neither in its current version nor 
+as a concept. The purpose is to complement and stimulate the 
+music learning process. The intelligence of the system relies on 
+its capability to derive probabilistic models of note transitions 
+from existing musical examples encoded in the MIDI format. 
+The model of note transitions is then used to interactively guide 
+users through the selection of notes in a composition. A 
+computer screen translates user actions into musical notation, 
+which can be edited and retrieved at a later stage.  
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 1. MIDI controller mounted with a LED stripe. 
+ 
+2. AMIGO  
+Figure 2 shows the two main hardware and software component 
+modules of AMIGO, which together with the user, establishes a 
+closed feedback loop. 
+  The hardware component is a MIDI keyboard mounted with 
+an LED stripe on a wooden board and is used to provide a visual 
+feedback to the user  as shown in Figure 1 . The software 
+component is responsible for  the analysis and generation of 
+musical content and the graphical user interface (GUI) of the 
+system as well as displaying the system output as musical 
+notation. The human in the loop (representing the user 
+perception, cognition, and action) is the primary  driver of the 
+system. 
+ 
+ 
+Figure 2. AMIGO main component modules. 
+ 
+  AMIGO assists users in the selection of pitch content in a 
+treble melodic line which is superimposed to an automatically 
+generated basso ostinato, extracted from the MIDI input file. To 
+this end, it indicates in the LED stripe the distribution of 
+probabilities of all notes in a range of one octave according to 
+the stylistic information of a musical example. The software 
+component is responsible for modeling the pitch content of an 
+input MIDI file (i.e., learning its pitch structure). Moreover, it 
+includes the GUI of AMIGO, which shows the real-time music 
+notation to the user. This visual feedback  aims at indirectly 
+acquainting users with the symbolic signs of music notation. 
+ 
+ 
+168
+2.1 Analysis-generation system   
+AMIGO analysis-generation algorithm learns both the vertical 
+and horizontal dimensions of input musical examples encoded 
+as a MIDI file. It aims at creating a graph -based model that 
+stores the probabilities of the 12 tones within an octave to 1) 
+vertically align with a given bass note and to 2) horizontally 
+succeed a previously selected note. Roughly, these two 
+dimensions can be understood as capturing the harmonic and 
+melodic structure of a musical example. These graph models are 
+then mapped into a color code in the LED stripe, which guides 
+the user action in the note selection process. 
+  The modeling of musical structures relies on two algorithms: 
+12 note histograms to capture the vertical dimension and the 
+transition table  from a Markov chain algorithm for the 
+horizontal dimension [1]. 
+  Histograms are used to represent the distribution of the 
+observed data [5]. In the case of our system, for each of the 12 
+chromatic notes, represented numerically and sequentially from 
+0 (C) to 11 (B), a different histogram is created. For each bass 
+note they represent the (frequency) distribution of vertical notes 
+in the original example. 
+  A square matrix storing  transitions between sequential pairs 
+of notes in the melodic (treble) line o f the input MIDI file 
+establishes the basis for creating the probabilities of 
+transitioning horizontally (i.e., melodically). Similar to the 
+representation used in the histograms, the notes are reduced to 
+12 values representing the total chromatic set within an octave. 
+The resulting matrix is then used to predict transitions during 
+generation, following the typical approach of Markov chains in 
+symbolic music generation. 
+  During performance, AMIGO linearly combines the vertical 
+and horizontal probabilities.  The computation of new 
+probabilities is triggered either by a new bass note (which is 
+automatically sequenced and generated by the system) or by the 
+selection of a new note in the treble melodic line played by the 
+user.    
+ 
+2.2 Keyboard controller with LED stripe 
+The MIDI keyboard in AMIGO is the main system component 
+where user actions are performed. It captures note -on (onset) 
+and note-off (offset) instructions from the user, which are then 
+processed by the analysis -generation system. To guide these 
+user actions an LED stripe was assembled on a wood bar and 
+mounted on the keyboard. For each key there is a corresponding 
+LED (see Figure 1). The LED stripe is connected to AMIGO via 
+an Arduino that receives instructions from the analysis -
+generation system. Du ring performance, every new set of 
+probabilities cause the LEDs change color, ranging from shades 
+of yellow to red, to inform the user the probability of a particular 
+note ‘fitting’ the current bass note and melodic shape. 
+ 
+2.3 Graphical User Interface 
+We created a GUI for AMIGO, for which a screenshot is shown 
+in Figure 3, to allow the user to visualize the musical output 
+using music notation. This includes two main scores. The upper 
+score displays the bass line and the note instructions from users 
+in real  time by associating time to spatial distances between 
+notes. The lower score displays a metrical version of the musical 
+output by quantizing the temporal information into rhythmic 
+values within the time signature of the original MIDI file. 
+Changes to pitch and duration can be done at later stages by user 
+manipulations of both of these representations. Moreover, the 
+GUI allows the user to export the scores as MIDI files. 
+Figure 3. AMIGO’s  interface displaying the music notation 
+feedback.  
+3. CONCLUSIONS AND FUTURE WORK 
+We presented AMIGO, a piece of assistive musical technology 
+for the intuitive creation of musical structures and the 
+acquisition of Western music formalisms from exposure. We 
+briefly detailed the algorithms and mechanics behind our 
+system. In particular, we propose a technique that combines 
+histograms and square transition matrices exposing harmonic 
+and melodic structural features from musical examples to assist 
+users in the generation of new structures. Ultimately, AMIGO 
+aims to easily introduce users to the creation of structures that 
+resemble existing music using an engaging method that can be 
+applied to novice users or children in the initial music training 
+phase. We believe that the possibility to have the music notation 
+feedback can hel p user to become acquainted with some 
+Western music formalisms. For further information and demos, 
+please refer to the following link: 
+https://sites.google.com/site/amigomusicalamigo/home/amigo 
+  In future work, we plan to have a new iteration of AMIGO, 
+which extends the analysis and generation from simple bass and 
+melodic lines to more complex harmonic structures, aiming to 
+promote a more engaging user experience. Furthermore, the 
+GUI design will be studied, adapted and tested for specific 
+target user groups. Finally, a thorough evaluation of AMIGO, 
+to capture its potential in engaging users in music creation and 
+the acquisition of formal music knowledge, will be pursued. 
+ 
+4. REFERENCES 
+[1] A.R. Addessi, F. Pachet. Young children confronting the 
+Continuator, an  interactive reflective musical system. 
+Musicae Scientiae, 10, 1 (March,  2006), 13-39.  
+[2] Flowkey, https://www.flowkey.com/en. Accessed April 2, 
+2018.  
+[3] E. Jaques -Dalcroze. Rhythm, Music and Education . 
+Barclay Press, 1967. 
+[4] McCarthy Music, https://mccarthypia no.com. Accessed 
+june 2, 2018.   
+[5] D. Rufilanchas. On the origin of Karl Pearson's term 
+"histogram". Revista Estadística Española,  59, 192  
+(2017), 29-35. 
+[6] K. Swanwick. A Basis for Music Education . Ninth 
+impression by The NFER/Nelson Publishing Company 
+Ltd,  1979. 
+[7] X. Xiao, P. Puentes, E. Ackermann, and H. Ishii.  
+Andantino: Teaching Children Piano with Projected 
+Animated Characters. In Proceedings of The 15th 
+International Conference on Design and Children 
+(IDC’16) (Manchester, United Kingdom, June 21 -24, 
+2016), ACM New York, NY, 2016, 37-45.  
+ 
+169

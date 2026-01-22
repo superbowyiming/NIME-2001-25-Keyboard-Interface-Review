@@ -1,0 +1,745 @@
+A Machine Learning Toolbox For Musician Computer
+Interaction
+Nicholas Gillian
+Sonic Arts Research Centre
+Queen’s University Belfast
+United Kingdom
+ngillian01@qub.ac.uk
+R. Benjamin Knapp
+Sonic Arts Research Centre
+Queen’s University Belfast
+United Kingdom
+b.knapp@qub.ac.uk
+Sile O’Modhrain
+Sonic Arts Research Centre
+Queen’s University Belfast
+United Kingdom
+sile@qub.ac.uk
+ABSTRACT
+This paper presents the SARC EyesWeb Catalog, (SEC),
+a machine learning toolbox that has been speciﬁcally devel-
+oped for musician-computer interaction. The SEC features
+a large number of machine learning algorithms that can be
+used in real-time to recognise static postures, perform re-
+gression and classify multivariate temporal gestures. The
+algorithms within the toolbox have been designed to work
+with anyN-dimensional signal and can be quickly trained
+with a small number of training examples. We also provide
+the motivation for the algorithms used for the recognition
+of musical gestures to achieve a low intra-personal gener-
+alisation error, as opposed to the inter-personal generalisa-
+tion error that is more common in other areas of human-
+computer interaction.
+Keywords
+Machine learning, gesture recognition, musician-computer
+interaction, SEC
+1. INTRODUCTION
+It has long been the goal of many composers, performers
+and researchers alike to be able to use their own body
+movements to trigger, control and manipulate electronic
+sounds in real-time, live on stage. This goal is slowly being
+made possible by the ever decreasing cost of sensor devices,
+such as the Wii 1 or SHAKE2, combined with the increas-
+ing number of machine learning algorithms in programs like
+Max/MSP3, Pure Data4, Chuck5, EyesWeb6 and the Wek-
+inator[12]. As authors such as Fiebrink et. al.[12] have
+shown, it is now possible for performers to train a machine
+learning algorithm in real-time, live on stage and have the
+performer’s movements (being sensed from anything such as
+a common gamepad to body worn accelerometers or EMG)
+be mapped directly to, for example, the synthesis parame-
+ters of a FM synthesiser. The machine learning algorithms
+featured in the programs listed above are generally excellent
+1http://uk.wii.com/
+2http://www.dcs.gla.ac.uk/research/shake/
+3http://cycling74.com/products/maxmspjitter/
+4http://puredata.info/
+5http://chuck.cs.princeton.edu/
+6http://www.infomus.org/EywMain.html
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’11,30 May–1 June 2011, Oslo, Norway.
+Copyright remains with the author(s).
+for solving two common problems; namely the discrete clas-
+siﬁcation of a static posture as one of K possible postures
+and the mapping of an input signal to one or more contin-
+uous output variables, also known as regression. However,
+many of the existing machine learning toolboxes are still
+unable to classify patterns that occur in a multidimensional
+space and change over a variable time period, otherwise
+known in the machine learning literature as multivariate
+temporal signals. Further, it was found that the few tool-
+boxes that do include multivariate temporal recognition al-
+gorithms either only work oﬄine, take an extensive amount
+of time to train or are limited to accept a speciﬁc form of
+sensor input, such as the 2D data from a mouse or 3D data
+from an expensive motion capture device.
+This has therefore provided the motivation for the de-
+sign and development of a novel machine learning toolbox
+that can recognise static postures, perform regression and
+classify multivariate temporal gestures. The toolbox, called
+the SARC EyesWeb Catalog (SEC), has been speciﬁcally
+designed to work with any-type of N-dimensional signal
+and operates as a middleware application; thus enabling
+a performer to easily integrate it into their own existing
+composition and performance environment. The SEC has
+been designed so it is suitable for both performers with ba-
+sic technology skills and no knowledge of machine learning
+right through to domain experts who want to create their
+own custom-built recognition systems. It is also suitable
+for researchers who wish to integrate and test a new form
+of feature extraction algorithm with the existing machine
+learning algorithms in the SEC. One of the main beneﬁts
+that the SEC oﬀers a performer is that it enables them to
+use the raw data or features from any sensor to quickly
+train a machine learning algorithm with the gestures the
+performer wants to use. After training the machine learn-
+ing algorithm the performer can then use it to recognise
+their gestures in real-time, even in a continuous stream of
+data that also contains non-gestural data. In this paper we
+present the SEC and describe how its machine learning al-
+gorithms have been speciﬁcally adapted for the recognition
+of musical gestures.
+2. RELATED WORK
+Machine learning algorithms have been successfully applied
+to a number of tasks throughout many areas of musician-
+computer interaction (MCI). Lee et al. [17] and Fels et
+al. [9] were some of the ﬁrst to apply the broad history
+of machine learning research on Artiﬁcial Neural Networks
+(ANN) to the ﬁeld of MCI. Lee used an ANN to map the
+input from a radio baton, sensor glove or a MIDI keyboard
+to audio output and Fels mapped the input from a Cyber-
+glove, 3-D tracker and a footpedal to a speech synthesiser.
+Fels work was later extended by Pritchard [22] who used
+several ANN to allow the user to synthesise audio, speech
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+343
+and song in real-time. Modler [19] also applied an ANN to
+map the sensor data captured by a sensor glove to continu-
+ously control the parameters of a synthesis engine running
+in SuperCollider. Along with applying the ANN to con-
+tinually map the glove data to synthesis parameters, Mod-
+ler also used the ANN to recognise patterns in the glove
+data, such as the classiﬁcation of certain hand postures like
+thumbs up or an extended index ﬁnger. The recognition
+of a speciﬁc symbolic hand gesture could then be used to
+trigger a sound, with the energy of the ﬁnger movement be-
+ing mapped to control the damping factor of a plate model.
+Cont et al. [6] created a number of ANN blocks for the
+Graphical User Interface ( GUI) program Pure Data that
+enabled a performer to quickly train and recognise dynamic
+temporal gestures sensed by two perpendicular accelerome-
+ters. The network was trained using six constant speed cir-
+cle gestures and was able to satisfactorily recognise a large
+variety of circles performed at diﬀerent speeds and sizes.
+Merrill et al. [18] built the FlexiGesture, a two handed de-
+vice that features a number of sensors including 3-degree-of-
+freedom (DOF) accelerometers, 3-DOF gyroscopes, 4-DOF
+squeezing, 2-DOF bending and 1-DOF twisting. The user
+could train the system to recognise a temporal gesture by
+pressing a ‘trigger’ button which starts the data recording
+process, releasing the button when they have completed the
+gesture. The system then asks the user to continually re-
+perform the gesture as it trains a template model for that
+gesture. Dynamic Time Warping was used as the recogni-
+tion algorithm and tests showed that the system was able
+to classify novel gestures into one of ten classes with up to
+98% accuracy.
+Fiebrink et al. [12] created a real-time, on-the-ﬂy ma-
+chine learning-based system called the Wekinator that can
+be trained by the user in a number of seconds. The Wekina-
+tor aﬀords the user the ability to quickly experiment with
+input/output mappings and even form judgements on the
+quality of the mapping by training and running it in real-
+time and observing the sonic results. The system was used
+for a live performance in which six performers started the
+training/mapping process from scratch, live on stage, and
+each performer gradually converged on the mapping setup
+they wanted as the piece progressed. Fiebrink et al. [11]
+extended this work by adding an additional ‘play-along’
+paradigm to the Wekinator in which the user listened to
+a speciﬁc piece of music whilst mimicking the gesture they
+would have liked to have performed to make that sound.
+The system was then trained on this gesture-sound rela-
+tionship and the user was able to create a sound or eﬀect
+by performing the corresponding gesture.
+Bevilacqua et al. [1] [3] have developed a real-time con-
+tinuous gesture recognition system for Max/MSP in which
+a Hidden Markov Model can continuously output, not only
+the likelihood of the user performing a given gesture at the
+current time, but also, where in that gesture the user might
+be. One of the main beneﬁts of this system is that it has
+been speciﬁcally designed to be trained with the minimum
+possible training examples (in some cases even one exam-
+ple can be suﬃcient). Bevilacqua et al. also [2] developed
+the MnM toolbox for Max/MSP which is dedicated to map-
+ping between gesture and sound, applying algorithms such
+as Principal Component Analysis to reduce the dimension-
+ality of the data, thus simplifying the mapping procedure.
+A number of researchers have focused on capturing the
+natural gestures performed on acoustic instruments such as
+Overholt et. al. [21] who added a number of algorithms
+from the OpenCV library to their Multimodal Music Stand
+System (MMSS) to recognise the gestures of a ﬂautist and
+use these to control a Max/MSP patch. Morales-Mazanares
+et al. [20] also tried to recognise the gestures of a ﬂautist,
+using a probabilistic model to estimate what the attacks or
+angular displacement of the instrument could inferrer about
+the player’s gestures. The accurate classiﬁcation of violin
+bowing gestures has also received attention from [23] [26]
+[10]. Finally the recognition of a conductors gestures has
+received a large body or research [24] [16] [7].
+These examples have illustrated how machine learning al-
+gorithms have been successfully applied to solve both clas-
+siﬁcation and regression problems throughout many areas
+of MCI. A large majority of this work, however, has been
+designed for custom-built hardware devices [9] [18] or is con-
+strained to recognising gestures from a speciﬁc sensor, such
+as the data from a 2D mouse [3], or is designed for a par-
+ticular instrument, such as a ﬂute [21]. This provided the
+motivation for us to develop a new machine learning tool-
+box that is speciﬁcally aimed for the real-time recognition
+of musical gestures. The SEC contributes to this existing
+work because it has not be constrained to work with just
+one sensor device or audio environment, can be used to clas-
+sify both static postures, temporal gestures and perform re-
+gression and most importantly can be quickly trained by a
+musician with a small number of training examples.
+3. THE SEC
+The SEC7 has been fully integrated as a third party library
+within a free program called EyesWeb. EyesWeb is an open
+software platform that was established to support the de-
+velopment of real-time multimodal distributed interactive
+applications and already features a large number of algo-
+rithms for processing both video and audio signals [5]. Eye-
+sWeb is a GUI orientated program that runs in Windows 8
+which features a patch window onto which the user can drag
+a number of blocks that represent a speciﬁc algorithm or
+function. A block will commonly feature a number of in-
+put, output and parameter pins, with one block’s output
+pin being connected to another block’s input pin to create
+a signal ﬂow between the two respective blocks. Using a
+small number of blocks in EyesWeb, for example, a per-
+former could build a patch to capture real-time data from a
+sensor unit, ﬁlter the data and plot the results without hav-
+ing to write a single line of code. EyesWeb also enables any
+performer with more technical skills to develop their own
+blocks, which may be required to perform a speciﬁc type of
+feature extraction or to interface with a custom-built piece
+of hardware. All the blocks in EyesWeb are written in C++,
+giving the developer the ability to write fast, eﬃcient code
+which is a necessity for real-time machine learning due to
+the large number of calculations required. EyesWeb there-
+fore provides an excellent environment for both technical
+and non-technical users as complex signal processing oper-
+ations can be easily constructed by connecting a number
+of blocks together or, alternatively, a custom block can be
+developed to perform one speciﬁc task.
+3.1 The SEC Blocks
+The SEC contains over 80 blocks (almost twice the num-
+ber of blocks since its ﬁrst public release [13]), all of which
+have been speciﬁcally designed for the real-time recogni-
+tion of musical gestures. Along with featuring a number
+of rudimentary blocks for saving/loading data, converting
+from one data type to another etc., the SEC also contains
+blocks for signal processing, performing mathematical oper-
+ations, and interfacing directly with hardware sensor units
+such as the Wii, the SHAKE and Infusion System’s Wi-
+7http://www.somasa.qub.ac.uk/~ngillian/SEC.html
+8EyesWeb is currently being ported to Linux
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+344
+Table 1: SEC Gesture Recognition Algorithms
+Algorithm Name Suitable Application Learning Type
+Adaptive Na¨ıve Bayes Classiﬁer Classiﬁcation Supervised
+Artiﬁcial Neural Networks Regression Supervised
+Hidden Markov Models Classiﬁcation Supervised
+N-Dimensional Dynamic Time Warping Classiﬁcation Supervised
+Fuzzy C-Means Clustering Classiﬁcation Unsupervised
+K-Means Clustering Classiﬁcation Unsupervised
+K-Nearest Neighbor Classiﬁcation Classiﬁcation Supervised
+Support Vector Machines Classiﬁcation Supervised
+microDig9. The SEC contains a large number of machine
+learning algorithms that can be used to classify static and
+temporal gestures as well as perform regression, a list of the
+main algorithms can be found in table 1. The SEC also
+contains a number of pre-processing or feature extraction
+algorithms that can be applied to reduce the computational
+load and complexity of a recognition problem along with a
+variety of post-processing algorithms that can be used to im-
+prove the overall system’s classiﬁcation performance. Each
+machine learning, feature extraction and post-processing al-
+gorithm in the SEC has been encapsulated as a single block,
+enabling the user to quickly create their own recognition
+system by dragging the algorithms they wish to use onto
+the EyesWeb patch window and connecting them together.
+This facilitates a user with even basic technical skills to ap-
+ply a wide range of extremely powerful machine learning
+algorithms, such as Support Vector Machines (SVM) or
+Hidden Markov Models ( HMM), to recognise their musi-
+cal gestures without having to write a single line of code.
+One of the most important features of the algorithms within
+the SEC is that they have all been designed to work with
+any N-dimensional input signal. This means that the recog-
+nition algorithms are not constrained to just work with the
+two-dimensional data from a mouse for example, but can
+work with anyN-dimensional continuous stream of data.
+This is a key advantage for performers, particularly those
+that create their own custom built sensors, interfaces or in-
+struments, as the output from any sensor(s), or features
+derived from this sensor data, can easily be used as input
+to any of the SEC blocks.
+3.2 Using the SEC for MCI
+The machine learning algorithms within the SEC enable any
+performer to use one or more musical gestures to control
+and manipulate the performer’s composition or improvisa-
+tion software in real-time. For example, a musician could
+use a classiﬁcation algorithm such as N-Dimensional Dy-
+namic Time Warping (ND-DTW) [15] to classify a speciﬁc
+conducting gesture and use the recognition of this move-
+ment to trigger the computer to start manipulating the live
+audio recording of the musician the gesture was directed
+towards. At the same time, the performer could use a re-
+gression algorithm like an ANN to continuously map the
+velocity at which the performer made the conducting ges-
+ture to control the degree of the warping eﬀect on the live
+audio recording.
+Rather than targeting the SEC for just one speciﬁc piece
+of audio software, it has been designed to function as mid-
+dleware enabling the user to pipe their sensor data into the
+SEC via a number of standard communication protocols,
+such as Open Sound Control (OSC) [25]. After recognition
+the classiﬁcation results can be piped out of the recognition
+system to control any piece of audio or visualization soft-
+9http://infusionsystems.com
+ware that use the same communication protocols. A middle-
+ware design architecture also enables the SEC to run on an
+independent machine from that which is running the audio
+software; which is beneﬁcially for CPU intensive recognition
+algorithms. A performer can therefore write their own soft-
+ware to capture and parse the real-time data from whatever
+sensor(s) they might be using and pipe this data into Eye-
+sWeb via OSC. Alternatively, a performer could directly
+implement the sensor interface as an additional EyesWeb
+block.
+3.2.1 Creating a Robust Recognition System
+Machine learning algorithms rarely exist in a vacuum [8].
+A robust recognition system commonly requires an appro-
+priate pre-processing or feature extraction stage prior to
+any classiﬁcation by a trained machine learning algorithm,
+with the predicted classiﬁcation label being post-processed
+prior to being acted upon. A user may therefore want to
+experiment with various feature extraction algorithms or
+post-processing functions as well as testing which machine
+learning algorithm works best for the recognition of their
+gestures. It is for this reason that each feature extraction
+algorithm or machine learning algorithm has been encapsu-
+lated as a single EyesWeb block as this enables the user to
+connect the blocks together to create the recognition sys-
+tem the user thinks maybe most appropriate for solving
+their recognition problem. One of the major advantages
+of using a patch-based GUI program such as EyesWeb is
+that multiple recognition algorithms can be used in paral-
+lel, with the output of one classiﬁer providing contextual
+information for another classiﬁcation chain. For example,
+the predicted event of one classiﬁer could be used to per-
+mit/deny the output of a second classiﬁer from being acted
+upon.
+3.2.2 Training a Machine Learning Algorithm
+Prior to using any machine learning algorithm it must ﬁrst
+be trained. This can be achieved by using a number of
+examples, called a training set, to tune the parameters of
+the algorithm’s adaptive model or function. The training
+set could contain, for example, a number of recordings of
+each of theG gestures the performer wants the algorithm
+to recognise. Each training example may also be hand-
+labelled by the user in which case the problem is known
+assupervised learning. By adopting a machine learning ap-
+proach, a musician can teach a computer to recognise their
+musical gestures by performing a number of repetitions of
+each gesture and use this data to train a machine learning
+algorithm. If the appropriate feature(s) are used to repre-
+sent the gesture and a suitable algorithm is trained then the
+algorithm should be able to classify a new input vector as
+one of the G gestures it was trained with; even if the new
+input vector was not contained in the original training set.
+The ability to categorize correctly new examples that diﬀer
+from those used for training is known asgeneralisation. In
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+345
+practical applications, the variability of the input vectors
+will be such that the training data can comprise only a tiny
+fraction of all possible input vectors, and so generalisation
+is a central goal in pattern recognition [4].
+The SEC features a number of useful tools to facilitate
+a user to eﬃciently create a training set and then quickly
+train a machine learning algorithm. Each algorithm, for ex-
+ample, will commonly have a dedicated block for recording
+training data, a second block for training the algorithm and
+a third block for the real-time classiﬁcation of any new data
+using the trained model. This three block design enables the
+user to create a ‘training patch’ for recording and training
+the algorithm and a separate ‘prediction patch’ for real-time
+classiﬁcation that may also contain other trained machine
+learning algorithms, post-processing algorithms and net-
+work connections to communicate with other audio/visual
+software.
+Figure 1: An example training patch for the ND-
+DTW algorithm
+The training patch, illustrated in Figure 1, will have the
+identical sensor input and feature extraction methods as the
+prediction patch, see Figure 2, but can also contain a num-
+ber of helpful features that assist the user in collecting and
+labeling the training data. This could consist of timer func-
+tions, for example, that enable the user to press a key to
+prepare the system to record a two-handed gesture. After
+a predetermined delay the user can then start to perform
+the gesture while the system records the training data, au-
+tomatically labeling each training sample with the ID value
+of that gesture. After a further predetermined delay the
+system stops recording the gesture and the user can either
+record another example of the same gesture or move onto
+the next gesture in their vocabulary. When the user has cre-
+ated a number of training examples for each gesture they
+can save the training data to a ﬁle and then use this to train
+the machine learning algorithm. Each algorithm will then
+save its trained model to a ﬁle to enable it to be loaded by
+the real-time classiﬁcation block.
+The user can select if they wish to train the algorithm
+using an automatic validation method, such asK-fold cross-
+validation, to estimate the generalisation ability of the trained
+model or if they want to devote all of the available data to
+training the model and instead test the algorithm ‘online’
+using the prediction patch. Either way, if a poor model
+has been created the user can quickly reload the original
+training data in the training patch and modify some of
+the parameters of the machine learning algorithm or even
+change the feature extraction method and quickly retrain
+a new model with the updated settings. Alternatively, the
+performer could use the one training set to train and vali-
+date several algorithms each with diﬀerent settings all at the
+same time to determine the best features/algorithm/settings
+to use. The performer then simply needs to load the best
+model into the predication patch. These examples illus-
+trate the advantages of using three separate blocks to cre-
+ate a training set, actually train a model and ﬁnally perform
+real-time prediction on new data using the trained model.
+Figure 2: An example prediction patch for the ND-
+DTW algorithm
+4. DESIGNING ALGORITHMS FOR MCI
+The design, development and evaluation strategies applied
+to the algorithms within the SEC have required a fundamen-
+tal paradigm shift from the common strategies employed
+throughout other areas of machine learning. In many areas
+of machine learning and gesture recognition the primary
+goal of any algorithm is to achieve a low inter-personal gen-
+eralisation error, which is the algorithms ability to correctly
+classify the gestures of a new participant that was not in-
+cluded in the training set. This is the case, for example, with
+a computer game that recognises the gestures of a player and
+uses these to control a character in the game. In order for
+the system to robustly recognise thousands of diﬀerent play-
+ers across the world who may want to play the game, the
+recognition algorithm may need to be trained with a very
+large number of training examples collected from perhaps
+hundreds of diﬀerent participants. The machine learning
+algorithm can then be trained with this extensive data set,
+perhaps overnight, after which it could be tested with an-
+other large test set that contains new data that was not used
+to train the algorithm to validate the classiﬁcation abilities
+of the model.
+4.1 The Intra-personal Generalisation Goal
+Applying this approach to training and testing a machine
+learning algorithm may not be suitable, however, for the
+recognition of musical gestures - such as in a NIME inter-
+action scenario. This is because each performer may want
+to deﬁne their own unique gestural vocabulary, i.e. the re-
+lationship between a gesture and its corresponding action.
+A performer may also want to capture the gestures using
+their own speciﬁc sensor device and use the recognition of
+a gesture to control a custom-made piece of audio software.
+It is therefore diﬃcult to create the pre-trained recogni-
+tion systems that are common throughout many areas of
+human-computer interaction (HCI). Musician-computer in-
+teraction alternatively requires a system that has a ﬂexible
+input/output conﬁguration and that can be trained by the
+performer using gestures from the their own vocabulary.
+A user-conﬁgurable recognition system for MCI would
+not therefore require the inter-personal generalisation abil-
+ities found in other areas of HCI; instead it would simply
+need to provide a good intra-personal generalisation for the
+one performer that initially trained the system. If another
+performer wants to use their own input device or gestural
+vocabulary to control the same audio software, then they
+simply have to retrain the machine learning system with
+their own gestures. This intra-personal generalisation goal,
+which is quite a paradigm shift from many areas of machine
+learning and HCI, would not only oﬀer the performer the
+advantage of being able to use their own hardware to cap-
+ture gestures from their own gestural vocabulary and use
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+346
+these to control their own speciﬁc audio software, it would
+also result in the requirement for a lower number of training
+examples per gesture - leading to a reduced amount of time
+spent in data collection and computational-training time.
+4.2 Rapid Training, Testing & Prototyping
+Any machine learning algorithm that can be quickly trained
+with a small number of training examples is extremely ben-
+eﬁcial to a performer. An eﬃcient training phase enables
+a performer to quickly decide upon a possible gestural vo-
+cabulary to use, train the recognition system and then, im-
+portantly, test the real-time prediction abilities of the sys-
+tem by performing the gestures and checking if they are
+correctly classiﬁed. Testing the system in this manner not
+only validates if a robust intra-personal generalisation error
+has been achieved, it also tests the aesthetic and practical
+validity of the gestures themselves. If a performer is un-
+happy with either then they can either change the feature
+extraction method or parameters of the machine learning
+algorithm being used and retrain the model. Alternatively
+the performer could scrap one or more of the gestures and
+replace them with more suitable movements. A recognition
+system that can be quickly trained and tested allows a mu-
+sician to rapidly prototype any action-sound relationship
+they think may be useful for a real-time performance sce-
+nario, test the validity of such gestures and then focus their
+time on the musical elements of the performance instead of
+spending hours training a system to recognise their gestures
+only to ﬁnd that the gestures do not work aesthetically or
+practical.
+4.3 Validating An Intra-Personal Classiﬁca-
+tion Algorithm
+An intra-personal generalisation error would call for a new
+method of evaluating the classiﬁcation abilities of a machine
+learning algorithm for MCI. For example in most machine
+learning applications, a large amount of data is collected
+from perhaps hundreds of users and the data is split into
+a training set and a test set. The machine learning algo-
+rithm is then trained with the training set and evaluated
+with the test set. If the training data is diﬃcult or ex-
+pensive to acquire, then a hold-out validation method such
+as K-fold cross-validation is used instead. Both of these
+validation methods are suitable for estimating the generali-
+sation abilities of an algorithm that will be used in an inter-
+personal recognition system. For MCI however, a more
+suitable generalisation metric would be to use the aver-
+age cross-validation error ( ACVE) calculated by indepen-
+dently computing the cross-validation error for each of the
+P participants and then averaging this result. The ACVE
+is suitable for MCI because it can accurately estimate the
+intra-personal generalisation abilities of a machine learning
+algorithm, while at the same time being validated by a large
+number of diﬀerent users.
+In addition to using a quantitative error function, such as
+the ACVE, qualitative subjective measures can also be par-
+ticularly useful for validating an algorithms potential ap-
+plication for MCI. This is because, as highlighted in [10],
+cross-validation-based approaches may be problematic un-
+der certain circumstances, such as overestimating a models
+quality when there are errors in the training data. In ad-
+dition, cross-validation does not capture user-speciﬁc and
+subjective notions of cost (e.g., whether the classiﬁer makes
+a mistake on an input that is highly likely to occur in per-
+formance, or on an input that can be avoided). Therefore
+combining both quantitative and qualitative error measures
+provides an appropriate method for validating algorithms
+for MCI.
+4.4 The SEC Design Goals
+Creating a recognition system that has a ﬂexible input/ouput
+conﬁguration, can be easily trained with examples from
+the user’s own gestural vocabulary and that achieves a low
+intra-personal generalisation goal have therefore been the
+key objectives in the design and development process of
+the SEC. These objectives not only informed the design
+of the SEC blocks but they also challenged us to adapt a
+number of existing machine learning algorithms and develop
+some novel recognition algorithms speciﬁcally for musician-
+computer interaction. The algorithms were adapted and
+developed because we wanted each algorithm to be able to:
+• Classify any N-dimensional signal and not be con-
+strained to just working with one type of sensor
+• Be quickly trained with a small number of training
+examples for each gesture
+• Be capable of recognising a gesture from within a con-
+tinuous stream of real-time data that also contains
+non-gestural data without having to train anull-class,
+such as a noise or silence class that is used in speech
+recognition
+• Classify both static and temporal musical gestures
+Several existing machine learning algorithms were adapted
+to meet these criteria by developing speciﬁc feature extrac-
+tion methods that enabled any N-dimensional signal to be
+quantized and used as input to the algorithm. The training
+time of the HMM algorithm, for example, was signiﬁcantly
+improved by developing multi-threaded training routines so
+that a unique thread was created to train the model for each
+individual gesture. The HMM algorithm was also adapted
+so that a classiﬁcation threshold was computed for each ges-
+ture in the model, thus enabling the algorithm to reject any
+null-gesture if the log-likelihood estimate for that gesture
+was below a given threshold.
+The SEC also features a number of novel classiﬁcation
+algorithms that have been developed speciﬁcally for MCI,
+such as the Adaptive Na ¨ıve Bayes Classiﬁer (ANBC) [14]
+and N-Dimensional Dynamic Time Warping (ND-DTW)
+[15]. Both algorithms have been speciﬁcally designed to be
+quickly trained with a small number of training examples,
+with the average training times for both algorithms on a
+small sized vocabulary of 10 gestures of just a few seconds.
+5. APPLICATIONS OF THE SEC
+5.1 Real-Time Improvisation For Piano
+The SEC is being used in a collaboration between the ﬁrst
+author and the UK based pianist Sarah Nicolls 10 to facili-
+tate an improvised piece that is built only from live sampled
+piano, controlled entirely by the pianist’s gestures. During
+the piece, the recognition algorithms in the SEC enable the
+performer to use subtle hand gestures to ‘save’ an impro-
+vised theme to an area of space located at various points
+above the piano keys. After a theme has been ‘saved’ to a
+space, the performer can then revisit this space at anytime
+and perform a number of other ﬁne-grain hand gestures to
+playback the theme, warping, stretching, looping and ﬁlter-
+ing the sample all via gestural control.
+5.2 Gestural Diffusion
+The SEC machine learning algorithms are currently being
+used in an electroacoustic composition by Robyn Farah for
+live gestural diﬀusion. For this piece, the SEC algorithms
+10www.sarahnicolls.com
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+347
+have been trained to recognise a number of gestures that
+enable the performer to ‘throw’ a sound into the sonic space,
+with the trajectory and intensity the of gesture being used
+to control a number of parameters of the behavior of the
+sound. The performer can also use a number of two handed
+‘sweeping gestures’ to control a large body of sounds that
+have already been introduced to the sonic space, pushing
+and pulling them around the space or removing them all
+together.
+5.3 RadioStreams
+The SEC is being used as the recognition system for an
+interactive installation piece called RadioStreams. In Ra-
+dioStreams, a user can navigate around a virtual globe using
+intuitive pointing gestures and listen to live radio streams
+from each country they navigate through. If the user likes
+a radio station they can ‘grab’ and ‘throw’ it onto one of
+eight speakers located around them. When all eight speak-
+ers have been populated with a radio station the user can
+then create a live improvisation by playing and controlling
+the live radio stations using gestures similar to that of a
+choral conductor.
+6. CONCLUSIONS
+This paper presented the SEC, a machine learning toolbox
+that has been speciﬁcally developed for musician-computer
+interaction. The SEC features a large number of machine
+learning algorithms that can be used in real-time to recog-
+nise static postures, perform regression and classify multi-
+variate temporal gestures. We also provided the motivation
+for the algorithms used for the recognition of musical ges-
+tures to achieve a low intra-personal generalisation error,
+as opposed to the inter-personal generalisation error that is
+more common in other areas of human-computer interac-
+tion.
+7. REFERENCES
+[1] F. Bevilacqua, F. Gu´ edy, N. Schnell, E. Fl´ ety, and
+N. Leroy. Wireless sensor interface and
+gesture-follower for music pedagogy. In NIME07,
+pages 124–129, New York, NY, USA, 2007. ACM.
+[2] F. Bevilacqua, R. Muller, and N. Schnell. Mnm: A
+max/msp mapping toolbox. In NIME05, Vancouver,
+BC, Canada, 2005.
+[3] F. Bevilacqua, B. Zamborlin, A. Sypniewski,
+N. Schnell, F. Gu´ edy, and N. Rasamimanana.
+Continuous realtime gesture following and
+recognition. Lecture Notes in Cimputer Science
+(LNCS), Gesture Embodied Communication and
+Human-Computer Interaction, 2009.
+[4] C. M. Bishop. Pattern Recognition and Machine
+Learning. Science and Business Media, Springer, 2006.
+[5] A. Camurri, P. Coletta, G. Varni, and S. Ghisio.
+Developing multimodal interactive systems with
+eyesweb xmi. InNIME07, pages 305–308. ACM, 2007.
+[6] A. Cont, T. Coduys, and C. Henry. Real-time gesture
+mapping in pd environment using neural networks. In
+NIME04, Hamamatsu, Japan, 2004.
+[7] R. Dillon, G. Wong, and R. Ang. Virtual orchestra:
+An immersive computer game for fun and education.
+In Proceedings of the 2006 international conference on
+Game research and development , CyberGames ’06,
+pages 215–218. Murdoch University, 2006.
+[8] R. Duda, P. Hart, and D. Stork. Pattern
+Classiﬁcation. Citeseer, 2001.
+[9] S. Fels. Glove-talkii: A neural network interface which
+maps gestures to parallel formant speech synthesizer
+controls. CHI’95, 1995.
+[10] R. Fiebrink. Real-time Human Interaction with
+Supervised Learning Algorithms for Music
+Composition and Performance. PhD thesis, School of
+Computer Science, Princeton University, 2011.
+[11] R. Fiebrink, P. R. Cook, and D. Trueman. Play-along
+mapping of musical controllers. The International
+Computer Music Conference (ICMC), 2009.
+[12] R. Fiebrink, D. Trueman, and P. R. Cook. A
+meta-instrument for interactive, on -the-ﬂy machine
+learning.NIME09, 2009.
+[13] N. Gillian, R. B. Knapp, and S. O’Modhrain. A
+pattern recognition toolbox for musician computer
+interaction. NIME09, 2009.
+[14] N. Gillian, R. B. Knapp, and S. O’Modhrain. An
+adaptive classiﬁcation algorithm for semiotic musical
+gestures. In the 8th Sound and Music Computing
+Conference, 2011.
+[15] N. Gillian, R. B. Knapp, and S. O’Modhrain.
+Recognition of multivariate temporal musical gestures
+using n-dimensional dynamic time warping. NIME11,
+2011.
+[16] A. Hofer, A. Hadjakos, and M. Muhlhauser.
+Gyroscope-based conducting gesture recognition.
+NIME09, 2009.
+[17] M. Lee, A. Freed, and D. Wessel. Neural networks for
+simultaneous classiﬁcation and parameter estimation
+in musical instrument control. Adaptive Learning
+Systems, 1706:244–255, 1992.
+[18] D. J. Merrill and J. A. Paradiso. Personalization,
+expressivity, and learnability of an implicit mapping
+strategy for physical interfaces. Proceedings of CHI
+2005 Conference on Human Factors in Computing
+Systems, 2005.
+[19] P. Modler, T. Myatt, and M. Saup. An experimental
+set of hand gestures for expressive control of musical
+parameters in realtime. InNIME03, 2003.
+[20] R. Morales-Mazanares, E. F. Morales, and D. Wessel.
+Combining audio and gesture for a real-time
+improviser. in International Computer Music
+Conference, (Barcelona, 2005), ICMA., 2005.
+[21] D. Overholt, J. Thompson, L. Putnam, B. Bell,
+J. Kleban, B. Sturm, and J. Kuchera-Morin. A
+multimodal system for gesture recognition in
+interactive music performance.Computer Music
+Journal, 33(4):69–82, 2009.
+[22] B. Pritchard and S. Fels. Grassp: Gesturally-realized
+audio, speech and song performance. NIME06, pages
+272–271, 2006.
+[23] N. Rasamimanana, E. Fl´ ety, and F. Bevilacqua.
+Gesture analysis of violin bow strokes. Gesture in
+Human-Computer Interaction and Simulation, pages
+145–155, 2006.
+[24] A. Wilson and A. Bobick. Realtime online adaptive
+gesture recognition. In Proceedings of the 15th
+International Conference on Pattern Recognition,
+volume 1, pages 270 –275 vol.1, 2000.
+[25] M. Wright and A. Freed. Open sound control: A new
+protocol for communicating with sound synthesizers.
+In International Computer Music Conference , pages
+101–104, Thessaloniki, Hellas, 1997. International
+Computer Music Association.
+[26] D. Young. Classiﬁcation of common violin bowing
+techniques using gesture data from a playable
+measurement system. NIME08, pages 44–48, 2008.
+Proceedings of the International Conference on New Interfaces for Musical Expression, 30 May - 1 June 2011, Oslo, Norway
+348

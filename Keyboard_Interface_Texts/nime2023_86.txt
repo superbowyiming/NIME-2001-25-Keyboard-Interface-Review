@@ -1,0 +1,569 @@
+The Hummellaphone: An Electromagnetically Actuated
+Instrument and Open-Source Toolkit
+Adam Schmidt
+University of Michigan
+School of Music, Theatre & Dance
+Ann Arbor, MI 48109
+schmia@umich.edu
+Michael Gurevich
+University of Michigan
+School of Music, Theatre & Dance
+Ann Arbor, MI 48109
+mdgurev@umich.edu
+ABSTRACT
+This paper presents the Hummellaphone, a highly recon-
+figurable, open-source, electromagnetically actuated instru-
+ment being developed for research in engineering learning,
+haptics, and human-computer interaction (HCI). The recon-
+figurable performance interface promotes experimentation
+with gestural control and mapping. Haptic feedback rein-
+troduces the tangible bidirectional communication between
+performer and instrument that is present in many acoustic
+and electro-acoustic instruments but missing in most digi-
+tal musical instruments. The overall aim of the project is
+to create an open-source, accessible toolkit for facilitating
+the development of and research with electromagnetically
+actuated musical instruments. This paper describes the
+hardware and design of the musical instrument and control
+interface as well as example research applications.
+Author Keywords
+electromagnetic actuation, mechanical synthesis, human-
+computer interaction, haptics, sustain, hardware
+CCS Concepts
+•Human-centered computing → Interaction design process
+and methods;•Hardware →PCB design and layout;•Applied
+computing → Sound and music computing;
+1. INTRODUCTION
+This project was largely inspired by the technology inte-
+grated within the Moog Guitar, and prompted by direct
+conversations with its designer, Paul Vo. After our prior
+experimentation with embedding sustainer technology into
+an electric guitar, Vo advised that recreating the technology
+in the Moog Guitar from its underlying patent [12] would
+be instructive, noting that there would be no restrictions on
+recreating it as the patent has expired.
+An initial response to Vo’s challenge led to a realization of
+a self-sustaining, custom built one-string guitar, which in-
+formed the development of the current project. Specifically,
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’23, 31 May–2 June, 2023, Mexico City, Mexico.
+it prompted consideration of whether the same technology
+could be more successful if implemented in contexts other
+than the guitar. The Moog Guitar was not especially suc-
+cessful in terms of widespread adoption or commercial sales
+(the original list price was $6495 USD). Motivating ques-
+tions became:
+1. Could we design an entirely new electromagnetically
+actuated sustaining instrument that sheds the bag-
+gage of the existing form and techniques associated
+with traditional instruments?
+2. What roles would reconfigurability and a lack of re-
+semblance to traditional instruments play in promot-
+ing exploration and adoption of such an instrument?
+3. Could lower cost and open source tools promote the
+wider adoption and creation of electromagnetically ac-
+tuated sustaining instruments?
+1.1 Related Work
+1.1.1 Infinite Sustain & Damping
+There is extensive literature on exciting and sustaining steel
+strings, metallic bars, and other idiophones by means of
+electromagnetic and/or acoustic feedback [4, 21, 6, 10]. The
+Magnetic Resonator Piano [16] is a notable example, in
+which electromagnetic coils are mounted to a grand piano to
+augment and extend its capabilities and performance prac-
+tice. The opposite function, actively damping, is more dif-
+ficult to implement, but advocated by Berhdahl et al. [3].
+The Moog Guitar [12] is a rare example that is able to
+both actively sustain and actively damp steel guitar strings
+while simultaneously having active control of the harmonics
+present in the string’s vibration. Instruments that employ
+electromagnetic or acoustic feedback control are most fre-
+quently augmentations of existing musical instruments. Ex-
+amples of instruments developed with electromagnetic ac-
+tuators from their genesis are far less common and present
+a rich opportunity for exploration.
+Most augmentations of existing instruments involving elec-
+tromagnetic actuation cited above are bespoke and unique,
+typically invoking high costs. The Magnetic Resonator Pi-
+ano requires both a fully functional grand piano plus the
+substantial added cost of adding an electromagnetic actua-
+tor for each active string. Similarly, augmenting an electric
+guitar bears additional requirements such as miniaturizing
+the circuitry to fit within the guitar, additional power con-
+siderations, and maintaining the guitar’s weight and balance
+point within an expected range.
+1.1.2 Electromechanical Instruments
+Electromagnetic instruments that rely on magnetized vi-
+brating steel to induce a signal in a pickup have been around
+for over a century. The Telharmonium is the most notable
+early example [26], and popular modern instruments in this
+category include the Hammond Organ, Fender Rhodes, and
+Electric Guitar. Bart Hopkin’s What-A-Shame [11] varies
+the frequency of a vibrating steel rod by allowing the per-
+former to dynamically change the length of the vibrating
+portion by sliding it through a narrow hole in a block of
+wood. This instrument features a similar pitch-changing
+mechanism to the Hummellaphone, but is performed more
+like a daxophone [7] or lamellaphone.
+1.1.3 Reconfigurability
+We consider two aspects of reconfigurability: virtual and
+physical. The first is a flexible relationship between the
+sound generation mechanism and the control interface. This
+virtual reconfigurablity enables users to quickly and easily
+map and remap inputs such as button presses, dial angles,
+or applied pressure to the output parameters such as pitch,
+filter cutoff frequency, or amplitude. This is generally made
+possible in the domain of DMIs because of the decoupling
+between physical interface and the software-based sound
+generation from the physical interface [27, 17].
+The physical modularity of an interface allows users to
+rearrange and redesign the physical layout of the interface
+with ease. There are numerous examples of modular, recon-
+figurable interfaces that control digitally-produced sound
+[8, 13, 22, 24, 15], and there are also examples of research
+that explores benefits of the decoupling of an interface from
+acoustic/electromechanical instruments [20, 2, 5, 21].
+In most actuated and non-actuated electromechanical or
+acoustic instruments, the performer’s body has a direct
+and intimate relationship with the generated sound through
+plucking, pressing, bowing, etc. Consequently, making a
+change to how the input affects the output would involve a
+significant overhaul in the mechanical design of the instru-
+ment.
+1.1.4 Haptic Feedback
+The tactile force feedback experienced by musicians when
+playing acoustic and electroacoustic instruments is consid-
+ered an important factor in facilitating learning and playa-
+bility. There is a growing body of research that addresses
+the typical unidirectional communication from performer
+to DMI by introducing force feedback through haptic ac-
+tuators, and researchers now generally agree that haptic
+feedback increases the intimacies between musician and in-
+strument and can even make them easier to play [19, 28,
+18, 1].
+Research by Luciani et al. [14] demonstrated compelling
+results from using audio signals to drive the force feedback
+of a cello-like haptic simulation. Advancements in digitally-
+controlled force feedback resulted in participants expressing
+that the virtual string they bowed felt very real. The au-
+thors write, “the most unexpected and promising result re-
+lies on the spontaneous remark made by all the performers
+happily surprised by the ‘strong presence of the string in
+hand’, triggering a strong feeling of presence of the string,
+thanks to the never realized 44Khz audio-haptic simula-
+tion,”which compared favorably to prior research with lower
+(3Khz) audio-haptic sampling rates. These findings moti-
+vated us to use the existing analog audio signals present in
+our system to drive haptic force feedback – a technique that
+is enabled by our analog signal processing approach [14].
+1.1.5 Morphology and Modality Research
+Harrison et al. note the prevalence of ‘instrument-like’ con-
+trollers or DMIs in NIME [25], and the suggestion in the
+accompanying discourse that such devices facilitate “the re-
+use of playing techniques from traditional instruments and
+hence offer a route to faster uptake” [9]. In a study at-
+tempting to unpack this assumption, Harrison et al. pose
+to what extent being ‘instrument-like’ means “sharing inter-
+action modalities” or “having the cultural appearance that
+stands in for a traditional instrument [9]?” They found that
+the answer diverges somewhat between guitarists and non-
+musicians, with both the interaction modality and the cul-
+tural appearance playing a role in study participants’ pref-
+erences and associations. But this limited user study was
+necessarily confined to short-term, constrained interactions
+with the example instruments, and could not investigate
+long-term adoption or development of performance practice.
+In a prior study, McPherson expresses interest in leverag-
+ing the virtuosic playing of established pianists, framing the
+Magnetic Resonator Piano as enabling a new repertoire of
+extended techniques [16]. But where a new ‘instrument-
+like’ system’s affordances don’t exactly match those of the
+acoustic instrument from which it derives, we speculate that
+the uptake of new ‘instrument-like’ systems among experts
+on the analogous system (e.g., adoption of the Moog Guitar
+by expert guitarists), in both long term and research con-
+texts, may be equally impacted by established notions or
+expectations of skill, style, and technique that could lead to
+self-imposed barriers on exploration and development.
+2. PROJECT GOALS
+The motivations and tensions that emerged from the prior
+work discussed above prompted the development of a novel
+instrument that would become the Hummellaphone with
+the following design criteria:
+1. A performance interface that is both physically and
+virtually reconfigurable.
+2. Electromagnetic actuation of a mechanical system.
+3. Audio-driven haptic feedback.
+4. A relatively low cost using standard, accessible, and
+readily-available materials and components.
+5. A novel form that is not explicitly related to any ex-
+isting instruments.
+In addition, we identified the two higher-level project
+goals:
+1. An accompanying series of workshops/modules to equip
+musicians/engineers to understand and build electro-
+magnetically actuated instruments, using the Hum-
+mellaphone as an exemplar.
+2. Release of an open-source toolkit that consists of build
+documentation, reference designs, electronic and me-
+chanical design principles, Computer Aided Design
+(CAD) files, schematics, parts lists, and more. An
+online knowledge base will provide room for discus-
+sion, results, troubleshooting, etc.
+3. TECHNICAL DESIGN
+In this section, we describe the initial mechanical, elec-
+tronic, and software design of the Hummellaphone, a modu-
+lar, reconfigurable, electromagnetically actuated instrument
+that was developed in response to these goals. The current
+design consists of four independent sound-generators, but
+its modular nature allows any number of additional units to
+be added. Each sound generator is an electromagnetically
+actuated steel rod supported by a bespoke roller bridge.
+A servo motor pushes and pulls the rod through the roller
+bridge to change the effective length of the rod and therefore
+dynamically change the pitch. Closed-loop feedback allows
+the instrument to compare the exact pitch of the steel rod
+to the desired pitch and compensate with the motor accord-
+ingly.
+3.1 Electromagnetic Sensoriactuators
+Electromagnetic coils act as both the sensor and actua-
+tor for each vibrating steel rod on the instrument. Initial
+coil prototypes have used 24AWG enameled copper wire
+wrapped around a cylindrical ceramic magnet. Coils are
+are paired up and wound in opposite directions to create a
+single humbucking pickup.
+3.2 Electronic Hardware
+The circuitry is modeled after the circuit from the Moog
+Guitar [12]. A detailed explanation of the schematic or
+component selection is out of the scope of this paper and will
+instead be presented in future learning modules. Instead, a
+simplified description is provided.
+The coils are connected to a circuit that switches between
+sensing and actuating modes at a high frequency (>20kHz).
+During the sense period, the instantaneous velocity of the
+rod is sampled and stored. During the actuate period, a
+current is sent through the coil to induce a magnetic force
+to influence the vibration of a steel rod. The amplitude and
+direction of the force applied is determined by the current
+state of the rod, a desired harmonic profile, and the signal
+processing circuitry.
+3.3 Harmonic Control
+3.3.1 Analog Signal Processing
+The Hummellaphone’s actuation and harmonic control are
+performed entirely in the analog domain. This was ini-
+tially aesthetically motivated, but has since revealed ad-
+ditional advantages. Early prototyping of advanced har-
+monic control techniques used real-time Digital Signal Pro-
+cessing (DSP) code exported from Functional Audio Stream
+(Faust) and uploaded to a Teensy 4.0. This workflow facil-
+itates rapid prototyping but imposes signal delays inher-
+ent to DSP, which makes harmonics of each steel rod more
+difficult to control. These delays are mitigated in analog
+circuitry.
+Additionally, for those interested in learning more about
+analog circuit design, the involved circuitry provides many
+interesting lessons in signal processing through use of basic
+circuit components such as op amps, comparators, MOS-
+FETS, logic gates, gate drivers, etc. Creating circuits that
+interface with a physical audio-generating system fosters a
+multi-sensory experience that enables a rich and intuitive
+understanding of the circuit.
+3.3.2 Interfacing with the active control circuit
+The active control circuit takes in several control voltages
+(CVs) as control parameters for controlling the pitch of each
+steel rod as well as the first several harmonics. Digital-to-
+Analog-Converters (DACs) between a control interface and
+the active control circuit permit easy and limitless recon-
+figuration of interface sensor inputs to the sonic outputs.
+Accepting control voltages also permits easy experimenta-
+tion with modular synthesizers and other CV output control
+interfaces (Figure 1).
+4. PERFORMANCE INTERFACE
+As a starting point for interaction research and control of
+the instrument, an initial control interface has been pro-
+totyped. Deflectable steel tines (steel feeler gauges) are
+mounted to 3D-printed stands and outfitted with Adafruit
+MPR121 capacitive touch sensors, QRD1114 infrared re-
+flective proximity sensors, and handmade electromagnetic
+haptic feedback actuators. The touch of a user’s finger is
+measured via the capacitive touch sensor. The depth of a
+press is measured by the optical proximity sensor.
+The electromagnetic coil located under each tine provides
+haptic feedback by inducing an alternating magnetic field
+that vibrates a neodymium magnet attached to the under-
+side of each steel tine. The initial haptic driver has been
+designed to use the audio signal generated by the vibrating
+steel rods as the source of force feedback, similar to how
+a cellist might feel the vibrations from the body of instru-
+ment anywhere it makes contact their body. This reestab-
+lishes the tangible and bilateral communication that exists
+between musicians and most acoustic instruments but is
+missing in most DMIs. This is enabled in part by the ana-
+log signal chain on the sound generation half of the system
+(Figure 2). 1
+5. AN OPEN-SOURCE TOOLKIT
+Open source projects such as Arduino 2, Daisy3, MJbots 4,
+and the Open Dynamic Robot Initiative 5 serve as models
+for our open-source toolkit. Similar to these projects, we
+will provide 3D CAD files, electronic schematics, and code
+to allow researchers and instrument builders to test their
+own ideas without the need to invest time and funds into
+designing from the ground-up. The design of the Hummel-
+laphone consists of off-the-shelf and reclaimed materials and
+components to provide a flexible and affordable platform for
+research.
+6. PROPOSED STUDIES
+Beyond the initial design of the instrument, the Hummel-
+laphone and associated toolkit aims to be a resource for
+answering our motivating research questions. In this paper
+we have specifically asked how might the reconfigurability
+and familiarity of an instrument affect the way musicians
+explore and adopt a new electromagnetically actuated in-
+strument. We also hypothesize that lower cost and access
+to open source resources may encourage wider engagement
+with this emerging area of electromagnetically actuated in-
+struments.
+1A demonstration video can be found at https://vimeo.
+com/798030677
+2https://www.arduino.cc
+3https://www.electro-smith.com/daisy
+4https://mjbots.com
+5https://open-dynamic-robot-initiative.github.io
+Figure 1: Full System Block Diagram
+Figure 2: The initial performance interface
+6.1 Interaction Design
+Although the Hummellaphone wasn’t intended to deliber-
+ately derive from a keyboard, there are obvious associations
+with a keyboard instrument: The initial controller is finger-
+actuated and the sound-generating mechanism is an array
+of nearly identical tone generators.
+Like Harrison et al. [9], we are interested in knowing how
+modality and morphology of an instrument affect the ex-
+perience of practicing and performing with it. A series of
+experiments comparing types of interfaces or several remap-
+pings of the same interface might reveal innate preferences
+in musical interactions. We could study whether people will
+tend to map their perceptions and expectations of the in-
+strument onto familiar morphologies or interaction modal-
+ities, how those are influenced by their prior experiences,
+and how or whether we can reinforce or disrupt these ten-
+dencies.
+6.2 Virtual vs Mechanical Sound Generation
+The harmonic control and predictable nature of the vi-
+brating steel rods is similar to the additive synthesis of
+Hammond tonewheel organs. A user study where partic-
+ipants use the same interface to control nearly identical
+sounds from a physically embodied sound generator or its
+digital simulation could explore whether physically embod-
+ied sound synthesis is experienced differently, and possibly
+found to be more compelling, even with a decoupled control
+interface.
+6.3 Haptic Interaction
+The Hummellaphone’s performance interface uses the au-
+dio signals generated by the instrument to drive the haptic
+feedback mechanism. This allows the system to imitate the
+tactile force feedback felt by musicians playing acoustic in-
+struments, but also provides opportunity to explore other
+relationships between audio and tactile feedback that would
+never be possible in a traditional acoustic instrument. For
+example, one can imagine using haptic force feedback to
+inform and guide the exploration of the harmonic profile
+of a sound generating steel rod. In the case of an interface
+arrangement that resembles the drawbars of a tonewheel or-
+gan, force feedback from the interface allows the player to
+select and tune parameters of the harmonic profile through
+sense of touch, perhaps isolating force feedback from each
+harmonic to separate fingers. Would this force feedback
+promote more sonic exploration when compared to an iden-
+tical interface with no force feedback? Enabled by the hap-
+tic reconfigurability of our system, this is just one of many
+possible questions that can be explored.
+7. FUTURE WORK
+7.1 The Toolkit
+The project website will host the associated files, designs,
+and learning modules related to the project. The software
+for reading sensor inputs and mapping them to the sound
+generation circuit is designed to be simple and flexible. Cus-
+tom Arduino libraries will be built to make remapping the
+interface input parameters standardized and simple. An al-
+ternative interface design in progress makes use of reclaimed
+3.5” hard drives. Future work will outline the process and
+craft of creating one-off designs to advocate for and inspire
+the utilization of limited recycled components.
+7.2 Performance Interfaces
+Additional interface modules will be developed to encourage
+and allow rapid reconfiguration of the physical layout and
+virtual mapping of an interface. Additional sensing meth-
+ods will be explored, and members of the community will
+be encouraged to share ideas and designs of their own in-
+terfaces. Experiments in utilizing existing DMI controllers
+and established systems such as modular synthesizers will
+also be welcome and encouraged.
+7.3 Learning Modules & Workshops
+Online learning modules that explain the schematics, code,
+and theory of operation will be provided for makers that
+wish to understand the science and technology behind an
+electromagnetically actuated instrument or even build their
+own. Inspired by projects designed for learning such as John
+Shive’s wave machine [23], a series of modules could follow
+a similar model where a maker is guided through the pro-
+cess of building their own electromagnetically actuated in-
+strument. Through building and experimenting, the maker
+gains a deeper understanding of electromagnetics, control
+theory, analog circuit design, digital signal processing, PCB
+design, CAD, digital fabrication, etc. Building further on
+the learning modules, we intend to develop future NIME
+workshops for exploring rapid prototyping and collabora-
+tive creation of electromagnetically actuated instruments.
+8. CONCLUSION
+This paper has presented the Hummellaphone, a highly
+reconfigurable, open-source electromechanical instrument.
+Based on the underlying principles of the Moog guitar, the
+Hummelaphone sheds deliberate associations with familiar
+instruments in order to foster experimentation and research
+within NIME as well as adjacent fields such as haptics, engi-
+neering learning, and HCI. Through a low-cost, accessible,
+flexible, open-source design and online community support,
+the project aims to lower the barriers to entry, grow interest
+in, and encourage the development of new electromagneti-
+cally actuated sustainer instruments.
+9. ACKNOWLEDGMENTS
+Funding for this project was generously supported in part
+through the School of Music, Theatre & Dance Eileen Weiser
+EXCEL Fund as well as the ArtsEngine Arts Integrative
+Graduate Research Grant Award at the University of Michi-
+gan.
+10. ETHICAL STANDARDS
+This research is conducted in accordance with the NIME
+Principles & Code of Practice on Ethical Research, and in
+compliance with the standards and practices of the Univer-
+sity of Michigan. The research involved no human or nonhu-
+man animal participants. The authors declare no conflicts
+of interest. The project aims to minimize its environmen-
+tal impact through the promotion and use of reclaimed and
+recycled materials wherever feasible.
+11. REFERENCES
+[1] E. Berdahl, G. Niemeyer, and J. O. Smith. Using
+haptics to assist performers in making gestures to a
+musical instrument. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 177–182, Pittsburgh, PA,
+United States, 2009.
+[2] E. Berdahl and J. O. Smith. A tangible virtual
+vibrating string : A physically motivated virtual
+musical instrument interface. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 299–302, Genoa, Italy,
+2008.
+[3] E. Berdahl, J. O. Smith III, and A. Freed. Active
+damping of a vibrating string. In 6th International
+Symposium on Active Noise and Vibration Control,
+Adelaide, Australia, 2006.
+[4] N. C. Britt, J. Snyder, and A. McPherson. The
+emvibe: An electromagnetically actuated vibraphone.
+In Proceedings of the International Conference on
+New Interfaces for Musical Expression, Ann Arbor,
+Michigan, 2012. University of Michigan.
+[5] K. Cybulski. Post-digital sax - a digitally controlled
+acoustic single-reed woodwind instrument. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, The University of
+Auckland, New Zealand, June 2022.
+[6] A. Eldridge and C. Kiefer. Self-resonating feedback
+cello: Interfacing gestural and generative processes in
+improvised performance. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 25–29, Copenhagen,
+Denmark, 2017.
+[7] J. Granzow. Encounterpoint: The ungainly
+instrument as co-performer. In F. Sallis, editor, Live
+Electronic Music: Composition, Performance, Study.
+Routledge, 2017.
+[8] K. F. Hansen and M. Alonso. More dj techniques on
+the reactable. In Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 207–210, Genoa, Italy, 2008.
+[9] J. Harrison, R. H. Jack, F. Morreale, and A. P.
+McPherson. When is a guitar not a guitar? cultural
+form, input modality and expertise. In Proceedings of
+the International Conference on New Interfaces for
+Musical Expression, pages 299–304, Blacksburg,
+Virginia, USA, June 2018.
+[10] G. S. Heet. String instrument vibration initiator and
+sustainer, Feb. 1978. United States Patent No.
+US4075921A.
+[11] B. Hopkin. WHAT-A-SHAME. Available at:
+https://barthopkin.com/instrumentarium/
+what-a-shame/, accessed 2023-01-31.
+[12] P. Ierymenko. Unitary transducer control system, Apr
+2001. United States Patent No. US6216059B1.
+[13] S. Kobayashi and A. Masayuki. Spinner: A simple
+approach to reconfigurable user interfaces. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 208–211,
+Vancouver, BC, Canada, 2005.
+[14] A. Luciani, J.-L. Florens, D. Courouss´ e, and
+C. Cadoz. Ergotic Sounds: A New Way to Improve
+Playability, Believability and Presence of Digital
+Musical Instruments. In A. L. Claude Cadoz, editor,
+ENACTIVE / 07 - International Conference on
+Enactive Interfaces, pages 373–376, Grenoble, France,
+Nov. 2007. ACROE. Enaction in Arts Papers.
+[15] Y. Maruyama, Y. Takegawa, T. Terada, and
+M. Tsukamoto. Unitinstrument : Easy configurable
+musical instruments. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 7–12, Sydney, Australia,
+2010.
+[16] A. McPherson. The magnetic resonator piano:
+Electronic augmentation of an acoustic grand piano.
+Journal of New Music Research, 39(3):189–202, 2010.
+[17] E. R. Miranda and M. M. Wanderley. New Digital
+Musical Instruments: Control And Interaction Beyond
+the Keyboard. A-R Editions, Middleton, WI, 2006.
+[18] S. O’Modhrain. Playing by feel: Incorporating haptic
+feedback into computer-based musical instruments.
+PhD thesis, Stanford University, 2000.
+[19] S. Papetti and C. Saitis, editors. Musical haptics.
+Springer Open, 2018.
+[20] L. Pardue, K. Buys, D. Overholt, A. P. McPherson,
+and M. Edinger. Separating sound from source: sonic
+transformation of the violin through electrodynamic
+pickups and acoustic actuation. In M. Queiroz and
+A. X. Sed´ o, editors,Proceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 278–283, Porto Alegre, Brazil, June 2019.
+UFRGS.
+[21] M. Pi˜ neyro. Electric slide organistrum. InProceedings
+of the International Conference on New Interfaces for
+Musical Expression, Ann Arbor, Michigan, 2012.
+University of Michigan.
+[22] E. Rosenbaum. Melodymorph: A reconfigurable
+musical instrument. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 445–447, Oslo, Norway,
+2011.
+[23] J. N. Shive. Similarities in wave behavior.Bell
+Telephone Laboratories, 1961.
+[24] N. Villar, A. T. Lindsay, and H. Gellersen. Pin & play
+& perform: A rearrangeable interface for musical
+composition and performance. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 188–191, Vancouver, BC,
+Canada, 2005.
+[25] M. M. Wanderley and P. Depalle. Gestural control of
+sound synthesis. Proceedings of the IEEE,
+92(4):632–644, 2004.
+[26] R. Weidenaar. Magic Music from the Telharmonium.
+The Scarecrow Press, Metuchen, NJ, 1995.
+[27] D. Wessel and M. Wright. Problems and Prospects for
+Intimate Musical Control of Computers. Computer
+Music Journal, 26(3):11–22, 2002.
+[28] Y. Zhang, Y. Li, D. Chin, and G. Xia. Adaptive
+multimodal music learning via interactive haptic
+instrument. In M. Queiroz and A. X. Sed´ o, editors,
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 140–145,
+Porto Alegre, Brazil, June 2019. UFRGS.

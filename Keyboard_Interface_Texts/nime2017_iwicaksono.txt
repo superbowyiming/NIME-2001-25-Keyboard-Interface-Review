@@ -1,0 +1,715 @@
+FabricKeyboard: Multimodal Textile Sensate Media as an 
+Expressive and Deformable Musical Interface  
+Irmandy Wicaksono∗† 
+∗Wearable Computing Lab
+D-ITET, ETH Zurich
+Gloriastrasse 35
+Zurich 8092
+ irmandy@mit.edu
+Joseph A. Paradiso†
+†Responsive Environments
+MIT Media Lab
+75 Amherst Street
+Cambridge, Massachusetts 02139
+joep@media.mit.edu
+ABSTRACT 
+This paper presents FabricKeyboard: a novel deformable 
+keyboard interface based on a multi-modal fabric sensate 
+surface. Multi-layer fabric sensors that detect touch, proximity, 
+electric field, pressure, and stretch are machine-sewn in a 
+keyboard pattern on a stretchable substrate. The result is a 
+fabric-based musical controller that combines both the discrete 
+controls of a keyboard and various continuous controls from 
+the embedded fabric sensors. This enables unique tactile 
+experiences and new interactions both with physical and non-
+contact gestures: physical by pressing, pulling, stretching, and 
+twisting the keys or the fabric and non-contact by hovering and 
+waving towards/against the keyboard and an electromagnetic 
+source. We have also developed additional fabric-based 
+modular interfaces such as a ribbon-controller and trackpad, 
+allowing performers to add more expressive and continuous 
+controls. This paper will discuss implementation strategies for 
+our system-on-textile, fabric-based sensor developments, as 
+well as sensor-computer interfacing and musical mapping 
+examples of this multi-modal and expressive fabric keyboard.  
+Author Keywords 
+Keyboard, multimodal, fabric sensors, e-textiles, continuous 
+and discrete controls, tangible computing, deformable interface, 
+musical expression 
+ACM Classification 
+Hardware ~ Sensor applications and deployments, Sensor 
+devices and platforms, Human-centered computing ~ Sound-
+based input / output 
+1.INTRODUCTION 
+Textiles are soft and conformable materials that could also be 
+stretchable, as opposed to standard electronics which are built 
+on rigid structures or flexible substrates. The fact that textiles 
+are omnipresent in our environments and that there has been a 
+significant effort in making them more intelligent present many 
+novel applications, including in the physical interaction media 
+[1-3,8]. Post et al. initially explored the concept of e-broidery 
+to develop several fabric-based musical interfaces [3]. These 
+interfaces include The Media Lab’s 1997 Musical Jacket, that 
+consists of an embroidered conductive thread keypad and is 
+connected to a wearable MIDI synthesizer and speaker circuits, 
+and  The  Embroidered  Musical  Balls,  which are composed of  
+ 
+Figure 1: The FabricKeyboard being stretched  
+sewn conductive electrodes, acting as pressure sensors for 
+modulating sound. 
+New electronic textile materials and integration techniques also 
+triggered several new developments of deformable musical 
+interfaces such as Zstretch, a stretchy fabric musical controller 
+[4], the Fabric Piezoresistive Multitouch Pad [5], and the xOSC 
+Musical Glove [6]. Giovanni et al . performed user studies on 
+how musicians interact with deformable interfaces, including 
+some of the aforementioned controllers [7]. The main results of 
+the studies showed that most of the musician used these 
+deformable interfaces as an expression, particularly to 
+manipulate and filter sound, rather than playing discrete notes. 
+Fabric-based ‘pianos’ or keyboards also exist within the maker 
+community; however, they are only discrete, touch sensitive, or 
+simple textile switches [3,8].  It is therefore interesting, to 
+incorporate both discrete and continuous controls into one 
+deformable musical controller. 
+Inspired by the current developments of textile sensors and the 
+stretchable nature of knitted fabrics, we envision a multimodal, 
+textile-based, musical interface with a familiar layout of an 
+existing instrument. We therefore designed and implemented a 
+fabric-based keyboard as pictured in Figure 1. The fabric 
+keyboard allows discrete controls with conventional keystrokes 
+and rich continuous controls with unique physical interactions 
+enabled by the fabric (e.g. squeezing, pulling, stretching, and 
+twisting). Additionally, we explored further by integrating 
+expressive, non-contact gesture sensing and developing fabric-
+based ribbon-controller and trackpad. 
+348
+1.1. Related Work 
+The evolution of electronic keyboards dates back over a 
+century ago when Elisha Gray, invented the Musical Telegraph 
+in 1876 [9]. This instrument is composed of an array of self-
+tuned vibrating reeds activated by mechanical switches. 
+Inspired by Leon Theremin’s non-contact gestures instrument, 
+Maurice Martenot developed the Ondes Martenot (1928), 
+which contains a ring that pulls a string to continuously vary 
+the pitch of a sound and a left-hand keyer to control the 
+volume. Later versions included a monophonic keyboard with 
+lateral pressure for vibrato effects. In 1940, Hugh LeCaine built 
+the Electronic Sackbut [10], which is a great example of early 
+expressive keyboard instruments. The expressive left-hand 
+controls in this keyboard nicely illustrate the still dominant 
+concept of a “left-hand controller”, which is a set of knobs, 
+sliders, touchpads, joysticks, and other input devices that the 
+performer can use to articulate the produced sound.  
+Don Buchla used capacitive touchpads as input devices in his 
+modular synthesizers dating to the mid/late 1960s. As 
+electronics further advanced, capacitive contact sensing 
+keyboards appeared in commercial synthesizers such as EMS 
+Sythi AKS and EDP Wasp in the early 70s. Moog and Rhea 
+subsequently designed a Multiply-Touch Sensitive Keyboard 
+that incorporated a new layer of sensors on the key surfaces to 
+detect XY finger gestures and pressure with 4-point capacitive 
+sensing and force-sensitive film respectively [11].  Haken et al. 
+constructed The Continuum, an indiscrete keyboard that 
+measures finger slide position and pressure on a flat continuous 
+surface; the keyboard had experienced several design 
+alterations, but in the end used hall-effect sensors to sense 
+proximity of magnets [12].  Instead of turning the knobs or 
+moving sliders, these controllers allow expressive and fluid 
+controls of the pitch and timbre of the sound generated by 
+applying various gestural inputs from the same hand right on 
+the keyboard surface. 
+There are also recent efforts in integrating discrete and 
+continuous controls of the keyboard. McPherson’s TouchKeys, 
+for example, integrated a new capacitive multi-touch sensing 
+layer on each key to map finger positions and contact area [13]. 
+Grosshauser and Tröster also explored the same principle, but 
+developed an FSR pressure sensor matrix instead, giving 
+additional pressure variations [14]. These techniques allow 
+users not only to augment, but also to evaluate keyboard 
+performances. Another remarkable example is the Seaboard, 
+which transformed typical keyboard surface using silicone in a 
+wavy pattern beyond an FSR layer to enable expressive, 
+continuous finger gestures as polyphonic modulations [15]. 
+Note that most of the expressive keyboard interfaces till date 
+rest on a rigid and heavy structure; a keyboard made out of 
+fabric, besides providing new interactions and tactile 
+experiences for musical expressions, can be easily folded, 
+rolled up, and packed in our luggage like a pair of socks or a 
+scarf [16 ]. It can also be wearable, which extends the 
+functionality of such fabric-based musical controllers. 
+2. FABRIC KEYBOARD DESIGN AND 
+IMPLEMENTATION 
+Figure 2a) illustrates the structure of the fabric keyboard, 
+whereas Figure 2b) and c) show the working prototype. The 
+keyboard is a textile-based sensate surface, consisting of one 
+octave of keys with multi-modal sensing capability. Multi-layer 
+fabric sensors in a keyboard pattern were embedded and 
+machine-sewn on a stretchable, base knit fabric. The outermost 
+layer of each key consists of a fused conductive fabric that acts 
+as a floating electrode to detect proximity, touch, or induced 
+electric field. Below this layer, a fabric pressure sensor was 
+embedded in a sandwich configuration. The configuration 
+includes a mesh and piezo-resistive fabric in between two 
+conductive fabrics, one of which is a common ground. Below 
+the base fabric, fabric stretch sensors were attached: one at the 
+right side, one at the left side, two at the bottom side, and a 
+long one in the middle and in-between the keys with a zebra 
+configuration (conductive/piezo-resistive fabric) to avoid 
+parasitic influence from the other sensors.   
+All of these fabric sensors were then connected to the circuitry 
+through conductive thread interconnects. To ensure firm 
+connections, especially upon stretching, stretchable routings 
+were machine-sewn using serpentine or zig-zag sewing patterns 
+on all of the stretch sensor interconnects. There is a main hub at 
+the edge of the fabric that separates the soft circuits (e-textiles) 
+from the rigid circuits (PCBs). This hub is pluggable and can be 
+connected by using the fabric-based ribbon cables.  This 
+separation not only allows fluid interaction between the 
+performer and the fabric keyboard, but also enables 
+customizable hardware for sensor processing. The fabrics that 
+we used to construct the fabric keyboard are: 
+• Non-conductive fabric: Knitted 75% Nylon, 25% 
+Spandex fabrics. 
+• Mesh fabric: Knitted 100% Polyester mesh fabric. 
+• Conductive fabric: Knitted Ag-coated fabric with 76% 
+Nylon and 24% Elastane and surface resistivity of <0.5 
+Ω/sq. 
+• Piezo-resistive fabric: Knitted Eeontex fabric with 72% 
+Nylon and 28% Elastane (LTT-SLPA) in a proprietary 
+conductive coating and surface resistivities of 10 4-107 Ω/
+sq upon request. 
+Figure 2: a) Multi-layer structure showing the fabric 
+materials and sensing modalities. b) Top and c) bottom view 
+of the fabric keyboard 
+Note that all of the fabrics used here, either electro-active or 
+not, are knitted to keep the stretchability of the fabric keyboard. 
+The conductive threads used in this project are made of purely 
+stainless steel fibers. Even though they are relatively hard to 
+solder and sew as a top thread, compared to silver-coated nylon 
+core threads, these threads have a relatively low resistance, are 
+robust, and can withstand high temperatures and multiple 
+washings. We found consistent results in using them as bobbin 
+threads. To connect them to the rigid main hub, we developed a 
+(a)
+(b) (c)
+349
+customized connector with stripped metal loops. These threads 
+were then tightly tied to these loops before applying a low 
+temperature solder and encapsulation to ensure firm 
+connections with low contact resistances. 
+3. SENSING ELEMENTS 
+Based on our multi-layer structure in Figure 2a), we propose 
+multiple sensing modalities: proximity, touch, and electric field 
+(Layer 1), pressure (Layer 3-6), stretch (Layer 7), and position, 
+which is from the additional modular fabric-based interfaces 
+such as the trackpad and ribbon-controller. A more detailed 
+explanation of design, implementation, and characterization of 
+each sensor can be seen in [17]. 
+3.1. Proximity and Touch 
+A single electrode mechanism with one layer of conductive 
+fabric was constructed for near-proximity and touch sensing 
+where there is a capacitive coupling between the finger as a 
+virtual ground and a charged electrode with specified charging 
+time and current. The MPR121 Proximity Touch Controller, 
+with 12 floating inputs, high sensitivity, and proximity/touch 
+threshold detection feature, is used for this in the one-octave 
+keyboard [18 ]. The proximity and touch data from this 
+controller can be differentiated by the threshold detection, 
+meaning that the off-state of a touch event represents the 
+capacitance value of our hand’s proximity. 
+Several tests were conducted to observe the influence of the 
+sensing area on the sensitivity of readings. It was found that as 
+the pad size represents a typical piano key’s area (2x12 cm), the 
+controller can sense hands approach or hover of up to 12 cm 
+over the surface. Increasing the pad size to 12x12 cm further 
+improves the sensitivity to up to 18 cm. Another interesting 
+modality is to enable the ‘multiplexed sensing’ or the “13th” 
+electrode feature of MPR121. By combining all of the floating 
+electrodes to form a single large sensing surface, this option 
+produced an observed improvement of sensitivity of up to 25 
+cm. Since this feature is accessible through programming , we 
+can also automatically transform the sensing mechanism from 
+poly to multiplex mode and vice versa as our hand comes 
+within the sensor’s reach. 
+3.2. Electric Field Sensing 
+Our body can act as either a shunt, disrupting an electric field 
+between a transmitter and a ground, as a transmitter, by 
+coupling our body to the transmitter itself, or as both when 
+crossing over between these modes [19]. In this work, we 
+exploited the electric hum or noise strength coming from the 
+AC mains power that gets coupled to our body as the “antenna” 
+in transmit mode. This electric hum typically ranges from 
+50-60 Hz. A passive electric field sensing circuit based on [20] 
+and comprising trans-impedance amplifier, band-pass filter, and 
+envelope detector, was designed for each individual key as 
+shown in Figure 4. The voltage output from each sensing circuit 
+is then fed to an analog multiplexer for sequential ADC voltage 
+readings by the micro-controller. 
+The passive electric field sensing circuit can detect touch as 
+well as proximity by carefully setting both trans-impedance and 
+band-pass filter gains to improve the sensitivity. However, the 
+most interesting scenario of using electromagnetic coupling is 
+when our body acts as a receiver antenna. After our fingers 
+strike the keys, the conductive fabrics connect our body to the 
+sensing circuits, forming a network. The electromagnetic noise 
+coupled into our body is then picked up by these sensing 
+circuits and can be controlled by moving the other hand 
+towards an electromagnetic source, which in this case is a 
+minimally-shielded device connected to the main power. The 
+sensitivity scales with the field strength of the source. However, 
+in our case, it can detect proximity from 60cm to up to 1m. The 
+output reveals the relative distance as our hand approaches the 
+transmitter, resulting in an instrument that exhibits similarity to 
+a Theremin. This enables us to continuously control certain 
+sound parameters by performing non-contact gestures with one 
+hand, while the other hand is in contact with the keyboard. 
+3.3. Pressure 
+The pressure-sensing element is a multi-layer structure made 
+out of piezo-resistive fabric and mesh fabric sewn in between 
+two conductive fabrics. The piezo-resistive fabric is a knit 
+fabric coated with PPy, a conductive polymer in concentrations 
+that can be requested. In this case, we used Eeonyx LTT-
+SLPA-20k, with surface resistivity of 20kΩ/sq. Since it is 
+piezo-resistive, the resistance of this fabric sensor changes in 
+correlation to the applied force. The decision to include mesh 
+fabric in the structure manifested from the non-uniformity of 
+the resistance baseline value on each key. The mesh layer 
+solves this problem, as it physically separates the conductive 
+fabric from the piezo-resistive fabric, avoiding tensions as well 
+as accidental contacts between them. Nonetheless, introducing 
+a mesh layer as a part of the pressure sensing element could 
+possibly reduce the sensitivity of the pressure sensor to low 
+finger pressures. We then experimented and characterized 
+different types of mesh fabric to test the relationship between 
+the gap size and thickness with each sensor’s sensitivity and 
+found that polyester knit mesh fabric gives the best sensitivity 
+and pleasant tactile feel, as it has a relatively large gap size, is 
+rather thick, and also squishy [17]. 
+3.4. Stretch 
+Knitted spandex fabrics, due to their high elasticity, are good 
+textile substrates for coated stretch sensors. The coated fabric 
+can be cut to different sizes in order to engineer its base 
+resistance and durability. Not only seamless, coating the fabric 
+itself with conductive polymers also eliminates the necessity of 
+an interfacial layer or complex transfer process in the case of a 
+printed or cured carbon-elastomer composite strain sensor. 
+Their ability to be sewn also makes it possible to integrate them 
+to any fabric.  
+In this work, we are interested to see how the complex 
+interlocked structures of knitted fabrics influence their response 
+to strain, both mechanically and electrically. The Instron testing 
+machine was used to study the response of several fabric stretch 
+sensors with various strain elongations. This machine is 
+universally used to evaluate mechanical properties of various 
+materials. We compared PPy-coated fabric for stretch sensors in 
+different cuts (course and wale), surface resistivities (coating 
+concentrations), and maximum allowable strain (elastane 
+compositions). The results showed that stretch sensors cut in 
+the wale direction with low surface resistivity and high 
+percentage of elastane, give the best performance both 
+mechanically in terms of structural integrity and electrically in 
+terms of dynamic range. The Instron test also proved that the 
+fabric stretch sensor is repeatable when stretched back and 
+forth 100 times with 40% and 80% strain. Hysteresis and 
+relaxation behaviors can also be observed to some extent, but 
+this is mainly caused by the structural property of knitted 
+fabrics. In addition, we found that transferring this ribbon strain 
+sensor onto another fabric as a substrate improves its reliability 
+and durability, as the substrate provides additional support to 
+recover the fabric stretch sensor back to its original length. The 
+placement of the stretch sensors that are embedded in between 
+the keys and on the edges of the fabric, as previously shown in 
+Figure 2c), enables the keyboard to distinguish  between 
+stretching or expanding the keys, pulling specific sides of the 
+fabric, and stretching the entire fabric. 
+350
+3.5. Additional Fabric Interfaces 
+The additional fabric interfaces, which are ribbon-controller 
+and trackpad, were designed to be modular. Silver or nickel-
+coated snaps were sewn as shown in Figure 2b) at the up right 
+corner of the fabric keyboard, allowing performer to add these 
+additional fabric controllers as necessary by snapping them. 
+Figure 3 shows the final look of these fabric controllers. In 
+order to develop these, we used: 
+• Non-conductive fabric : Woven 100% cotton denim 
+fabric. 
+• Mesh fabric: 100% Nylon Tulle netting fabric. 
+• Conductive fabric: Woven Soft&Safe fabric with 70% 
+Bamboo fiber and 30% Ag fiber, Copper Polyester 
+Taffeta with 100% Cu fiber, and Cobaltex fabric with 
+100% Ni fiber. Their surface resistivities are <1 Ω/sq, 
+0.05 Ω/sq, and <0.1 Ω/sq respectively. 
+• Resistive fabric: Woven Exstatic fabric with 87% 
+Polyester and 13% BSAF Resistat and surface resistivity 
+of 105 Ω/sq. 
+3.5.1. Fabric Ribbon-controller 
+The fabric ribbon-controller is a long sensate surface that 
+measures position along one axis for continuous expression by 
+sliding our finger. We compared two methods of single axis 
+location sensing as shown in Figure 3b) and c). The first 
+method in Figure 3b), is based on a voltage gradient between 
+two lines at both ends of a piezo-resistive/resistive fabric layer. 
+When a finger strikes the pad, a connection is made between 
+the resistive fabric and bottom conductive fabric through a 
+mesh fabric. The bottom fabric is connected to an ADC, in 
+which the voltage value directly correlates to the position of the 
+finger in respect to Vcc and Gnd, If a piezo-resistive layer is 
+used, we can implement current-steering circuits as discussed 
+in [21] to calculate both position and pressure of the finger 
+simultaneously. The second approach, as illustrated in Figure 
+3c), is based on the total resistance of a resistive fabric from 
+one edge to the contact point. It requires external reference  
+resistor to form a potential divider configuration. The latter 
+approach was chosen because of its simplicity in hardware, as 
+linearization can be easily be done through software, providing 
+a prior knowledge of the reference resistor. 
+3.5.2. Fabric Trackpad 
+Based on the maturity of current resistive touchscreen 
+technologies, we tested two main approaches: 5-wire and 4-
+wire configurations in our fabric trackpad design. The first 
+approach, the 5-wire configuration, was realized by sewing a 
+conductive fabric on top of a fabric substrate followed by mesh 
+and resistive fabric. Four conductive connections were then 
+embroidered onto each corner of the resistive layer, as 
+illustrated in Figure 3d). To measure the coordinate of the 
+finger, the corner points are periodically set to either represent a 
+low or high. The bottom conductive fabric is then used to 
+measure the voltage gradient of the axis as our finger strikes the 
+pad. The 4-wire configuration in Figure 3e) consists of a mesh 
+layer in between two resistive fabrics. Conductive threads were 
+sewn through the two opposing sides of each resistive fabric 
+orthogonally to each other. In this approach, one of the 
+conductive thread lines on each resistive fabric becomes an 
+ADC line, while the other is set to high-impedance. The upper 
+resistive fabric provides a voltage gradient by setting each 
+conductive line to either Vcc or Gnd. This mechanism occurs 
+alternately, hence the voltage read by the other fabric pair as an 
+ADC contact represents either the x or y-position value 
+We performed drawing tests to evaluate the performance of 
+these two configurations. In the case of 5-wire, there is a non-
+linear behavior on the patterns drawn closer to the edges. The 
+non-equipotential voltage distribution across the edges is the 
+reason behind this. As the touch point is further away from the 
+corners, the voltage starts to drop due to the resistance 
+distribution across the layer. To solve this issue, a linearization 
+pattern can be applied by sewing conductive thread in certain 
+patterns across all sides. The 4-wire configuration, however, 
+performed better compared to the previous configuration. It did 
+not have issues in voltage distribution, since in this 4-wire 
+technique, two resistive layers are required and the voltage 
+gradient in both cases now becomes unidirectional. The fabric 
+trackpad could read several simple to complex stroke patterns 
+satisfactorily. The advantages of this method over the grid-
+based technique is that it has a high resolution (depending on 
+ADC bits), seamless look, smooth tactile feel, and low 
+complexity; however, the trackpad could only detect a single 
+touch and is not as sensitive, as it needs a small amount of force 
+to break through the mesh layer. 
+4.HARDWARE DESIGN 
+Based on the modular design of our fabric keyboard, we 
+fabricated two different boards with their own features as 
+shown in Figure 4 below. The first board ( FabricKeys) consists 
+of MPR121 proximity and touch controller channels as well as 
+pressure, stretch, ribbon-controller, and trackpad channels, 
+(a) (b) (c)
+Figure 3: a) The fabric trackpad and ribbon-controller. 
+ b) Voltage gradient and c) total resistance approaches of 
+measuring finger location with ribbon-controller. d) 5-wire 
+and e) 4-wire configurations of the resistive fabric trackpad
+piezo-/resistive fabric 
+mesh fabric 
+conductive fabric
+resistive fabric 
+mesh fabric 
+conductive fabric
+piezo-/resistive fabric 
+mesh fabric 
+conductive fabric
+(a)
+(b) (c)
+(d) (e)
+resistive fabric 
+mesh fabric 
+resistive fabric
+Figure 4: System interface of the multimodal array of fabric 
+sensors, showing a) Feather M0 Wi-Fi, b) FabricKeys, and c) 
+ThereminKeys
+351
+whereas the second board ( ThereminKeys) comprises passive 
+electric field sensing, pressure, and stretch channels. 
+Both of these boards have configured pin-headers for stacking 
+the main hub and connecting it to the fabric musical controller 
+through a customized fabric ribbon connector. We used an 
+Adafruit Feather M0 Wi-Fi as the main hub, giving us 
+flexibility in adopting either wired (Serial or MIDI) or wireless 
+(OSC) protocols. We chose Wi-Fi because of its direct approach 
+to interfacing with OSC through UDP. These headers are also 
+compatible with other Feather modules, such as BLE or RF, 
+enabling us to change communication protocols as necessary. 
+5.SENSOR-COMPUTER INTERFACES 
+AND MUSICAL MAPPINGS 
+We tested three different protocols in this work: direct serial 
+communications with a customized data structure, MIDI, and 
+OSC. The hardware USB data-rates, with 115200 bps for 
+reading all of the sensor data, are 53 Hz and 62 Hz, while the 
+maximum possible latencies are 19 ms and 16 ms respectively 
+for FabricKeys  and ThereminKeys. With the ribbon-controller 
+and trackpad attached, the maximum latency increases to 20.6 
+ms. If, instead of USB, the wireless approach is used, as the 
+calculated round-trip delay was ~8.5ms, the maximum latency 
+when using OSC through UDP is 23 ms. Note that the 
+maximum latency here only applies to the multiplexed sensing 
+elements; some of the continuous controllers, such as ribbon-
+controller and trackpad, have a lower latency (~2ms).  The 
+effective latency however could be a little bit higher than this, 
+as we have not considered the latency after the data is 
+transferred and converted into sound. We finally focused on the 
+MIDI implementation, taking into an account its 
+interoperability, simplicity, and wide software support. In this 
+example, we used Ableton Live 9 as our audio workstation. 
+Table 1: Example of MIDI message mappings 
+Table 1 shows the on-board mapping of each sensor into MIDI 
+messages. It can be seen that these are customizable and could 
+change, depending on the intended sonic interactions. The 
+stretch sensors can be set to MIDI CC messages that will 
+correspond to certain timbral, dynamic, and temporal variations 
+(filter resonance, frequency, glide, reverb, amp, distortion, et 
+cetera), as well as pitch-bend. The additional controls, such as 
+the ribbon-controller or trackpad, can be mapped as 
+independent instruments, since they are integrated with touch 
+as well as near-proximity sensing, or as a keyboard 
+complement with CC or pitch-bend messages.  
+Figure 5 below demonstrates several examples of the gestural 
+interactions performed with the fabric keyboard and its 
+extension fabric interfaces. In this work, we explored several 
+possible mappings based on the underlying sensing modalities. 
+A performer can use the multiplexed proximity mode for 
+sensing high-range hand approach. Amplitude modulation can 
+be mapped into this non-contact parameter as our hand gets 
+closer to the surface, giving an ambient sound effect before the 
+performer starts playing physically with the keyboard. Another 
+possibility is to map this as a pitch modulation, getting stronger 
+as our hand approaches towards the surface. In addition, as 
+each key on our fabric keyboard is also able to sense near-
+proximity, we can map our hand’s presence on each key as an 
+individual note, and its distance in respect to it as a modulation. 
+For the electric field sensing, we mapped the non-contact 
+gesture control to filter frequency and expanding of the keys to 
+tremolo effects. Indeed, another novel interaction enabled by 
+the fabric keyboard is stretching. We also demonstrated this 
+physical gesture by correlating pitch modulation as we stretch 
+multiple keys against each other, as well as vibrato intensity as 
+we pull a specific side of the fabric subsequently. Lifting and 
+stretching the fabric after playing with it can also be mapped to 
+modulate an echo. Furthermore, one can twist the whole fabric, 
+which will ground all of the keys and trigger them to turn on, as 
+well as contracting some of the stretchable fabric sensors 
+simultaneously, giving a new style of performance to the users. 
+Figure 5: Several interactions demonstrated include a) 
+Expanding the keys with fingers b) Pulling left side c) 
+Pulling bottom side of fabric d) Expanding specific side 
+with fingers while playing the keys e) Squeezing the keys f) 
+Stretching the fabric g) Sliding on the trackpad h) on the 
+ribbon-controller while playing the keys i) Hovering around 
+and approaching towards the surface j) Playing the keys 
+with one hand while the other waves towards/against an 
+EMI source k) Lifting and stretching l) Twisting the whole 
+fabric 
+There are evidently many possible mappings that can result 
+from this fabric keyboard as we explore its modalities and their 
+relationships to one another. Refer to [17] for more  
+information of our mappings. Video demonstrations of several 
+performances with the keyboard, including the ribbon-
+controller and the trackpad can also be accessed at the link of 
+this project, provided in the Appendix of this paper. 
+6.EV ALUATIONS 
+We have discussed the design and implementation of multi 
+sensory fabric surface as a keyboard interface and demonstrated 
+Sensing 
+Modality Data
+No of 
+Sensing 
+Elements
+Channel Message Type Converted Data
+Touch Bool 12 1 Note Off/On Note Number
+Pressure Int 
+Int 12 1 
+1
+Note Off/On 
+Polyphonic/
+Channel Pressure
+Velocity (0-127) 
+Pressure (0-127)
+Proximity Bool 
+Int 12 2 
+2
+Note Off/On 
+CC
+Note Number 
+Value (0-127)
+Stretch Int 5 1 CC/Pitchbend Value (0-127)/MSB 
+(0-127)
+Ribbon-
+controller 
+Position 
+Touch/
+Proximity
+Int 
+Bool/
+Int
+1 
+1
+1 
+3
+Pitchbend 
+Note/CC
+MSB (0-127) 
+Note Number/  
+Value (0-127)
+Trackpad 
+Position 
+Touch/
+Proximity
+Int 
+Bool/
+Int
+2 
+1
+4 
+4
+CC 
+Note/CC
+Value (0-127) 
+Note Number/  
+Value (0-127)
+(a) (b) (c)
+(d) (e) (f)
+(g) (h) (i)
+(j) (k) (l)
+352
+a working prototype. However, there are still several limitations 
+in this work that need further work. Using bare conductive 
+threads has been proved to cause several complications such as 
+parasitic capacitances and short-circuits, affecting the sensor 
+response especially upon extreme movements of the fabric. 
+Thus, it is recommended to use insulated conductive threads, as 
+developed in [1], or more effectively, to fabricate the shielded 
+version of them. Even though the strain sensors worked reliably 
+when stretched around their allowable range, stretching outside 
+their range could influence their base resistance. Calibrating 
+each sensor baseline value is therefore necessary to compensate 
+this offset.  
+In terms of the usability, we found that it is relatively hard to 
+play chords with the keyboard, due to the gap in between each 
+key for the stretch sensor’s placement. This gap is required so 
+that we can expand the keys comfortably with our finger. 
+However, choosing a more stretchable base fabric and reducing 
+this gap distance could possibly solve this design issue. Finally, 
+since our current maximum possible latency would not be 
+suitable for staccato keyboard performance s, further efforts in 
+hardware are required by reducing the multiplexing load and 
+the ADC processing time of each sensing modality. 
+7.CONCLUSIONS AND FUTURE WORK 
+In this paper, we presented FabricKeyboard: a novel, multi-
+modal, fabric-based keyboard controller comprising a multi-
+layer of fabric sensors patterned on a stretchable fabric 
+substrate. Each key, as well as the bulk fabric, could detect 
+touch, proximity, pressure, stretch, and coupled electric field 
+simultaneously, resulting in rich discrete and continuous 
+gesture sensing. To complement this fabric keyboard, other 
+fabric interfaces such as ribbon controllers and trackpads were 
+also built. These fabric interfaces are modular and can be 
+snapped to the main keyboard controller. Our seamless design 
+separates the soft-circuits (smart fabrics) from the rigid-circuits 
+(circuit boards), allowing the performers to fully explore the 
+fabric and express themselves. This enhances the relationship 
+between the physical interaction and the music, as the fabric 
+deeply embodies the sound it resonates. Supported by MIDI 
+protocol, the fabric keyboard can be connected to any audio 
+synthesis or sequencer software and mapped to essentially any 
+instrument, sound, or effect.  
+There is much work that can be done in the future to further 
+extend this project. Firstly, we would like to continue our 
+reliability tests and perform washability tests on the fabric 
+sensors. It is also interesting to extend this fabric keyboard to 
+two or three octaves and incorporate haptic feedback by 
+integrating fabric-based actuators. We would like to conduct in-
+depth user studies with musicians and sound artists to improve 
+our device’s ergonomics and to study the rich multimodal and 
+sonic experiences that can result from this keyboard. In the end, 
+we would like to collaborate with them for a musical 
+performance. We hope that this work not only contributes 
+towards fabric-based musical controllers, but also to other new 
+physical interaction media involving electronic textiles. 
+8.ACKNOWLEDGMENTS 
+We would like to thank Lyle Mays for the original inspirations, Nan-
+Wei Gong for the initial discussions of this work, the Responsive 
+Environments Group at the MIT Media Lab, and the Zeno Karl 
+Schindler Foundation. 
+9.REFERENCES 
+1.Poupyrev, I., Gong, N.W., Fukuhara, S., Karagozler, M.E., 
+Schwesig, C. and Robinson, K.E., 2016, May. Project 
+Jacquard: Interactive Digital Textiles at Scale. In Proc. 
+CHI (pp. 4216-4227). ACM. 
+2.Berzowska, J., 2005. E-textiles: Wearable computers, reactive 
+fashion, and soft computation. Textile, 3(1), pp.58-75. 
+3. Post, E.R., Orth, M., Russo, P.R. and Gershenfeld, N., 2000. 
+E-broidery: Design and fabrication of textile-based 
+computing. IBM Sys, 39(3.4), pp.840-860. 
+4.Chang, A. and Ishii, H., 2007, June. Zstretch: a stretchy fabric 
+music controller. In Proc. 7th NIME (pp. 46-49). ACM. 
+5.Roh, J.S., Mann, Y ., Freed, A. and Wessel, D., 2011, June. 
+Robust and Reliable Fabric, Piezoresistive Multitouch 
+Sensing Surfaces for Musical Controllers. In NIME (pp. 
+393-398). 
+6.xOSC Glove. http://dev-blog.mimugloves.com 
+7.Troiano, G.M., Pedersen, E.W. and Hornbæk, K., 2015, April. 
+Deformable interfaces for performing music. In Proc. 33rd 
+CHI (pp. 377-386). ACM. 
+8.Perner-Wilson, H., Buechley, L. and Satomi, M., 2011, 
+January. Handcrafting textile interfaces from a kit-of-no-
+parts. In Proc. 5th TEI (pp. 61-68). ACM. 
+9.Paradiso, J.A. American Innovations in Electronic Musical 
+Instruments, http://www.newmusicbox.org/articles/
+american-innovations-in-electronic-musical- instruments/  
+10.Young, G., 1989. The Sackbut Blues: Hugh Le Caine, 
+Pioneer in Electronic Music, National Museum of Science 
+and Technology Press, Ottawa CA.  
+11.Moog, R.A. and Rhea, T.L., 1990. Evolution of the keyboard 
+interface: The Bösendorfer 290 SE recording piano and 
+the Moog multiply-touch-sensitive keyboards. CMJ, pp.
+52-60. 
+12.Haken, L., Tellman, E. and Wolfe, P., 1998. An indiscrete 
+music keyboard. CMJ, 22(1), pp.30-48. 
+13.McPherson, A., 2012, May. TouchKeys: Capacitive Multi-
+Touch Sensing on a Physical Keyboard. In NIME. 
+14.Grosshauser, T. and Tröster, G., 2013, May. Finger Position 
+and Pressure Sensing Techniques for String and Keyboard 
+Instruments. In NIME (V ol. 13, pp. 27-30). 
+15.Lamb, R. and Robertson, A., 2011. Seaboard: a New Piano 
+Keyboard-related Interface Combining Discrete and 
+Continuous Control. In NIME (pp. 503-506). 
+16.Paradiso, J.A. and Borque, L. L., A Fabric Keyboard for 
+Composing on the Road. (Unpublished manuscript) 
+17.Wicaksono, I., 2017. Master Thesis. Multisensory Fabric as 
+Deformable Musical Interface. 
+18.MPR121 Datasheet. http://www.nxp.com/pages/proximity-
+capacitive-touch-sensor-controller:MPR121 
+19.Zimmerman, T.G., Smith, J.R., Paradiso, J.A., Allport, D. 
+and Gershenfeld, N., 1995, May. Applying electric field 
+sensing to human-computer interfaces. In Proc. CHI (pp. 
+280-287). ACM. 
+20.Gong, N.W., Steimle, J., Olberding, S., Hodges, S., Gillian, 
+N.E., Kawahara, Y . and Paradiso, J.A., 2014, April. 
+PrintSense: a versatile sensing technique to support 
+multimodal flexible surface interaction. In Proc. 32nd CHI 
+(pp. 1407-1410). ACM. 
+21. Freed, A., 2009, June. Novel and Forgotten Current-steering 
+Techniques for Resistive Multitouch, Duotouch, and 
+Polytouch Position Sensing with Pressure. In NIME (pp. 
+230-235) 
+10.APPENDIX 
+Demonstrations of this project can be accessed at https://
+www.media.mit.edu/projects/FabricKeyboard/overview/ 
+353

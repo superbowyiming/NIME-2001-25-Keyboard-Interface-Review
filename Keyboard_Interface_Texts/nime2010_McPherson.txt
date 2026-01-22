@@ -1,0 +1,644 @@
+Augmenting the Acoustic Piano with Electromagnetic
+String Actuation and Continuous Key Position Sensing
+Andrew McPherson
+Electrical & Computer Engineering
+Drexel University
+3141 Chestnut St.
+Philadelphia, PA 19104
+apm@drexel.edu
+Y oungmoo Kim
+Electrical & Computer Engineering
+Drexel University
+3141 Chestnut St.
+Philadelphia, PA 19104
+ykim@drexel.edu
+ABSTRACT
+This paper presents the magnetic resonator piano, an aug-
+mented instrument enhancing the capabilities of the acous-
+tic grand piano. Electromagnetic actuators induce the strings
+to vibration, allowing each note to be continuously con-
+trolled in amplitude, frequency, and timbre without exter-
+nal loudspeakers. Feedback from a single pickup on the
+piano soundboard allows the actuator waveforms to remain
+locked in phase with the natural motion of each string. We
+also present an augmented piano keyboard which reports
+the continuous position of every key. Time and spatial res-
+olution are suﬃcient to capture detailed data about key
+press, release, pretouch, aftertouch, and other extended ges-
+tures. The system, which is designed with cost and setup
+constraints in mind, seeks to give pianists continuous con-
+trol over the musical sound of their instrument. The in-
+strument has been used in concert performances, with the
+electronically-actuated sounds blending with acoustic in-
+struments naturally and without ampliﬁcation.
+Keywords
+Augmented instruments, piano, interfaces, electromagnetic
+actuation, gesture measurement
+1. INTRODUCTION
+The acoustic piano is among the most versatile of instru-
+ments, capable of complex polyphony and rapid passage-
+work across an extremely wide register. Yet in comparison
+with most other acoustic instruments, the piano has a sur-
+prising limitation: once a note is struck, the performer has
+virtually no ability to modulate its sound before it is re-
+leased. Building a keyboard instrument with the ability to
+continuously shape each note is an age-old problem: In the
+15th century, Leonardo da Vinci devised an instrument us-
+ing rosined wheels to selectively sound a bank of strings;
+later, the late 18th and early 19th centuries saw a prolif-
+eration of new instruments attempting to bring indeﬁnite
+sustain and continuous modulation to the keyboard [6].
+With modern electronic synthesizers, inﬁnite sustain and
+real-time note shaping are no longer challenging. Yet de-
+spite decades of improvement, many performers ﬁnd that
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME2010, 15-18th June 2010,Sydney, Australia
+Copyright 2010, Copyright remains with the author(s).
+electronic instruments still do not match the richness and
+nuance of their acoustic counterparts; very few pianists
+would choose even the most sophisticated synthetic piano
+over any acoustic grand of reasonable quality.
+This paper presents the magnetic resonator piano, which
+seeks to unify the ﬂexibility of synthesis with the richness of
+the acoustic piano by electronically augmenting an acoustic
+grand piano. Electromagnetic actuators directly induce the
+strings to vibration, bypassing the piano’s percussive ham-
+mer mechanism and allowing continuous control over the
+sound of each note. Continuous position sensing of each
+piano key allows the performer to control parameters of
+actuation in real time without impeding traditional piano
+technique, while an optional second keyboard can be used
+to control the actuators without engaging the mechanical
+action. All sound is produced by the piano strings, with-
+out loudspeakers, facilitating integration with other acous-
+tic instruments in a concert hall. Vocabulary of this hybrid
+acoustic-electronic instrument includes indeﬁnite sustain,
+crescendos from silence, harmonics on each piano string,
+and new timbres which combine the warmth and resonance
+of the acoustic piano with an ethereal purity often associ-
+ated with electronic synthesis.
+2. PREVIOUS WORK
+Electromagnetic piano string actuation has been recently
+explored by Bloland, Berdahl et al. [1, 3]. Their system, the
+Electromagnetically-Prepared Piano, uses twelve solenoid
+magnets placed over selected strings. Signals are generated
+in Max/MSP and can include periodic waveforms, ﬁltered
+noise, and prerecorded samples. The resulting sounds are
+quite compelling, blending the warmth of the piano with a
+uniquely electronic purity.
+Electronic actuation has also been applied to the electric
+guitar, both in commercial technologies such as the EBow
+[9] and using more comprehensive feedback approaches [2].
+Work by Boutin and Besnainou explores active control of a
+violin bridge [5] and xylophone bar [4]. Stable active con-
+trol of acoustic mechanisms requires very low processing
+latency, and is often accomplished using specialized digital
+signal processing hardware. Dozio and Mantegazza [7] pro-
+vide guidance for the implementation of real-time control
+systems using general-purpose microprocessors; Lee et al.
+[10] present one such system achieving latency as low as
+24µs at a 40kHz sampling rate.
+Separately, keyboard controllers have been developed which
+report the continuous position of each key. Freed and Avizie-
+nis [8] demonstrate a keyboard capable of continuous key
+position sensing, including high-speed communication with
+a host computer to transmit high-bandwidth position data.
+A keyboard controller by Moog [12] also permits horizontal
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+217
+motion of each key and touch sensitivity on the key surface.
+These interfaces build on established keyboard technique to
+allow control of more complex musical processes.
+2.1 Comparison with Previous Work
+Our electromagnetic actuation system operates on the
+same principle as the Electromagnetically-Prepared Piano
+[1], but we present an implementation which allows cover-
+age of the entire range of the piano at reasonable cost. We
+also employ a feedback-based control strategy that can be
+implemented without the requirement of ultra low latency
+or separate pickups for each string. In comparison to eﬀorts
+which focus on actuation or keyboard sensing in isolation,
+we seek to tightly integrate both elements deeply into the pi-
+ano, fusing traditional (hammer-actuated) piano technique
+and electronic control into a single augmented instrument
+that acts as a natural extension of the acoustic piano.
+3. ELECTROMAGNETIC ACTUATION
+The design of the actuator system is explained in detail
+in an article currently in press [11]. The major features of
+the hardware and software design are outlined below.
+3.1 Hardware Design
+Figure
+1: The magnetic resonator piano. Top: com-
+plete system. Top inset: electromagnetic actuators
+above the strings. Bottom: Brackets holding actu-
+ators for four octaves of strings.
+Figure 1 shows a picture of the electromagnetic actuation
+system, which can be installed in any acoustic grand piano
+without modiﬁcation to the instrument. A block diagram
+is shown in Figure 2. Actuation works on the principle of
+ferromagnetic attraction, whose application to piano strings
+is detailed in [1]. One custom-wound solenoid electromag-
+net is used for each note of the piano, up to 88 notes total
+(48 in the current prototype). Actuators are suspended
+above the string by an aluminum bracket which rests on
+the steel beams of the piano frame. Though the actuators
+must initially be adjusted to the speciﬁc geometry of a pi-
+ano, removal and reinstallation are as simple as lifting and
+replacing the aluminum brackets.
+Each actuator is driven by a dedicated ampliﬁer opti-
+mized for low cost and parts count. Ampliﬁer input signals
+are generated by computer, but it would be prohibitively
+expensive to use a separate DAC channel for each note of
+the piano. Instead, each ampliﬁer input is attached to a 16-
+channel multiplexer which dynamically selects an available
+DAC channel. A microcontroller maintains a mapping from
+DAC channels to ampliﬁers, receiving MIDI Control Change
+messages to make and break connections. In this way, 88
+actuators can be covered using an inexpensive commercial
+audio interface, with the maximum polyphony determined
+by the number of DAC channels.
+3.2 Signal Processing
+The strongest tones are obtained when the actuator wave-
+form remains locked in phase to the motion of the string.
+On the other hand, recording the motion of each string faces
+several obstacles, including EM interference from the elec-
+tromagnets and substantial digital buﬀering delays which
+make precise feedback control impossible1.
+We have developed an intermediate approach which uses
+a single piezo pickup on the piano soundboard to record
+the sum of all string vibrations. Bandpass ﬁlters isolate
+the fundamental frequency of each note (or, optionally, the
+ﬁrst several harmonics). These ﬁltered signals drive phase-
+locked loops which synthesize new waveforms that remain
+in phase with the ﬁltered signal (Figure 3). Mechanical de-
+lays and digital buﬀering produce a phase lag between the
+motion of the string at the point of its interaction with the
+actuator and the pickup signal. This lag is unknown but
+time-invariant; therefore, the PLL includes an adjustable
+phase oﬀset ∆ φ, calibrated by ear, which allows the ac-
+tuator signal to remain precisely locked in phase with the
+motion of each string.
+K 1 + !s
+ss2+ 2"#ns + #n
+2
+High-Q bandpass Loop filter
+VCO 1 VCO 2
+to DAC
+$%
+vo1 vo2
+%f
+fcenter
+vadc %ivi2"#ns
+Figure
+3: Input ﬁlter and PLL system for one active
+note.
+3.3 Measurements
+A piano string can be induced to vibration at any of
+its harmonics (and very weakly in between), with response
+falling oﬀ with increasing frequency due to actuator induc-
+tance and mechanical losses. Figure 4 compares the am-
+plitude of electromagnetic and hammer-actuated tones on
+middle C (C4). Electronically-actuated tones show compa-
+rable amplitude to standard piano notes, but with a slower
+1Deplo
+ying the ultra-low latency feedback systems of Sec-
+tion 2 on a scale to cover the entire piano would face sub-
+stantial hurdles in cost and complexity.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+218
+PLL
+!"1
+ADC
+Piezopickup
+(soundboard)
+BPF
+f1
+PLL
+!"15
+BPF
+f15
+.......
+DAC
+....
+....
+mux mux
+...
+Note Controller
+f1 f15f2 f3
+.....
+MIDI
+MCU
+Atmel AVR
+ATtiny2313
+Computer
+shift reg.
+Vdac1, ..., 15
+shift reg.
+ctrl1
+ctrl2
+ctrl1 ctrl2 ctrl3 ctrl4
+(4 bits each)
+Vin1
+. . .
+Iout1
+Vin2
+Iout2
+Driver
+Coils
+...
+... ..
+.
+1 global input maximum 15 active notes up to 88 output channels
+(over strings)
+Level Shifters
+....
+Vshift1, ..., 15
+Figure 2: Block diagram of the magnetic resonator piano.
+attack time and extended sustain 2. Figure 4 also shows
+that the use of feedback produces stronger, more consistent
+tones.
+Musically speaking, electromagnetic tones exhibit a pure,
+ethereal tone quality that remains mellow even at loud dy-
+namics. The musical qualities reﬂect their spectral content
+(Figure 5) which, in comparison to the piano, emphasizes
+the fundamental frequency but contains less energy in the
+higher partials. Figure 5 shows that a variety of spectra
+(and correspondingly, a variety of timbres) can be generated
+by varying the harmonic content of the actuator waveform,
+though limited high-frequency performance of the electro-
+magnets makes replication of brighter piano timbres diﬃ-
+cult. Future work will explore ampliﬁer and electromagnet
+designs with stronger high-frequency performance.
+0 5 10 15
+ï55
+ï50
+ï45
+ï40
+ï35
+ï30
+ï25
+ï20
+ï15
+ï10
+ï5
+0
+Time (sec)
+Amplitude (dB)
+Electromagnetic actuation versus traditional piano on middle C (C4)
+ 
+ 
+Actuator with feedback
+Actuator without feedback
+Piano
+Figure 4: Amplitude of electromagnetic actuation
+on middle C (C4) versus a piano note played ap-
+proximately forte. Actuator tones last 5 seconds.
+3.4 Control Parameters
+The actuator system is not merely a source of new sounds.
+Its principal goal is to provide the performer with a means
+of continuously shaping the sound of the piano. It is impor-
+tant, then, to highlight the controllable parameters of each
+actuator:
+2Figure 4 shows the result of driving the string at constant
+amplitude. Arbitrary dynamic envelopes are possible by
+varying the amplitude of the actuator signal.
+100Hz 1kHz 10kHz
+−80
+−60
+−40
+−20
+0
+Frequency
+Amplitude (dB)
+Piano note, forte, after 1 second
+100Hz 1kHz 10kHz
+−80
+−60
+−40
+−20
+0
+Frequency
+Amplitude (dB)
+Sine wave
+100Hz 1kHz 10kHz
+−80
+−60
+−40
+−20
+0
+Frequency
+Amplitude (dB)
+Harmonics 3 and 5
+100Hz 1kHz 10kHz
+−80
+−60
+−40
+−20
+0
+Frequency
+Amplitude (dB)
+White noise
+Figure 5: Spectra for actuation with several wave-
+forms compared with a standard piano note, C4.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+219
+• Amplitude (and amplitude envelope)
+• Frequency (relative to string fundamental)
+• Phase (relative to existing string motion)
+• Spectrum (harmonic content plus noise sources)
+Together, these parameters deﬁne themusical vocabulary
+of the instrument, including dynamics, articulation, timbre
+and tone quality. Correlations between acoustic features
+and subjective musical attributes are often diﬃcult to quan-
+tify, and are nearly always more subtle than simple one-to-
+one mappings (e.g. amplitude to dynamic, frequency to
+pitch, etc.). Ultimately, the human performer should have
+the ability to shape the instrument’s acoustic parameters to
+his or her taste. To that end, we have created a new per-
+formance interface which intuitively extends the keyboard
+to allow continuous expression.
+4. CONTINUOUS KEYBOARD SENSING
+Mechanically, the piano oﬀers very few dimensions of con-
+trol: the only aspect of keyboard performance that aﬀects
+the sound is the velocity with which a hammer strikes a
+string. On the other hand, pianists describe their instru-
+ment in far richer terms, discussing a wide palette of tone
+colors and sometimes swearing by gestures that would seem
+to have little acoustic relevance, including angle of approach
+to the keyboard or force on the keys after note onset. We
+hypothesize, then, that pianists transmit much more ex-
+pressive data to the instrument than a simple onset-release
+approach would reveal (or a MIDI controller would record).
+Capturing this additional expressive data has exciting po-
+tential to modulate the sound of the piano in a musically
+intuitive manner.
+4.1 Hardware Design
+We have developed an interface which continuously records
+key position on the acoustic piano using a modiﬁed Moog
+Piano Bar [13]. The Piano Bar uses optical reﬂectance sen-
+sors on each white key and interruption sensors on each
+black key (Figure 6). Though it was developed as a MIDI
+controller, internal pads on the circuit board provide access
+to the continuous analog light levels for each key. 88 sen-
+sors are multiplexed over 12 lines such that white keys can
+be measured at a rate of 600Hz and black keys at 1.8kHz.
+A digital signal provides a falling edge at the beginning of
+each cycle of keys, allowing synchronized data capture.
+Our data capture system uses two 6-channel, 12-bit ADCs
+[15] attached to an Atmel AVR microcontroller [14] which
+behaves as a USB audio device. Data is transmitted in a
+raw, packed 12-bit format and decoded by the host com-
+puter to extract the position of each key. The system is
+calibrated after installation, recording minimum and max-
+imum values on each key to compensate for variations in
+sensitivity and mechanical sensor position.
+4.2 Measurements
+Figure 7 shows a short excerpt recorded on a Steinway D
+grand piano with continuous key position sensing, demon-
+strating several important points:
+1. The sampling rate is suﬃcient to capture several points
+during the short interval of a key press. MIDI velocity
+can thus be calculated (as the Piano Bar does inter-
+nally), but theshape of key press events can also be
+measured, which may suggest speciﬁc types of perfor-
+mance technique. Key release can be measured in a
+similar manner. As an example, Figure 8 shows the
+LEDphoto-
+diode
+piano key (white)
+LEDphoto-
+diode LEDphoto-
+diode
+piano key (black)
+Figure 6: Disassembled view of Moog Piano Bar
+showing optical sensors, and diagram of sensor op-
+eration.
+continuous velocity of each key for an excerpt of Fig-
+ure 7.
+2. Force on the keys after onset creates a compression
+of the felt pads underneath the keyboard, resulting in
+slight key displacement. In particular, the long note
+(F4) in Figure 7 shows a decreasing force over the
+course of the note.
+3. Partial key-press gestures (either intentional or inad-
+vertent) which do not create a sound are recorded.
+4. Properties of the keyboard itself are revealed, includ-
+ing mechanical ringing on key release resulting from
+an underdamped system.
+This sensor system can be used to study traditional pi-
+ano technique at new levels of detail. Equally compelling,
+though, is its ability to capture a range of extended key-
+board gestures, each of which can be mapped to distinct
+actuator behavior:
+• Deliberate aftertouch and vibrato
+• Pre-touch and partial key presses
+• Very slow, controlled motion of each key
+• Light sweeps across the keyboard
+• Lifting and shaking keys between thumb and foreﬁn-
+ger
+Figure 9 shows an example of several of these gestures
+performed on a single key.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+220
+p f p p f p
+G = 55 5 B 5 = 55 5 B 5
+0 1 2 3 4 5 6 7 8 9
+0
+0.2
+0.4
+0.6
+0.8
+1
+Time (seconds)
+Key Position (1 = fully depressed)
+Continuous Position of Four Keys: C4 (blue), D4 (red), E4 (green), F4 (black)
+Figure
+7: Continuous position of four keys for a
+short musical phrase.
+4.6 4.8 5 5.2 5.4 5.6 5.8 6 6.2 6.4 6.6
+ï2.5
+ï2
+ï1.5
+ï1
+ï0.5
+0
+0.5
+1
+1.5
+2
+2.5
+x 10
+ï3
+Time (seconds)
+Key Velocity (positive = press)
+Continuous Velocity of Four Keys: C4 (blue), D4 (red), E4 (green), F4 (black)
+Figure
+8: Continuous key velocity for excerpt of
+previous ﬁgure.
+5. MUSICAL IMPLICATIONS
+The preceding sections demonstrate augmentation of both
+interface and sound production aspects of the piano. To
+create a truly expressive musical instrument, data from the
+keyboard must be mapped in a meaningful way to parame-
+ters of string actuation. The following sections discuss past
+experiences and future directions.
+5.1 Concert Performance
+The magnetic resonator piano was used in a concert per-
+formance November 2009 in Philadelphia, featuring music
+composed for it by Andrew McPherson 3. Two pieces were
+performed: Secrets of Antikythera, which was performed by
+a single pianist on magnetic resonator piano, and d’Amore,
+which employed pitch tracking on a viola soloist to selec-
+tively induce vibrations in the piano strings, creating a res-
+onant harmonic glow behind the viola.
+This concert predated the continuous keyboard sensor.
+Instead, in Secrets of Antikythera, two keyboards were used
+to control the actuators: the piano keyboard with a Moog
+Piano Bar and a secondary MIDI keyboard (see Figure 1),
+which was used in situations where hammer action was
+undesirable. Timbres and time-varying parameters were
+programmed in advance and selected like MIDI programs.
+Although this arrangement falls short of the goal of con-
+tinuous performer control, the instrument was nonetheless
+easily playable by the pianist, and the resulting sounds
+blended naturally with both traditional piano and viola.
+Electromagnetically-actuated sounds were particularly ef-
+fective in quieter, sparser sections employing the pedal,
+where the piano resonance could be explored without its
+customary percussive character. [11] provides further re-
+ﬂection on this concert.
+5.2 Implications of Continuous Sensing
+The continuous keyboard sensing described in Section 4
+profoundly changes the performance experience. On nearly
+every keyboard instrument, regardless of the dynamic level,
+complete key presses are required to produce sound. Deriv-
+ing performance data from subtle variations in key position
+gives rise to a new technique based on light touch, freeing
+the ﬁngers from fully engaging the comparably heavy me-
+chanical lever system. Nonetheless, even small deﬂections
+of the keys provide haptic feedback to the performer. Pas-
+sages of great delicacy and rapidity can be played without
+engaging the hammers, and it is straightforward to transi-
+tion between light technique and standard piano playing.
+3A
+demonstration video can be found at: http://www.
+youtube.com/watch?v=WDTaH_d8s8c
+0 5 10 15 20
+ï0.2
+0
+0.2
+0.4
+0.6
+0.8
+1
+Time (seconds)
+Key position (1 = fully depressed)
+Position of key C4 responding to several extended keyboard gestures
+Short, light taps Partial key ïpress tremolo Vibrato on depressed key Variable force aftertouch
+Figure
+9: Continuous position measurement of several extended keyboard gestures.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+221
+The secondary MIDI keyboard, when used, presents a
+more traditional performance experience, since it is not
+equipped with continuous sensing. (It would be possible, of
+course, to use an enhanced controller like the Moog Multiply-
+Touch-Sensitive Keyboard [12] in its place.) The controller
+software seamlessly handles simultaneous performance on
+both keyboards, the only constraint being the need to phys-
+ically lift the piano dampers with the pedal in order to ef-
+fectively use the upper keyboard.
+5.3 Gesture-Sound Mapping
+The potential for completely new keyboard techniques is
+exciting, but we also aim to develop approaches which aug-
+ment existing piano technique, building on the extensive
+training of skilled pianists. Ongoing work explores map-
+pings between gestural data and sound production. These
+quantities are inherently coupled in acoustic instruments,
+and maintaining the illusion of tight coupling is critical to
+producing an expressive electronic instrument. Tight cou-
+pling requires both low latency and design choices that align
+with the performer’s physical intuition. For example, heavy
+force on the keys should correlate with stronger sounds, vi-
+brato actions should result in acoustic vibrato eﬀects, and
+light key touches should produce soft, airy sounds.
+We plan to explore these couplings in collaboration with
+pianists. First, we intend to use continuous key sensing
+to study traditional piano performance in greater detail,
+identifying common physical gestures and their correlation
+with the performer’s expressive intent. Second, we will use
+lessons learned from this study to generate mappings from
+sensor data to sound production that extend the possibili-
+ties of the piano in an intuitive manner, soliciting feedback
+from performers on the perceived expressivity of each choice
+of mapping.
+5.4 Final Remarks
+The magnetic resonator piano opens up new creative op-
+portunities for both pianists and composers by allowing con-
+trol of the piano sound both within and across notes. De-
+sign decisions were made with cost and setup eﬃciency in
+mind, resulting in a system which is installable in any grand
+piano and controllable with standard computer hardware.
+We look forward to future collaborations with composers
+and performers to fully explore the musical potential of this
+instrument.
+6. ACKNOWLEDGMENTS
+This material is based upon work supported by the Na-
+tional Science Foundation under Grant # 0937060 to the
+Computing Research Association for the CIFellows Project.
+7. REFERENCES
+[1] E. Berdahl, S. Backer, and J. Smith. If I had a
+hammer: Design and theory of an
+electromagnetically-prepared piano. In Proc. ICMC
+2005.
+[2] E. Berdahl, G. Niemeyer, and J. Smith. Active
+control of a vibrating string. In Proc. Acoustics ’08.
+[3] P. Bloland. The electromagnetically-prepared piano
+and its compositional implications. In Proc. ICMC
+2007.
+[4] H. Boutin and C. Besnainou. Physical parameters of
+an oscillator changed by active control: Application
+to a xylophone bar. InProc. DAFx 2008.
+[5] H. Boutin and C. Besnainou. Physical parameters of
+the violin bridge changed by active control. In Proc.
+Acoustics ’08.
+[6] E. Dolan. E. T. A. Hoﬀmann and the ethereal
+technologies of “nature music”. Eighteenth-Century
+Music, 5(1):7–26, 2008.
+[7] L. Dozio and P. Mantegazza. General-purpose
+processors for active vibro-acoustic control:
+Discussion and experiences.Control Engineering
+Practice, 15(2):163–176, 2007.
+[8] A. Freed and R. Avizienis. A new music keyboard
+featuring continuous key-position sensing and
+high-speed communication options. InProc. ICMC
+2000.
+[9] G. Heet. String instrument vibration initiator and
+sustainer. U.S. Pat. 4,075,921, 1978.
+[10] N. Lee, E. Berdahl, G. Niemeyer, and J. O. Smith.
+Practical implementation of low-latency DSP for
+feedback control of sound. InProceedings of the
+Acoustics ’08 Conference, Paris, France, 2008.
+[11] A. McPherson. The magnetic resonator piano:
+Electronic augmentation of an acoustic grand piano.
+Journal of New Music Research. In press.
+[12] R. A. Moog and T. L. Rhea. Evolution of the
+keyboard interface: The B¨ osendorfer 290 SE
+recording piano and the Moog
+multiply-touch-sensitive keyboards. Computer Music
+Journal, 14(2):52–60, Summer 1990.
+[13] Piano Bar. Products of interest. Computer Music
+Journal, 29(1):104–113, 2005.
+[14] PJRC. Teensy USB development board.
+http://www.pjrc.com/teensy/.
+[15] Texas Instruments. 500kHz, 12-bit, 6-channel
+simultaneous sampling analog-to-digital converter.
+http://focus.ti.com/docs/prod/folders/print/
+ads7864.html.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+222

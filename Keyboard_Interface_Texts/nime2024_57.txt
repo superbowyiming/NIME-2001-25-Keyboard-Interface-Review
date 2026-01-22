@@ -1,0 +1,443 @@
+Stitch: a Knitting-powered Musical Interface using
+Computer Vision
+Kate Bosen
+Aalborg University
+A. C. Meyers Vænge 15
+Copenhagen 2450
+kbosen23@student.aau.dk
+Dan Overholt
+Aalborg University
+A. C. Meyers Vænge 15
+Copenhagen 2450
+dano@create.aau.dk
+ABSTRACT
+This paper describes a new instrument for musical expres-
+sion that makes music from knitting. This interface uses
+only knitting needles, yarn, and a computer as hardware.
+The webcam input on a laptop captures the player knit-
+ting in real-time, and a bespoke MaxMSP patch processes
+the incoming data stream. Movements are detected using
+computer vision principles to identify shapes, lines, and the
+motions of the performer’s stitches. Gestures the performer
+uses are then mapped to a synthesizer that produces mu-
+sic according to how the player moves, while they knit and
+purl. Each performance varies due to the speed at which
+the performer knits, the technical knitting style of the per-
+former, the kinds of stitches cast on the needles, the color
+and texture of yarn used during performance, and the size
+of the knitting project.
+Author Keywords
+NIME, Sound and Music Computing, fiber arts, knitting,
+computer vision, Max MSP
+CCS Concepts
+•Applied computing→ Sound and music computing;•Human-
+centered computing→ Gestural input;
+1. INTRODUCTION
+Knitting has a centuries old, storied tradition among women
+in Scandinavia. Originating from Arabia and travelling to
+Europe on trade routes [9], it was originally a craft per-
+formed primarily by tradesmen’s guilds. As yarn became
+increasingly affordable and available, many middle and up-
+per class European women started to knit too. As a result
+of this change, men began to reject the craft as a feminine
+pursuit [8]. As time progressed, women began to knit as a
+means to demonstrate ability to provide for a husband, and
+later as a means of protest in feminist movements [17], [2].
+Today, knitting is still most common amongst women and
+girls, with as many as 99 percent of respondents in some
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’24, 4–6 September, Utrecht, The Netherlands.
+studies involving knitting identifying as women [19]. Ad-
+ditionally, knitting has been shown to be a pastime that
+reduces stress, and can be done at home as a solo activity,
+contributing to its recent resurgence as a hobby catalyzed
+by the COVID-19 pandemic [20][10][3][4]. All of this is rele-
+vant and interesting to the first author, who happens to be
+a woman living in Scandinavia who has recently learned to
+knit.
+Within the NIME community, and within the broader
+electronics and sound communities, interest in knit materi-
+als for interaction has been rising in recent years. E-textiles
+are used for flexible, tight fitting sensor data acquisition sys-
+tems [18]. In the musical instrument domain, projects such
+as FabricKeyboard [21], KittedKeyboard [22] and Singing
+Knit [15] were sources of inspiration for this project, be-
+cause of their use of knitted materials. Where this project
+departs from such inspiration is in how knitted fabric is
+used. The aforementioned works use pre-knitted materials
+as sensors to either replicate existing instruments (Knitted-
+Keyboard) or augment acoustic instruments (Singing Knit).
+Stitch aims to turn the act of knitting yarn together into
+what makes the music as process in and of itself. Placing a
+performer with knitting needles and yarn in front of a we-
+bcam running the Stitch software is the only thing needed
+for this work.
+The concept for Stitch is to investigate how to build a
+NIME that creates music while also incorporating a com-
+ponent of visual art. While such approaches are not new,
+e.g., projects capturing dancing with sensors on clothing or
+using a webcam to map movements to sonic gestures [16],
+but there has been relatively little done in the area of us-
+ing fiber arts to create music. With Stitch, the design of
+the knit informs the composition of the piece being played,
+and vice versa. Similar to how there are infinite ways of
+knitting a sweater, scarf, or hat by changing the pattern
+of the stitches and yarn, Stitch’s compositions have infinite
+possibilities. It can be used by beginner knitters or expe-
+rienced knitters at home to compose music while making a
+project, or it can be used by musicians who want to learn
+some knitting technique. This would be especially useful for
+them, according to a study showing that amateur knitters
+are significantly happier than amateur musicians [6]. There
+can also be more of a performative aspect to Stitch by plac-
+ing the artist on stage with accompanying musicians. Stitch
+can be a collaborative instrument, for instance in knitting
+circles if each member of the circle has their own webcam
+and accompanying software setup. Stitch can also be a solo
+instrument, included in an avant-garde music performance
+or enjoyed in the privacy of ones home while knitting on
+the couch. The gesture mapping and synthesizers used for
+Stitch can also be changed depending on the composer’s
+artistic needs.
+The remainder of this paper gives an overview of the
+work related to inspiring and informing Stitch, describes its
+design goals and current sound mappings, and details the
+implementation of the computer vision concepts, packages,
+and synthesizers used in the MaxMSP software developed
+for Stitch. Finally, we put forth some discussion about the
+outcomes of this initial exploration of Stitch, and where fu-
+ture work on the project could lead.
+2. ETHICAL STATEMENT
+This project was created in earnest as a way for people
+to make music regardless or gender, ethnicity, or socio-
+economic status. No data was collected from individuals
+outside the creators of the project. Knitting needles and
+yarn are available at low costs in second hand stores, and
+can be reused. Most libraries have computers that can
+be used to download and run software on a free license of
+MaxMSP.
+While the authors strove for an inclusive system, of course
+there are shortcomings. Those who have limited or no mo-
+bility in their hands will struggle to use the instrument.
+Additionally, while those who are visually impaired can still
+knit using their tactile senses, they may encounter difficulty
+when operating the software.
+3. RELATED WORK
+The following projects include work that was surveyed when
+preparing Stitch. These projects were considered for their
+use of textiles to make musical interfaces:
+• FabricKeybord/KnittedKeyboard: The KnittedKey-
+board is a project that emerged from MIT’s Media
+Lab, which is a keyboard made from conductive, ther-
+mochromic, and polyester yarns knit together by an
+industrial machine [22]. There are additional sensors
+embedded into the fabric piano for further gestural
+control. The FabricKeyboard is an earlier iteration of
+the same knitted keyboard interface. The nature of
+this keyboard allows for stretching, twisting, folding,
+and compacting the fabric to make sounds [21].
+• Singing Knit: The Singing Knit is a wearable knit col-
+lar for measuring a singer’s vocal interactions through
+surface electromyography (EMG) made by a group at
+Queen Mary University of London [15]. It uses EMG
+sensors to augment vocal performance by using knit
+fabrics, something that humans are used to wearing
+around their necks instead of dealing with the discom-
+fort and irritation that comes with applying and wear-
+ing electrodes, as is customary for EMG augmented
+instruments.
+• Buffer: Made by artist Nicola Woodham, Buffer is an
+e-textile made of a jacket and companion headpiece
+with sensors placed inside both. The sensors both
+trigger sound samples and adjust filter parameters in
+a performance setting [1].
+These projects were considered for their use of computer
+vision through a laptop’s built-in webcam.
+• Hand Motion-Controlled Audio Mixing Interface: A
+touch-free music mixer using computer vision on ei-
+ther the LeapMotion or the Microsoft Kinect. The
+user moves objects around within the cameras view to
+control musical parameters such as volume and pan-
+ning [14].
+• Handmate: A browser-based hand gesture controller
+for Web Audio. It was built in the web environment so
+that its users could access computer vision technology
+without requiring specialized hardware or software. It
+uses a webcam to track hand gestures. There are two
+modes – one for making effects with hand gestures on
+a microphone sound input, and one mode for MIDI,
+which maps the hand gestures to MIDI output[7].
+4. DESIGN
+After surveying the available literature, the ideal outcome
+for the Stitch system would be a musical interface that re-
+quires no special equipment beyond what would be in a
+typical home of a musician or a knitter, and creates beau-
+tiful music based on thoughtful mappings from gesture to
+sound output. The ideal outcome of Stitch would also be a
+system that allows the audience to walk away from a Stitch
+performance feeling like they saw something powerful and
+novel, and allows the performer to walk away from a perfor-
+mance with a piece of art (or at least the start of one) and
+a calm demeanor, as is typical after a long knitting session.
+Something that all of the e-textile NIMEs surveyed in the
+literature have in common is sensors and conductive threads
+embedded into their bodies, either through the use of con-
+ductive thread embedded into the yarn or sensors attached
+to the yarn making the body of the instrument. This is
+the nature of an e-textile [18]. For Stitch, it would not
+be appropriate to attach sensors to the yarn or the nee-
+dles, as this would inhibit the movement of the performer
+and the construction of the knit. The most logical solution
+was therefore to use a camera to track the movements and
+shapes made by the knitter and the fabric.
+With the concept fleshed out and main hardware selected,
+it was time to consider how to design the system. Figure 2
+shows a block diagram of the whole system, from the knit-
+ter, through the sound processing done in MaxMSP, to the
+final sound output at the end. A knitter sits in front of
+a webcam captured in MaxMSP, and as they move their
+hands, knit, purl, stretch, and pull the yarn these gestures
+are tracked by various objects from the cv.jit (v.2.02) pack-
+age available in the MaxMSP package manager [13]. It was
+decided to use this package because it comes with a multi-
+tude of image processing techniques and feature detection
+objects, along with extensive documentation. There are
+some native objects in MaxMSP that process video as well,
+but more advanced are available in the cv.jit package. The
+details of this implementation will be described later.
+Knitting items by hand is a “slow-living,” offline, relax-
+ing process that people to do slow down and give a lot of
+attention to something they love. This idea is at the heart
+of Stitch, and was especially in the designer’s mind when
+considering how to map gestural input to sound output. It
+is important that the mappings can feel organic, straight-
+forward, and natural [12], and not like one is fighting the
+computer to have control of the music. Three of the most
+obvious visual features that could be picked up by a camera
+and mapped are:
+• The orientation of the knitting needles. Are they
+pointing up? Is one needle pointing to the side? Are
+they both pointing at a 45 degree angle?
+• The amount of already-knit yarn is in the frame of the
+camera. Is the project a bright pink almost-finished
+scarf cascading down the performers lap? Are there
+only two rows of stitches that are the same color as
+the performers shirt? Are the individual stitches being
+Figure 1: A screenshot of the main maxpatch
+stretched out for the knitter to read their work? Are
+the stitches scrunched together?
+• The amount of movement the performer is making.
+Are they making small, slow movements with the stitches?
+Or are their elbows flying and is there smoke flying
+from the needles because they are knitting so fast?
+The gestural inputs described above were mapped to two
+parameters of a synthesizer: the fundamental frequency of
+the synthesizer and the center frequency of a bandpass fil-
+ter applied to the synthesizer. The sound design vision for
+Stitch is somewhat modular, because it is fairly simple to
+change the synthesizer being used at the end of the data
+stream, once it has been processed and de-noised. For this
+first iteration of the project, a drone sound was chosen.
+In some meditation practices, it is common to have drone
+sounds played over long periods of time that create strong
+overtones. Since knitting is a relaxing way to pass the time
+[4], it seemed fitting that the sonic design theme was medi-
+tation.
+5. IMPLEMENTATION
+The software environment chosen to implement the Stitch
+system design was MaxMSP 8. It is a rapid, robust proto-
+typing software that has both built-in video and audio pro-
+cessing capability as well as a plethora of user-made software
+packages with ample documentation. This specific patcher
+makes use of the jitter objects that come with Max and the
+objects in the aforementioned cv.jit package made by Jean-
+Marc Pelletier [13]. This package contains a collection of
+external objects that use various computer vision concepts
+such as facial recognition, blob detection, and overlaying
+graphics that give visual feedback for the patterns that the
+objects detect. The following objects were leaned on most
+heavily for image detection in Stitch:
+• cv.jit.hough: This object computes the Hough trans-
+form of the live webcam stream once it has been turned
+into a binary image. For every pixel in the binary in-
+put that contains a 1, every line passing through that
+point is represented in a Hough space image output
+by its distance and angle from the origin. The result
+is that for every 1-pixel a sinusoid is created. See the
+black box in the middle of Figure 1 for a view of how
+the Hough space looks in the patch’s visualizer.
+• cv.jit.lines: Figure 3 shows the camera input con-
+nected to this object. There are red lines superim-
+posed on the image where it has detected lines on
+the knitting needles. cv.jit.lines uses the Hough space
+mentioned above to find straight lines in a greyscale
+image.
+Figure 2: High level overview of the the entire Stitch system.
+Figure 3: Line capture visualizer from the cv.jit.lines object
+Once each of the webcam streams are passed through
+their respective computer vision processing objects, they
+output data in the form of Cartesian or polar coordinates.
+Each of the raw data stream outputs are incredibly noisy,
+and for that reason needs to be processed to make more
+manageable data streams, that can be controlled in simple
+one-to-one mappings using gestures of the knitter. This was
+done by taking the running median each of data stream and
+smoothing it out so that it was a bit more manageable to
+map parameters to.
+After the data streams are smoothed, they are mapped
+to the parameters of a synthesizer. The synthesizer used
+in this patch is a simple monophonic synthesizer overlayed
+with a bandpass filter. The line detection algorithm’s out-
+put was mapped to the pitch of the synthesizer, and the
+output of the hough space calculation was mapped to the
+center frequency of the bandpass filter. The line detection
+algorithm fed the frequency of the synthesizer because of
+the way that the cv.jit.lines object works: One of its out-
+puts is the left most x coordinate of a line, and it seemed
+intuitive that the position of the lines on the screen should
+be mapped linearly to pitch. The Hough space output was
+mapped to the center frequency of a cutoff filter because
+that is another effect that was desired in the sound design,
+because it was in the creator’s mind that there should be no-
+ticeable overtones in the music created because they create
+a meditative effect that compliments the already soothing
+nature of knitting.
+Please see Figures 1 and 4 for a view of the entire max
+patch, and the synthesizer subpatch, respectively. A video
+of Stitch can be found at the Youtube link in the footnotes.
+1
+Figure 4: A screenshot of the synthesizer subpatch (called
+knitting synth, bottom right of the main patch)
+6. DISCUSSION
+This paper is an initial exploration for the concept of Stitch.
+Its development included an autobiographical design (ABD)
+from the first author of this paper, who designed and created
+the system. ABD research shows that human-computer in-
+terface experts often use this process when developing new
+systems [11] [5]. It has been shown to be extremely valu-
+able for designers to get early stage feedback on their sys-
+tem, and it facilitates major tinkering and faster iteration
+than having to wait to recruit a panel or participants for a
+generalized usability test [11]. These are relevant consider-
+ations for Stitch, which is a novel instrument by a designer
+with the necessary skill set of the intended end-user. One
+result from this ABD is that there is most obvious room
+for improvement by reducing the amount of latency caused
+by the denoising process, and having more granular control
+over the sonic output of the system. It would demonstrate
+true control over the mappings process if one could hear the
+difference between each individual stitch being cast onto the
+needle in soothing synthetic polyphony.
+1https://youtu.be/iZujUEqWma0
+7. CONCLUSIONS
+In this paper, the concept, design, implementation, and po-
+tential use cases for a knitting instrument were described.
+Stitch is an instrument that is inspired by e-textiles but
+takes the concept in a different direction. It is a knitting
+musical interface that uses computer vision from a webcam
+in MaxMSP to make music while also participating in mak-
+ing fiber arts. There was consideration in how to map the
+movements in a way that feels natural for the performer
+and also fits the vibe of knitting, which is a calming and
+meditative time for most knitters.
+The authors acknowledge that the scope of Stitch in its
+current iteration is limited, as this was an initial investiga-
+tion of its concept. There is always room for future work
+in any project, and Stitch is no exception. Obvious first
+steps toward the future could include a more generalized
+perceptual evaluation of the system from both musicians
+and knitters to see what they make of the interface and the
+sound design.
+Other future work that would be of interest to the authors
+would be to weave conductive fibers into a ball of yarn, so
+that Stitch becomes more of a classic e-textile. It would also
+be very interesting to test different software mappings and
+synthesizers, to evoke different sonic themes. For instance, if
+there were conductive fibers woven into the yarn the knitter
+could create an “electric blanket” that makes cozy ambient
+electric sounds as they knit.
+The authors look forward to any opportunity for forth-
+coming research and development on Stitch, and spread-
+ing awareness of the exciting fields of e-textile instruments,
+knitting, and where those two intersect.
+8. REFERENCES
+[1] Nicola Woodham - buffer, 2020.
+[2] R. Andreassen. From a Collective Women’s Project to
+Individualized Gender Identities: Feminism, Women’s
+Movements, and Gender Studies in Denmark.
+Atlantis: Critical Studies in Gender, Culture & Social
+Justice, 29(1):71–76, Oct. 2004. Number: 1.
+[3] J. Beyer. Knitting masculinities: How men are
+challenging masculinity and needlework in a
+post-pandemic age. Fashion, Style &amp; Popular
+Culture, 2022. Publisher: Intellect.
+[4] J. W. Hartzell, S. Yaguda, and D. Boselli. Knitting to
+improve cognition and reduce stress in cancer
+survivors: A pilot study. Journal of Clinical Oncology,
+39(15 suppl):e24049–e24049, May 2021. Publisher:
+Wolters Kluwer.
+[5] C. Kiefer, D. Overholt, and A. Eldridge. Shaping the
+behaviour of feedback instruments with
+complexity-controlled gain dynamics.
+[6] A. Lamont and N. Ranaweera. Knit One, Play One:
+Comparing the Effects of Amateur Knitting and
+Amateur Music Participation on Happiness and
+Wellbeing. Applied Research in Quality of Life, 15,
+May 2019.
+[7] M. Lim, N. Kotsani, and P. Hartono. Handmate: An
+Accessible Browser-based Controller for Web Audio
+and Midi using AI Hand-Tracking. In NIME 2022,
+The University of Auckland, New Zealand, June 2022.
+PubPub.
+[8] S. McGregor. Traditional Scandinavian Knitting.
+Courier Corporation, Jan. 2004. Google-Books-ID:
+QYzQs5b KmgC.
+[9] L. Nargi. Knitting Around the World: A
+Multistranded History of a Time-Honored Tradition.
+Voyageur Press, Oct. 2011. Google-Books-ID:
+TxcSEAAAQBAJ.
+[10] K. Nartker. Crafting in COVID: Engagement With
+Textile Arts and Crafts Among Senior Living
+Residents Throughout the COVID-19 Pandemic.
+Gerontology and Geriatric Medicine,
+8:233372142210791, Mar. 2022.
+[11] C. Neustaedter and P. Sengers. Autobiographical
+design in hci research: designing and learning through
+use-it-yourself. In Proceedings of the Designing
+Interactive Systems Conference, DIS ’12, page
+514–523, New York, NY, USA, 2012. Association for
+Computing Machinery.
+[12] D. Overholt. The Musical Interface Technology Design
+Space. Organised Sound, 14(2):217–226, Aug. 2009.
+[13] J.-M. Pelletier. cv.jit | Computer Vision for Jitter –
+Jean-Marc Pelletier, 2020.
+[14] J. Ratcliffe. Hand Motion-Controlled Audio Mixing
+Interface.
+[15] C. N. Reed, S. Skach, P. Strohmeier, and A. P.
+McPherson. Singing Knit: Soft Knit Biosensing for
+Augmenting Vocal Performances. In Augmented
+Humans 2022, pages 170–183, Kashiwa, Chiba Japan,
+Mar. 2022. ACM.
+[16] W. Siegel. Dancing the music: Interactive dance and
+music. 01 2012.
+[17] M. A. Skov. The queens of loud machines: Knitting
+and making music in West Berlin in the 1970s–1980s,
+2023.
+[18] R. Stewart. Cords and Chords: Exploring the Role of
+E-Textiles in Computational Audio. Frontiers in ICT,
+6:2, Mar. 2019.
+[19] T. L. H. Sørensen and B. Eriksson. Threads of
+participation: Crafting female agency in a
+collaborative art project in Denmark. Conjunctions,
+9(1):1–16, June 2022.
+[20] H. Utsch. Knitting and stress reduction. Psy.D.,
+Antioch University New England, United States –
+New Hampshire. ISBN: 9781109889581.
+[21] I. Wicaksono and J. Paradiso. FabricKeyboard:
+Multimodal Textile Sensate Media as an Expressive
+and Deformable Musical Interface. May 2017.
+[22] I. Wicaksono and J. A. Paradiso. KnittedKeyboard:
+Digital Knitting of Electronic Textile Musical
+Controllers.

@@ -1,0 +1,510 @@
+Quick Live Coding Collaboration In The Web Browser
+Chad McKinney
+University of Sussex, UK
+C.Mckinney@sussex.ac.uk
+ABSTRACT
+With the growing adoption of internet connectivity across
+the world, online collaboration is still a diﬃcult and slow
+endeavor. Many amazing languages and tools such as Su-
+perCollider, ChucK, and Max/MSP all facilitate networking
+and collaboration, however these languages and tools were
+not created explicitly to make group performances simple
+and intuitive. New web standards such as Web Audio and
+Web GL introduce the capability for web browsers to du-
+plicate many of the features in computer music tools. This
+paper introduces Lich.js, an eﬀort to bring musicians to-
+gether over the internet with minimal eﬀort by leveraging
+web technologies.
+Keywords
+Live Coding, Network Music, Web Audio, Web GL
+1. INTRODUCTION
+There are a myriad of computer music languages and envi-
+ronments with built in networking libraries. Common ex-
+amples are SuperCollider, Max/MSP, and ChucK, which
+all make use of the Open Sound Control (OSC) [25] proto-
+col to share information between computers and programs.
+While powerful, these libraries require a large amount of
+eﬀort to create some framework for groups to use. This has
+led to a proliferation of higher level network libraries and
+frameworks such as OSCGroups [1], Benoit Lib [16], the
+Co-Audicle [22], and the Republic [10] which all serve to
+simplify collaboration by building on top of existing tech-
+nologies. These tools are rich and powerful but are diﬃcult
+to use, requiring expertise and with varying levels of stabil-
+ity and operating system support.
+Browser based technologies are a good choice for collab-
+orative frameworks because web browsers are common and
+their development is widely supported with heavily funded
+development. The recent advent of web standards such as
+WebGL [11] and more recently Web Audio [19] has led to
+many early eﬀorts for web based graphics and audio ap-
+plications. WebGL and Web Audio are important because
+they give developers access to powerful functionality such as
+OpenGL Shader Language (GLSL) support and real-time
+audio synthesis that was previously unavailable. Among
+these online graphics and audio applications are several live
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’14,June 30 – July 03, 2014, Goldsmiths, University of London, UK.
+Copyright remains with the author(s).
+coding environments. Live Coding is a natural ﬁt for web
+development, not just because of WebGL and Web Audio,
+but also because of the built in support for text editing in
+HTML documents and the ability to use JavaScript as a
+target language for code generation.
+Before browser based live coding, networked live coding
+has been an established technique because the information
+that is shared between users is lightweight and highly ab-
+stracted. Unlike audio and video streaming approaches, the
+sharing of code between users requires very little bandwidth
+and adverse eﬀects from dropped packets can be easily cor-
+rected or even ignored depending on the intent of the sys-
+tem design. PowerBooks Unplugged were early pioneers
+in merging networking techniques with live coding perfor-
+mances [20]. Eschewing the stage to sit among the audi-
+ence, members use only the sound produced by their laptop
+speakers, although sometimes augmented by an ampliﬁed
+signal for mid and low frequencies, using OSC messages to
+share their code among members. Live coding performances
+have utilized many diﬀerent languages and approaches of-
+ten with an emphasis on honesty and communication with
+audiences [23]. Because of the diﬃculty of programming
+live, several live coding speciﬁc languages have subsequently
+been created such as Tidal [14] and IxiLang [12]. These lan-
+guages provide very high level syntaxes and semantics for
+the fast creation and manipulation of audio sequences and
+synths graphs.
+Most browser based live coding systems don’t use the
+same code sharing approach as a group such as PowerBooks
+Unplugged because they are designed for a single user. Be-
+fore the creation of WebGL and Web Audio, sites like Jsaxus
+[2] and Flaxus [9] used JavaScript and Adobe Flash to al-
+low users to program graphics based applications in real
+time. The standardization of the Web GL speciﬁcation al-
+lowed for 3D accelerated programs to be written entirely
+inside a web browser. Sites like livecoding.io [8], Livecode-
+lab [6], Livecoder [15], WebGL Playground [21], and GLSL
+Sandbox [4] have harnessed this API to create live pro-
+gramming environments that can be easily accessed from
+any computer using a web browser. More recently the Web
+Audio speciﬁcation has been developed, but the project is
+younger than WebGL and is still undergoing active devel-
+opment and lacks a complete cross-browser implementation.
+CoﬀeeCollider [26] is a newer framework that looks to bring
+SuperCollider like functionality to the browser. It leverages
+CoﬀeeScript for its more elegant syntax while providing ba-
+sic functionality for synthesis and sequencing, but does not
+support graphics or collaborative programming. Gibber is
+an early adopter and provides a thorough audio synthesis
+environment for live music and graphics programming [17].
+The author has proposed adding collaborative sessions and
+clock synchronization to the project however currently these
+features are still in development [18]. Because none of these
+Proceedings of the International Conference on New Interfaces for Musical Expression
+379
+technologies are complete or oﬀer the features required to
+bring ease to online computer music collaboration, the au-
+thor has endeavored to create a new language designed from
+the beginning with quick collaboration in mind. In this
+paper Lich.js is presented with an explanation for the lan-
+guage design, audio and graphics capabilities, networking,
+and summed up with a look towards the future.
+2. LICH.JS
+Lich.js was created to achieve several goals including quick
+collaboration, graphics and audio live coding, a terse and
+expressive language, and a set of powerful but safe language
+features. Collaboration is the main priority and it is for this
+reason that the language is web based. The goal of Lich.js
+is to make collaboration fast and painless for everyone, from
+the most experienced network musicians to the casual inter-
+ested party. Having the language running on the web allows
+for members to join a group and start making art without
+installing a single piece of software. The end goal is for
+a group of people to sit down at any computer and start
+making music together, as if the computer were like any
+other instrument, lacking the requirement of some special
+software pre-installed on the device.
+The consequence of choosing a web based design is that
+JavaScript now becomes the target language. I decided
+early on that the syntax provided by JavaScript is too ver-
+bose to allow for easy live coding. By creating a domain
+speciﬁc language, unique syntaxes can be created to make
+expressions terse and clear with respect to music and graph-
+ics. Lich.js is a pure functional language with syntax similar
+to Haskell, but unlike Haskell it is dynamically typed and
+compiles to JavaScript. Haskell-like syntax was chosen be-
+cause it provides both an existing language as an established
+reference point and because the syntax is terse and declar-
+ative. It also provides some other useful syntax elements
+such as pattern matching, which allows function arguments
+and case statements to easily select and decompose objects
+by type. Lich.js also implements partial application, which
+is similar to currying in Haskell, and allows for functions to
+be passed a number of arguments less than the expected to-
+tal. The return value is now a new function with that many
+fewer arguments, and with the curried arguments prede-
+ﬁned in a new closure. Lich.js also widely uses a streaming
+operator>> for data ﬂow, which takes inspiration from the
+|> forward pipe operator in F#. This operator ﬁts well in
+a music language because it composes chains of computa-
+tion that are expressed similarly to a signal path through a
+series of eﬀects pedals or synth modules. For example “saw
+440>> lowpass 900 1 >> gain 0.1” expresses a saw oscillator
+feeding into a low pass ﬁlter and ﬁnally being lowered in
+volume.
+Lich.js’s lexer and parser are written in Jison [5], which
+compiles input strings of Lich.js into an abstract syntax
+tree. This syntax tree is then recursively traversed gener-
+ating substrings of code which are concatenated together
+to produce the ﬁnal target JavaScript code string. This
+JavaScript string is evaluated against a pre-built runtime
+that facilitates audio and graphics sequencing, and network-
+ing capabilities. The entire framework is hosted on a server
+and users simply visit a website to immediately begin col-
+laborating. Immediacy is an important goal for the Lich.js
+design because it makes iteration and code dissemination
+incredibly simple for the ensemble. Juggling code bases
+can be diﬃcult even for experienced ensembles, especially
+those using mixed operating systems. Lich.js is supported
+on Windows, Mac OSX, Linux, and can even be run on
+mobile devices such as tablets and phones.
+A functional paradigm was chosen because it allows for
+highly modular and terse programs, two features that are
+useful when writing and using code in a real-time perfor-
+mance. Like Haskell, Lich.js enforces immutability of ob-
+jects. This means that variables can not be rebound or
+mutated, including containers such as lists and dictionaries.
+By disallowing object mutation it becomes easier to rea-
+son about the behavior of a program, allowing for chains of
+pure functions to build up complex, but more predictable
+programs than imperative designs. This becomes especially
+important in networked coding contexts where collisions be-
+tween code bases can easily cause unforeseen consequences.
+Being a live coding language, it would be rather useless
+if there wasn’t some way to allow for side eﬀects in the sys-
+tem and Lich.js provides a few well deﬁned ways to allow
+for these eﬀects. The easiest is to use the interactive mode,
+which is the default mode when visiting a Lich.js website.
+In interactive mode, commands can be executed and global
+scope variables can be rebound by hand using a “let myVar
+= myValue” syntax similar to GHCI for Haskell. Func-
+tions or any other language construct still have no ability
+to change objects and so any mutation is directly requested
+by the user and only at global scope. For live coding this
+is very useful because changes to synth deﬁnitions and pat-
+terns are deﬁned in the global scope. The user can now rely
+on the vast majority of their programs being created with
+pure functions. The other mode for writing code is the li-
+brary mode which is similar to a basic Haskell ﬁle. Global
+variables don’t require use of the “let” syntax but can only
+be deﬁned once and never changed as well as anything else.
+Predeﬁned user code can be compiled ahead of time with
+useful functions such as chord progressions, section changes,
+useful data structures, and so on, with the guarantees of
+immutability. In interactive mode, library ﬁles can be im-
+ported and called like any other system code.
+For more complicated uses of state, Lich implements the
+State Monad as found in Haskell. The State Monad is a
+kind of wrapper that allows for state mutation to be em-
+ulated using a chain of pure computations. Regarding the
+type system, Lich.js is not a strict clone of Haskell, and
+eschews a strong type system . For this reason some se-
+mantics are more similar to Erlang or Scheme because of
+the ability to utilize mixed lists or other structures. This
+does introduce many more opportunities for confusion and
+unpredictability, oﬀsetting some of the eﬀorts of the pure
+functional design. Dynamic typing was chosen simply be-
+cause it gives the user less to worry about while coding in
+the moment, which is useful for live coding, as evidenced
+by most of the other live coding languages using a similar
+type system. Additionally, enforcing type semantics would
+add another layer of computation during compilation which
+could be potentially introduce more audio glitches during
+performance.
+3. SYNTHS AND PATTERNS
+Web Audio is a new API that is still being implemented
+in major browsers. Chrome and Safari provide full sup-
+port and Firefox has recently enabled it in their browser,
+although it is a less mature implementation. The API pro-
+vides a relatively low-level interface for creating real-time
+synthesis in pure JavaScript. The metaphor of a mixing
+console with eﬀects channels is present throughout, lend-
+ing itself well to use in web applications and games. Un-
+fortunately the API is unwieldy for live coding because it
+is verbose and lacks many higher level features that you
+can ﬁnd in other audio programming languages. For these
+reasons Lich.js compiles user created synth deﬁnitions into
+Proceedings of the International Conference on New Interfaces for Musical Expression
+380
+pure JavaScript code, generating the necessary node con-
+nections and managing unit generator life times. Currently
+the WebAudio API deﬁnes several oscillators (sine, triangle,
+saw, and square wave), ﬁlters (lowpass, highpass, bandpass,
+notch, and several shelf variants), a waveshaper, a limiter,
+buﬀer playback, convolution, mixing nodes, and FFT analy-
+sis. This is a good basis for any audio application, but pales
+in comparison to many other audio engines and as such re-
+quires augmentation. Lich.js currently supports all of the
+supplied audio types except for FFT analysis. Furthermore
+it includes a wide array of custom unit generators includ-
+ing noise generators, ﬁlters, distortion eﬀects, reverb, bit
+crushing, decimation, buﬀer manipulation, envelopes, and
+a frequency shifter.
+Lich.js also implements a robust synth deﬁnition syntax
+that allows for language constructs, such as pattern match-
+ing or conditional branching, to be used directly. This is
+possible because these synth deﬁnitions compile down to a
+graph of audio node connections in JavaScript and reference
+values in the same language. This contrasts with a language
+such as SuperCollider where synth deﬁnitions are walled oﬀ
+from many language semantics because the target language
+for audio processing is diﬀerent. It should be noted that
+higher level language semantics in Lich.js such as condi-
+tionals won’t run at audio rate in a synth deﬁnition, but
+instead will deﬁne the particular connections that are cre-
+ated inside the node graph upon compilation. One unique
+feature of the synth deﬁnition is the use of the >> operator.
+This operator simply takes the left operand and applies it
+to the right operand. The syntax is simple but would not
+be easily implemented in other languages that don’t utilize
+partial application. For this reason Lich.js synth deﬁni-
+tions have a signal path like ﬂow that declaratively describe
+transformations.
+M
+M synth definitions use the ]> operator
+let b ]> tri 80 >> lowpass SR0 1 >> perc 0 1 0.S
+let s ]> white 1 >> bandpass 900 S >> perc 0 1 0.R
+MM impulse patterns use a layout based syntax
+drums K> b s [b b] s
+let leadsyn f ]> sin f >> delay 1 0.1 >> perc 1 0.1 1
+MM solo patterns sequence over argument values
+lead ∼> leadsyn TT0 [660 990] SS0 _ RR0 _ 110 55
+F
+igure 1: Some expressions for synth and pattern generation.
+By using the play function, running synths can be gener-
+ated from synth deﬁnitions, but using the generative pattern
+sequencers in Lich.js allows for more powerful control. Cur-
+rently there are two diﬀerent syntaxes for generating pat-
+terns in Lich.js. The ﬁrst is impulse based patterns, such
+as a drum sequence, and is invoked using the + > operator.
+Impulse patterns deﬁne nested rhythms using variables and
+lists without the need for commas and with rests marked
+by the Haskell wildcard
+symbol. Rhythm duration modi-
+ﬁers can be added to the pattern to generate more complex
+expressions with a small amount of code. The other kind
+of pattern generator is the solo pattern invoked using the
+∼>operator. Unlike impulse patterns, solo patterns only
+take a single synth variable and afterwards are supplied a
+sequence of values to call that synth with. This is useful
+for sequencing bass lines, melodies, or any function that re-
+quires an argument. Like impulse patterns, modiﬁers can
+be added to the sequencer, but here they modify the values
+passed to synth instead of durations.
+3.1 Scheduling
+The scheduler in Lich.js has been greatly improved upon
+since the original implementation. JavaScript timers can
+have a variation of tens to hundreds of milliseconds which
+is not reliable enough for an audio sequencer, and for this
+reason the original scheduling in Lich.js was uneven and in-
+consistent. In a massive revision the scheduler was rewritten
+to use a technique found in several other web audio applica-
+tions [24]. The most important part of the technique is to
+recognize that Web Audio implementations are run in a dif-
+ferent thread from the main user view and the Web Audio
+scheduler is highly accurate. The problem is ﬁnding how to
+leverage the accuracy of the Web Audio timer without hav-
+ing the standard JavaScript timers mar the ﬁdelity. The
+solution is to write an event scheduler with a look ahead
+time. Because Web Audio Objects have an explicit start
+and stop time, if you can schedule events far enough ahead
+of time (100ms or so should suﬃce) then even if your sched-
+uler has variance, the actual web audio event will still occur
+accurately. Furthermore the scheduler is more robust and
+can withstand higher variance in CPU activity from other
+parts of the program.
+4. GRAPHICS
+Most of the graphics functionality in Lich.js is built upon the
+THREE.js [3] library which is a WebGL based JavaScript
+library for 3D graphics. Although WebGL has been sup-
+ported longer than Web Audio, the API is very low level,
+requiring tremendous eﬀort to make something usable, let
+alone live coding. Pragmatism was the deciding factor for
+using THREE.js. Writing a new language, audio system,
+and client/server architecture were all tremendous tasks,
+but necessary to materialize the unique features required
+in Lich.js. WebGL on the other hand is older than Web
+Audio and THREE.js has well established itself as a sta-
+ble library that implements most features that would be
+needed in a graphics based application. While THREE.js
+abstracts away most of the diﬃculties of OpenGL, it still
+requires more code than is feasible to write in real time. For
+this reason most of the graphics work in Lich.js has been to
+take the implementation of THREE.js and build on top of
+it a collection of higher level functions and algorithms for
+live coding visuals.
+Lich has several functions for 3D mesh generation from
+basic shapes such as spheres and boxes to complex genera-
+tive algorithms. The functions take position and color data
+in addition to any other values they require, creating the
+mesh and directly drawing it in the scene. All meshes can
+have their position, rotation, angular and linear momen-
+tum, color, and scale manipulated in real-time. Further-
+more, because the pattern sequencers described in the pre-
+vious section support more than just audio functions, you
+can compose a deﬁnition that manipulates a mesh instead
+of audio. Beyond mesh manipulation, Lich.js has some pre-
+liminary code for shader generation using a mini-language
+called Splice. Splice is a very basic language that takes a
+string and translates every character into a GLSL function,
+then wraps up the result with some boiler plate code to cre-
+ate a new GLSL shader. The result is often glitchy with
+some surprising behavior. Passing native GLSL code di-
+rectly is supported, but writing pure GLSL in real-time is
+cumbersome. At the moment there is no 2D Graphics API
+or support for textures. These are among several features
+that will be added in upcoming versions of the language.
+5. NETWORKING
+Networking was the greatest motivating factor for creating
+Lich.js with a web based implementation. The network-
+ing features currently supported are simple, but the focus
+has been to make the project stable and usable ﬁrst, before
+Proceedings of the International Conference on New Interfaces for Musical Expression
+381
+adding more features. Networking in Lich.js uses a sim-
+ple client and server architecture with the server written in
+Node.js [7]. There are three main networking features in the
+language: the networked IDE, chat based communication,
+and shared code execution. The Lich.js IDE is based on
+the ACE HTML5 code editor which supports syntax high-
+lighting, matching bracket highlighting, and customizable
+keyboard bindings. The work on the IDE so far has served
+to create a completely automated user management experi-
+ence. When a user visits a Lich.js site they are greeted with
+a request for a user name. The server receives the name
+and stores a cookie on the client computer so they don’t
+have to reenter this information in the future. There is cur-
+rently no password system so this is the extent of logging on.
+Once into the main Lich.js page they are presented with a
+code editor and a post view on the bottom. If another user
+joins the same site the code editing view is automatically
+split in half using a smooth transition animation, and now
+both users can see other’s code. Originally the code editor
+was a single document, but this caused signiﬁcant issues
+with unexpected code deletions and collisions. The current
+method aﬀords many of the same features of the shared
+editor, namely the visibility of the code and eﬀorts of the
+other users, but the networked code editors are read-only
+for everyone but the owner.
+A chat feature was added to the system because even
+though the post window could be used as a chat using print
+functions, it was easy to lose messages to system print out
+and was too small for an audience to read. The new chat
+feature prints chat messages very large and right justiﬁed
+over the entire window. The messages fade in and out and
+only last a few seconds. They are legible and invite at-
+tention without being too distracting. Finally, code is ex-
+ecuted across the network. Whenever any user executes a
+function that function sent is across the network and exe-
+cuted for each client. While currently not implemented, it
+would be useful to have a more sophisticated implementa-
+tion that uses time stamps with pre-calculated latency to
+execute changes synchronously across the system. Another
+concern is that while it is very simple to start using Lich,
+if an interested user wanted to create their own server, the
+procedure is more complicated. It requires the installation
+of Node.js and using some command line tools. A more el-
+egant method needs to be developed to make independent
+servers easier to create for newer users.
+6. CONCLUSIONS AND FUTURE WORK
+In this paper I have argued that the continued diﬃculty
+of networking has stiﬂed the creation and productivity of
+network bands and ensembles; that there is a need for a
+simpler approach for users of all experience and skill levels.
+To accomplish this goal I have an introduced Lich.js, a new
+live coding language in the burgeoning ﬁeld of web based
+languages. After surveying the current alternatives a jus-
+tiﬁcation was made for the need of yet another language;
+one based on collaboration from the beginning. Following
+the introduction, Lich.js was covered in detail, including the
+language syntax and semantics, synth deﬁnitions and pat-
+tern generation, graphics, and networking. Lich.js is open
+source and available on GitHub [13] but is still in develop-
+ment. The oﬃcial release of Lich.js will align with NIME
+2014. Leading up to the oﬃcial release the project will see a
+concerted eﬀort to minimize bugs and increase performance.
+New features are also being considered such as local area
+network clock synchronization, time stamped code execu-
+tion, Open Sound Control responder implementation, and
+more graphics and audio functionality.
+7. REFERENCES
+[1] R. Bencina. OscGroups, 2010.
+http://www.audiomulch.com/~rossb/code/oscgroups/.
+[2] J. Brodsky. Jsaxus, 2013.
+https://github.com/jonbro/jsaxus.
+[3] R. Cabello. Three.js, 2010. http://threejs.org/.
+[4] R. Cabello. Glsl sandbox, 2013.
+http://mrdoob.com/1S9/glsl_sandbox.
+[5] Z. Carter. Jison, 2014.
+http://zaach.github.io/jison/docs/.
+[6] D. D. Casa, S. McDonald, J. Stutters, and T. C.
+Ryan. Livecodlab, 2013. http:
+//www.sketchpatch.net/livecodelab/index.html.
+[7] R. L. Dahl. Node.js, 2009. http://nodejs.org/.
+[8] G. Florit. livecoding.io, 2013. http://livecoding.io.
+[9] I. Ivanoﬀ and J. Jimenez. Flaxus, 2006.
+http://www.iRoff.org/flaxus/screen.html.
+[10] J. Rohruber, A. de Campo. The republic quark, 2011.
+https://github.com/supercolliderMquarks/republic.
+[11] Khronos Group. Webgl - opengl es 2.0 for the web,
+2013. http://www.khronos.org/webgl/.
+[12] T. Magnusson. The ixi lang: A supercollider parasite
+for live coding. In ”Proceedings of the International
+Computer Music Conference”, pages 198–200, 2011.
+[13] C. McKinney. Lich.js, 2014.
+https://github.com/chadmckinney/lich.js.
+[14] A. McLean. Artist-Programmers and Programming
+Languages for the Arts. PhD thesis, Department of
+Computing, Goldsmiths, University of London,
+October 2011.
+[15] F. Obermeyer. Livecoder, 2013.
+http://livecoder.net.
+[16] Patrick Borgeat, Holger Ballweg, and Juan A.
+Romero. Benoitlib, 2012.
+https://github.com/cappelnord/benoitlib.
+[17] C. Roberts. The web browser as synthesizer and
+interface. 2013.
+[18] C. Roberts. Gibber 2.0, 2014.
+http://charlieMroberts.com/gibber/info/.
+[19] C. Rogers. Web audio api: W3c working draft, 2013.
+http://www.wS.org/tr/webaudio/.
+[20] J. Rohrhuber, A. de Campo, R. Wieser, J.-K. van
+Kampen, E. Ho, and H. H ¨olzl. Purloined letters and
+distributed persons. In Proceedings for the Music in
+the Global Village Conference, 2007.
+[21] K. Samp. Webgl Playground, 2013.
+http://webglplayground.net/.
+[22] G. Wang, A. Misra, and P. R. Cook. Building
+Collaborative Graphical Interfaces in the Audicle. In
+NIME ’06: Proceedings of the 2006 conference on New
+interfaces for musical expression, pages 49–52, Paris,
+France, France, 2006. IRCAM — Centre Pompidou.
+[23] A. Ward, J. Rohrhuber, F. Olofsson, A. McLean,
+D. Griﬃths, N. Collins, and A. Alexander. Live
+Algorithm Programming and a Temporary
+Organisation for its Promotion. In O. Goriunova and
+A. Shulgin, editors, read
+me — Software Art and
+Cultures, 2004.
+[24] C. Wilson. A tale of two clocks, 2013. http://www.
+html5rocks.com/en/tutorials/audio/scheduling/.
+[25] M. Wright, 2002. Open sound control 1.0 speciﬁcation.
+http://opensoundcontrol.org/specM1_0.
+[26] N. Yonamine. Coﬀeecollider, 2013.
+http://mohayonao.github.io/coffeecollider/.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+382

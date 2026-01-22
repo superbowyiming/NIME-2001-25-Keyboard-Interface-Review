@@ -1,0 +1,729 @@
+Multi-point vibrotactile feedback
+for an expressive musical interface
+Stefano Papetti, Sébastien Schiesser, Martin Fröhlich
+Institute for Computer Music and Sound Technology
+Zurich University of the Arts
+Pﬁngsweidstrasse 96, 8031 Zurich
+{stefano.papetti},{sebastien.schiesser},{martin.froehlich}@zhdk.ch
+ABSTRACT
+This paper describes the design of a hardware/software sys-
+tem for rendering multi-point, localized vibrotactile feed-
+back in a multi-touch musical interface. A prototype was
+developed, based on the Madrona Labs Soundplane, which
+was chosen for it provides easy access to multi-touch data,
+including force, and its easily expandable layered construc-
+tion. The proposed solution makes use of several piezo ac-
+tuator discs, densely arranged in a honeycomb pattern on a
+thin PCB layer. Based on o↵-the-shelf components, custom
+amplifying and routing electronics were designed to drive
+each piezo element with standard audio signals. Features,
+as well as electronic and mechanical issues of the current
+prototype are discussed.
+Author Keywords
+Haptic musical interface, Vibrotactile feedback, Multi-point,
+Piezo actuators
+ACM Classiﬁcation
+H.5.2 [Information Interfaces and Presentation] User Inter-
+faces — Haptic I/O, H.5.5 [Information Interfaces and Pre-
+sentation] Sound and Music Computing — Systems
+1. INTRODUCTION
+Looking at current musical interfaces, that of tactile feed-
+back seems like a minor issue as compared to ergonomics
+or gesture mapping. Nevertheless, several recent studies
+(e.g. [25, 24, 4, 21, 8]) suggest that the development of mu-
+sical skills strongly relies on tactile and kinesthetic cues:
+These would inform sophisticated control strategies that al-
+low experienced musicians to achieve top performance levels
+(for example in terms of precise timing and accurate into-
+nation), and enable expressivity and self-monitoring.
+Indeed, while performing on acoustic or electro-acoustic
+musical instruments, an intense haptic experience is un-
+avoidable, as well as highly relevant to the musical perfor-
+mance itself. Interaction with digital musical interfaces is
+also generally mediated by touch, however, while such inter-
+faces can track input gestures, they generally provide haptic
+feedback only as by-product of their built-in mechanics, if
+any. This lack of physical experience at the performer’s side
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’15,May 31-June 3, 2015, Louisiana State Univ., Baton Rouge, LA.
+Copyright remains with the author(s).
+alters the action-perception loop [19] that is normally estab-
+lished in tactual interactions with traditional instruments.
+Touch is the most intimate of the senses, and indeed a
+more intimate connection with digital musical interfaces
+should strongly rely on the haptic modality. Qualitative
+aspects [11], as well as musical performance indicators [13]
+appear also to be a↵ected by the haptic response of an in-
+strument.
+Following the increasing availability of low-cost sensors,
+actuators and computing systems, several prototype musi-
+cal interfaces o↵ering haptic feedback have been developed
+in the last few decades. Some of them simulate the hap-
+tic behavior of an acoustic or electro-acoustic counterpart
+(e.g. [7, 12, 22]), while some others aim at implementing
+new paradigms (e.g. [3, 20, 26, 1]), inspired to di↵erent ex-
+tent by traditional musical instruments.
+In [14] a wearable vibrotactile system is described, to ren-
+der compositions made expressly for the sense of touch.
+Research on haptic interfaces also exists, where feedback
+is used to teach, facilitate or enhance playing techniques [26,
+16], or to help follow a score [15].
+As for commercial products, only a few examples of hap-
+tic musical interfaces or instruments are currently found.
+The Yamaha AvantGrand digital pianos1 o↵er vibrotactile
+feedback through transducers embedded in the instrument
+body, simulating the e↵ect of strings and soundboard vi-
+brating, and pedal depression. Syntact2 is a contact-free in-
+terface, which provides contactless tactile feedback through
+an array of ultrasonic transducers.
+The use of multi-touch surfaces in music started some
+years ago with the JazzMutant Lemur touchscreen con-
+troller and the reacTable, and the trend is now exploding
+with iPads and other tablets. While the possibility to design
+custom GUIs has opened to great ﬂexibility in live electron-
+ics and interactive installations, such devices still cannot
+convey a rich haptic experience to the performer.
+Aiming at investigating how performance in basic musi-
+cal gestures may be a↵ected by audio-tactile feedback, in a
+previous experiment some of the present authors took into
+account a ﬁnger-pressing task [17]: Somewhat similarly to
+what happens when learning a musical instruments, by re-
+lying on kinesthetic memory, subjects had to memorize and
+reproduce di↵erent pressing force targets with the best ac-
+curacy. Results show that audio-tactile augmentation al-
+lowed subjects to achieve the target forces with improved
+accuracy. The psychophysics of active touch for broadband
+vibrotactile stimuli was also investigated in [27, 30]. In an-
+other study [10] the perceived quality of a digital piano aug-
+1http://europe.yamaha.com/en/products/
+musical-instruments/keyboards/hybridpianos/
+avantgrand/2Still unreleased as of January 2015, http://www.
+ultrasonic-audio.com/products/syntact.html
+235
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+Figure 1: The Madrona Labs Soundplane
+mented with vibrotactile actuators was tested according to
+di↵erent auditory and tactile feedback conditions. A par-
+tial preference for the combination of audio and vibrotactile
+feedback was found.
+In this perspective, we argue that the addition of rich
+haptic feedback to future musical interfaces would enhance
+several aspects of musical practice, such as improved user
+experience, control and expressivity. For this reason, we
+decided to design an advanced vibrotactile feedback system
+to be used in a musical interface. Such augmented inter-
+face would then serve as a open and versatile framework,
+allowing experimentation with di↵erent audio-tactile map-
+pings, and testing the e↵ectiveness of vibrotactile feedback
+in musical practice.
+2. DESIGN
+Vibrotactile feedback as found in the current generation of
+touch-screen devices is a↵ected by several limitations. Such
+devices usually make use of either an Eccentric Rotating
+Mass (ERM) motor or a Linear Resonant Actuator (LRA)
+coupled with the device body, which therefore vibrates as
+a whole. Also, these actuator technologies can only pro-
+duce simple vibratory signals: ERM motors produce vibra-
+tions whose frequency and amplitude cannot be set indepen-
+dently, and show a considerable lag in response time; LRA
+conversely have improved response time, however they only
+vibrate at a ﬁxed resonant frequency, not a↵ected by the
+amplitude. Furthermore, with regard to touch input, cur-
+rent touch-screen systems cannot detect ﬁnger pressure3,
+and often do not o↵er response times suitable for real-time
+musical applications.
+As opposed to what described above, our goal was to
+implement distributed and localized vibrotactile feedback,
+with as little limitations as possible on the vibration signal
+in terms of temporal dynamics and spectral envelope. Being
+a very demanding objective, we started evaluating existing
+multi-touch interfaces that could be adapted to our purpose
+by adding a newly developed haptic layer. After doing some
+research, our choice fell on the Madrona Labs Soundplane.
+2.1 The Madrona Labs Soundplane
+The Soundplane, pictured in Figure 1, is an elegant-looking
+wooden musical interface that was ﬁrst described in [18],
+and is now a commercially available product4. It provides
+a large multi-touch and pressure-sensitive surface based on
+capacitive sensing, and it o↵ers high tracking speed.
+The interface allows easy disassembly and is potentially
+open to hacking, which was required for our purpose. More-
+over, Do-It-Yourself instructions are provided for building
+the original prototype version, with details on the used ma-
+terials and construction solutions, as well as source code
+and patches for Max5. An online forum is also available to
+3With the exception of the just announced Force Touch
+technology by Apple.4http://madronalabs.com/5http://cycling74.com/
+exchange advices for hacking and ﬁne tuning. Furthermore,
+when we contacted the Soundplane inventor and mentioned
+our goal, he showed interest in the idea of implementing a
+haptic layer.
+The interface patented capacitive sensing technology
+makes use of several carrier antennas, each sending a sig-
+nal at a di↵erent ﬁxed frequency. Separated by a dielectric
+layer, transversal pickup antennas catch these signals, which
+are modulated by changes of thickness in the dielectric layer
+due to pressure on the Soundplane surface.
+In the commercial version, the generation of carrier sig-
+nals and the decoding of the modulated signals are done
+internally by a DSP chip, while a USB connection sends
+three-dimensional touch data (x, y: surface coordinates,z:
+pressure intensity) to a host computer. Conversely, in the
+“analog” 8⇥8 DIY version all the digital signal processing is
+done in software by a host computer: Eight carrier signals
+are generated in Max and sent from the analog outputs of
+an audio interface, while the eight modulated signals are
+acquired by its inputs and decoded by a Max external to
+extract three-dimensional touch data.
+It is worth noting that, despite its wooden ﬁnish, the
+Soundplane surface does not feel nor it behaves like a sti↵
+wooden panel. Indeed its tiled touch pads are engraved
+and independent of each other, and they rest on a natural
+rubber layer enabling a certain extent of compression when
+pressed.
+2.2 Construction
+In what follows, we will refer to our haptic Soundplane pro-
+totype as the “HSoundplane”.
+The original Soundplane multi-layered design consists of
+a top tiled surface – a sandwich construction made of wood
+veneer, stuck to a thin Plexiglas plate and a natural rubber
+foil – resting on top of the capacitive sensing layer described
+above (made of carrier antennas, dielectric and pickup an-
+tennas). Since these components are simply laid upon each
+other and kept in place with little pegs built into the wooden
+casing, it is quite simple to disassemble the structure and
+replace some of the elements.
+Ideally, vibrotactile actuators should be placed as close
+as possible to the touch location, in that way maximizing
+the vibration energy conveyed to the ﬁngers. In our case
+that would actually mean that actuators should be embed-
+ded in the top surface, just below the wood veneer. As a
+compromise we chose to place our haptic layer between the
+top surface and the sensing components. However, such so-
+lution poses some serious challenges: the original ﬂexibility,
+ﬂatness and thickness of the layers above the sensing com-
+ponents has to be maintained as much as possible, so as
+to preserve the sensitivity and calibration uniformity of the
+Soundplane.
+A review of actuator technologies suitable for musical ap-
+plications is found in [20]. To implement a haptic layer for
+the Soundplane we chose a solution based on low-cost piezo-
+electric transducer elements, having the following cumula-
+tive advantages: below their resonant frequency, they have a
+response suitable to the vibrotactile range (5–1000 Hz [29]);
+they o↵er fast response times; they can be driven by audio
+signals; they are thin (down to a few tenths of a millimeter);
+they allow scaling up due to their size and cheap price.
+In order to provide di↵erentiated haptic information to
+multiple touch points, a large amount of densely distributed,
+individually driven piezo elements is necessary. To max-
+imize the density of actuators, they have been arranged
+in a honeycomb pattern, which required to cut their origi-
+nal round shape into hexagons. As shown in Figure 2, the
+actuators were arranged so as to match the tiled pads on
+236
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+Figure 2: Arrangement of piezo actuators in a hon-
+eycomb pattern, matching the Soundplane tiled sur-
+face.
+the Soundplane surface (see Figure 1): interleaved columns
+made of 5 or 4 piezo elements correspond respectively to
+a column of pads, or to intersections between them. It is
+worth noticing that this solution even exceeds the number of
+pads at the Soundplane surface, thus allowing for continu-
+ous feedback in sliding gestures even when crossing di↵erent
+pads.
+To retain as much as possible the ﬂexibility of the original
+surface – in this way allowing the sensors below to detect in-
+dividual ﬁnger pressures – the piezo elements were wired via
+a ad-hoc designed ﬂexible PCB with SMD soldering tech-
+niques (see Section 2.3).
+To let the actuators vibrate, despite being sandwiched
+between the top surface and the sensing layer, the PCB with
+piezo elements was laid on top of an additional thin rubber
+foil, ad-hocdesigned with holes corresponding to each piezo
+element. This solution also guaranteed to leave the overall
+ﬂexibility unaltered.
+However thin, the addition of the actuators layer alters
+the overall thickness of the hardware. For this reason we had
+to re-design the original top surface (a sandwich made of
+wood veneer, Plexiglas and natural rubber) replacing it with
+a thinner version. As a result, the thickness of the new top
+surface plus the actuators layer matches that of the original
+surface. In this way we could ﬁt the new instrumentation
+into the original Soundplane wooden case.
+Figure 3 shows an exploded view of the HSoundplane con-
+struction, consisting of nine layers.
+2.3 Electronics
+In order to provide e↵ective vibrotactile feedback at the
+HSoundplane surface, some key considerations have to be
+made. On the one hand, the use of input audio signals
+gives great advantages in terms of versatility and richness
+of feedback. On the other hand, the voltage needed to drive
+piezo actuators – in our case up to 200 V – is not compatible
+with standard audio equipment. Moreover, as mentioned in
+Section 2.2, the piezo elements have been placed under each
+pad (32⇥5) and at each intersection (31⇥4), which makes
+for a total number of 284 elements, thus posing a non-trivial
+challenge from an electrical standpoint.
+These observations lead to the following requirements, so
+as to drive all the piezo actuators. Being in the analog do-
+main, having one separate audio signal per actuator would
+be clearly overkill, therefore we considered using a maxi-
+mum of one channel per column of pads, that is 32 sepa-
+rate audio channels, which can be easily provided by e.g. a
+MADI interface. This already results in a limitation, for it
+implies that each group of 5 + 4 piezos – corresponding to
+a column of 5 pads and 4 intersections – would be fed by a
+single signal (see Section 2.3.2 for more details). To reach
+all of the actuators, each of the 32 channels has to be mul-
+tiplexed with a 1:9 ratio (in this way slightly exceeding the
+overall number of actuators). Moreover, to comply with the
+electrical speciﬁcations of piezo elements, each audio signal
+has to be ampliﬁed by about a factor 100.
+Figure 3: Multi-layered construction of the
+HSoundplane: a) wooden case; b) new touch sur-
+face (wood veneer,0.5m m); c) new Plexiglas plate
+(1m m); d) new natural rubber foil (1.3m m); e) ﬂex-
+ible PCB (0.3m m); f) piezo elements (0.2m m); g)
+natural rubber holed foil (1.3m m); h) carrier an-
+tennas (original); i) dielectric (original); j) pickup
+antennas (original).
+Multiplexing continuous analog signals can be a delicate
+issue, since the end user must not notice any disturbance
+or delay in the feedback. Moreover, amplifying the already
+multiplexed signals would imply a huge number of ampli-
+ﬁers, while amplifying the original signals would require
+high voltage multiplexers, which are available in a limited
+choice, are expensive and more di cult to drive.
+2.3.1 Complete setup
+To satisfy the requirements and solve the issues pointed
+out above, we came up with a solution based on three key
+components: 1) Texas Instruments DRV2667 piezo drivers,
+that can be directly fed by audio input and drive a signal
+up to 200 V; 2) serial-to-parallel shift registers with output
+latches of the 74HC595 family; 3) high voltage MOSFET
+relays.
+For the sake of simplicity, the whole output stage of the
+HSoundplane was divided into four identical parts, repre-
+sented in Figure 4, each consisting of a ﬂexible PCB with
+72 piezo actuators (a), connected by a ﬂat cable to a driver
+PCB with 8 audio-to-haptic ampliﬁers and routing electron-
+ics (b). In order to address the right actuators and syn-
+chronize their switching with the audio signals, a master
+controller (c) parses the control data generated at the host
+computer and routes them to the appropriate slave drivers.
+237
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+driverµC
+audiodriverµC
+audiodriverµC
+audiodriverµC
+audio
+master
+32 b)
+c)
+HSoundplane
+a)
+Figure 4: Overview of the complete actuators con-
+trol electronics: a) piezo actuators on ﬂexible PCBs
+(simpliﬁed view); b) slave PCBs with audio-to-
+haptic drivers and routing electronics; c) master
+controller.
+audiosignal piezosignal
+a) audio in8 2667
+2667
+2667
+2667
+2667
+2667
+2667
+2667
+ch 1ch 2
+ch 4ch 3
+ch 5ch 6
+ch 8ch 7
+74HC595
+3F3E3D3C3B3A2J2H
+74HC595
+2G2F2E2D2C2B2A1J
+74HC595
+1H1G1F1E1D1C1B1A
+74HC595
+6C6B6A5J5H5G5F5E
+74HC595
+5D5C5B5A4J4H4G4F
+74HC595
+4E4D4C4B4A3J3H3G
+74HC595
+8J8H8G8F8E8D8C8B
+74HC595
+8A7J7H7G7F7E7D7C
+74HC595
+7B7A6J6H6G6F6E6D
+µcontroller
+ch 1
+ch 2
+ch 3
+ch 4
+ch 5
+ch 6
+ch 7
+ch 8
+ABCDEF GHJ
+11111111 99999999
+init
+sync
+sync8
+b)
+c) d)
+e)
+72
+Figure 5: Overview of a slave driver board: a)
+8-channel audio input; b) 8 piezo drivers; c) 72-
+point matrix of relays individually connected to
+each piezo actuator; d) relay control; e) microcon-
+troller for initialization and synchronization.
+2.3.2 Driver board
+Figure 5 shows a slave driver board, which works as follows:
+Eight audio signals (a) are routed to the piezo drivers (b),
+where they are ampliﬁed to high-voltage and sent to a 8⇥
+9 relay matrix (c) which connects to each piezo actuator.
+This 72-point matrix is addressed by a chain of serial-to-
+parallel shift registers (d), commanded by a microcontroller
+(e).
+At startup, the microcontroller initializes the piezo
+drivers, setting among other things their ampliﬁcation level.
+When in running mode, the slave microcontroller receives
+routing information from the master, sets a corresponding
+72-bit word and sends it to the shift registers, which indi-
+vidually open or close the relays of the matrix.
+As shown in Figure 5, each ampliﬁed audio signal feeds a
+whole row of 9-points in the relay matrix. Therefore, each
+signal path is hard-coded to 9 addresses, which can be more
+appropriately deﬁned as switching rather than multiplexing.
+Such ﬁxed addressing is the main limitation of the current
+HSoundplane prototype: each column of 9 actuators can
+only be fed with a single vibrotactile signal.
+2.4 Software
+The original Soundplane comes with a client application
+for Mac OS, which receives multi-touch data sensed by
+the interface, and transmits them as Open Sound Control6
+messages according to an original format named “t3d” (for
+touch-3d). The t3d data represent touch information for
+each contacting ﬁnger, reporting absolute x and y coordi-
+nates, and force along the z axis.
+In our prototype, these data are not only used to drive
+some audio engine, but also to activate the piezo actuators
+located at the corresponding x and y coordinates, and to
+drive them with vibrotactile signals.
+2.4.1 Control of signal switching
+In the current prototype, the synchronization between vi-
+brotactile signals and the relay matrix happens at the host
+computer level. While vibrotactile signals are output by the
+audio interface, control messages are sent to the master con-
+troller via USB. The master controller parses the received
+messages and addresses the slave driver boards on a serial
+bus to set the state of relay matrices.
+The choice of using a master controller, rather than ad-
+dressing each driver board directly, was due to two reasons:
+ﬁrst, properly interfacing several external controllers with a
+host computer can be complex; second, the perspective of
+developing a self-contained musical interface would require
+to get rid of a controlling computer and work in closed-loop.
+The presence of a main processing unit that receives touch
+data, processes them and generates vibrotactile informa-
+tion, is therefore a requirement in a mid-term perspective
+(see Section 4).
+2.4.2 Rendering of vibrotactile feedback
+The sense of touch is generally regarded as capable of per-
+ceiving vibrations in the 5–1000 Hz frequency range. Four
+mechanoreceptive channels have been identiﬁed in the skin,
+which mediate the mechanical aspects of touch [5]. The
+Pacinian channel is the most important for vibrotactile per-
+ception, as it determines sensitivity thresholds in the range
+40–800 Hz (a U-shaped contour, with peak sensitivity be-
+tween 200 and 300 Hz), and is sensitive to spatial and tem-
+poral summation.
+In general, touch has been studied mostly as a receptive
+sense, by measuring the perception of vibrations in pas-
+sive settings. However, the everyday experience of touch
+– including that arising from the performance on musical
+instruments – clearly shows that active touch (manipula-
+tion, exploration) is of primary importance. So far, only
+a few studies have investigated the perception of vibration
+in active touch and musical tasks (e.g. [6, 2, 9]). Aiming
+at overcoming the lack of knowledge in this ﬁeld, recently
+some of the present authors reported novel results concern-
+ing the psychophysics of active touch for di↵erent pressing
+force conditions [27, 17].
+Based on the current knowledge of vibration perception,
+and in order to optimize the output from the piezo actua-
+tors, vibration signals are ﬁrst ﬁltered with a bandpass ﬁl-
+ter (40–400 Hz). This also minimizes any sound spill, while
+maximizing vibrotactile perception. A low frequency boost
+is also available to compensate for the frequency response
+of the piezo actuators (see Section 3).
+As it often happens with digital musical interfaces, the
+mapping possibilities between the users’ gesture and audio
+output are manifold. Moreover, as opposed to common mu-
+sical interfaces, the HSoundplane provides vibrotactile feed-
+back to the user, and this requires to deﬁne an additional
+6http://opensoundcontrol.org/
+238
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+mapping strategy. Since the actuators layer is part of the
+interface itself, we decided to provide the users with a cou-
+ple of predeﬁned vibrotactile feedback mapping strategies,
+while the sound mapping is left freely deﬁnable as in the
+original Soundplane. Two alternative mapping strategies
+are o↵ered in the current prototype:
+• One makes use of the sound output controlled by the
+HSoundplane: Audio signals are ﬁrst ﬁltered as men-
+tioned above, and fed back to the actuators layer. This
+approach is straightforward and ensures coherence be-
+tween the musical output and the tactile feedback,
+resembling what found in traditional musical instru-
+ments, where the source of vibration is also the acous-
+tic source.
+• A simpler mapping strategy relies on a pseudo-white
+noise signal, ﬁltered as above, whose amplitude is set
+according to force data values. This approach has the
+advantage of maximizing the performance of the ac-
+tuators and the perception of vibrations. Also, in a
+mid-term perspective, relying on the waveform mem-
+ory provided by the piezo drivers, this mapping can
+be totally self-contained.
+Currently we still have to evaluate the e↵ectiveness of
+the implemented mappings. For instance, in the second
+one, being the produced vibrations independent from the
+sound synthesis, this may result in occasional perceptual
+mismatch between touch and audition.
+3. MEASUREMENTS
+Before the ﬁnal implementation, the characteristics of dif-
+ferent types of piezo actuators have been measured, and
+their performance evaluated, in this way guiding the choice
+of piezo elements to be used in the HSoundplane prototype.
+Measurements were made with a Wilcoxon Research 736T
+piezoelectric accelerometer, connected to a Wilcoxon Re-
+search iT100M Intelligent Transmitter. The AC-coupled
+output of the transmitter was recorded as audio signals at
+44.1 KHz with 24 bit resolution via a RME Fireface 800
+interface.
+The frequency responses of four di↵erent types of piezo
+elements were measured in the 10–2000 Hz range. For this
+purpose, we realized a scaled-down version of the HSound-
+plane layers, and placed the four actuators in correspon-
+dence of four pads of the top surface. The accelerometer
+was stuck to the surface with soft double-tape. Figure 6
+shows a detail of the measured frequency responses in the
+40–500 Hz range.
+More measurements are still needed to assess the e↵ective
+dynamic range of vibrations provided by di↵erent piezos,
+and their frequency response under ﬁnger-load condition.
+In addition to such measurements, we informally evalu-
+ated the behavior of the di↵erent actuators by touch. Indeed
+the piezo elements having resonance at 4 KHz felt like the
+best of the group, both in terms of conveyed energy and
+low frequency response, thus conﬁrming the measurement
+results.
+Nevertheless, since each piezo driver has to feed 9 actua-
+tors in parallel, particular attention has to be paid to issues
+such as current consumption and heat dissipation. Among
+the analyzed actuators, the one resonating at 6.3 KHz has
+the smallest capacitance value, and therefore current needs,
+while the 4 KHz one has the highest. For this reason, as
+a starting point we chose to go for the piezo components
+resulting in less electrical issues, even though they are the
+least performing. However, in case their actual performance
+were not satisfying and new calculations showed that the
+100−100
+−95
+−90
+−85
+−80
+−75
+−70
+Frequency [Hz]
+Amplitude [dBFS]
+ 
+ Piezo resonance3.6 KHz4 KHz6.3 KHz6.5 KHz
+Figure 6: Vibration frequency response, measured
+at four di↵erent types of piezo actuators.
+piezo drivers can support a higher current load, they could
+be easily replaced.
+Vibrotactile cross-talk was informally evaluated by the
+authors during the development: Indeed we found that the
+HSoundplane is able to render localized vibrotactile feed-
+back with unperceivable vibration spill at other locations,
+even when touching right next to the target feedback point.
+Quantitative characterization will be performed by measur-
+ing the vibration amplitude at non-feedback points.
+Currently, time-domain measurements of the synchro-
+nization between audio signals and relay control are being
+carried out. The closed-loop latency from touch to the arise
+of vibrotactile feedback will be also evaluated.
+4. PERSPECTIVES AND ISSUES
+In a mid-term perspective we planned the development of an
+autonomous interface, able to generate vibrotactile feedback
+on-board while relying on an external computer for audi-
+tory feedback only. For this purpose, the touch information
+processed by the original Soundplane DSP chip could be di-
+rectly sent to the master controller in our design, and used
+to route vibrotactile signals synthesized on-board or from
+pre-computed waveforms stored on the piezo drivers.
+Currently, the development of new musical interfaces is
+mostly grounded on practice and intuition only, often lead-
+ing to the production of one-of-a-kind prototypes. Con-
+versely, we aim at a scientiﬁcally-grounded design of haptic
+musical interfaces. Parallel investigations on vibrotactile
+perception in musical tasks [27, 9, 17] are being carried out
+in our lab. Results from these ongoing studies will help op-
+timizing the rendering of vibration and touch-to-vibration
+mappings in the HSoundplane and other haptic interfaces.
+The designed solutions are currently being tested for iso-
+lating possible electronic and mechanical issues.
+In addition, inspired by user experience studies in HCI,
+the HSoundplane will be tested in controlled experiments in
+musical practice context, aimed at evaluating the musician’s
+playing experience. To this end, we will rely both on ex-
+isting and new methodologies for the evaluation of musical
+interfaces (e.g. [23, 28]). We envision that rich vibrotactile
+feedback would make musical interfaces more accessible for
+hearing- or visually-impaired musicians, and therefore we
+will invite a pool of such subjects to the planned experi-
+ments.
+5. CONCLUSIONS
+We presented the HSoundplane, a prototype of musical in-
+terface based on the Madrona Labs Soundplane, which was
+239
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+augmented with multi-point vibrotactile feedback. Several
+constructive and electronic issues have been addressed in
+the current design to reach this goal. Nevertheless further
+optimization and evaluation are still needed.
+The rendering of localized vibrotactile feedback is an open
+issue in current multi-touch interfaces, and we imagine it
+will become more and more relevant in the search for richer,
+more engaging interaction. We believe that at least some of
+the technological solutions described here can be of inspira-
+tion for the implementation of multi-point haptic feedback
+in future interfaces.
+6. ACKNOWLEDGMENTS
+The authors wish to thank Randy Jones, the inventor of the
+original Soundplane, for providing technical support during
+the development the HSoundplane prototype.
+This research is pursued as part of the project AHMI
+(Audio-Haptic modalities in Musical Interfaces), funded by
+the Swiss National Science Foundation (SNSF).
+7. REFERENCES
+[1] T. Ahmaniemi. Gesture Controlled Virtual
+Instrument with Dynamic Vibrotactile Feedback. In
+Proc. Conf. on New Interfaces for Musical Expression
+(NIME), pages 485–488, 2010.
+[2] A. Askenfelt and E. V. Jansson. On vibration
+sensation and ﬁnger touch in stringed instrument
+playing.Music Perception: An Interdisciplinary
+Journal, 9(3):pp. 311–349, 1992.
+[3] D. Birnbaum. The Touch Flute : Exploring roles of
+vibrotactile feedback in music performance. Technical
+report, McGill University, 2003.
+[4] D. M. Birnbaum and M. M. Wanderley. A systematic
+approach to musical vibrotactile feedback. InProc.
+Int. Computer Music Conf. (ICMC),2 0 0 7 .
+[5] S. J. Bolanowski, G. A. Gescheider, R. T. Verrillo,
+and C. M. Checkosky. Four channels mediate the
+mechanical aspects of touch.J. Acoust. Soc. Am.,
+84(5):1680–94, Nov. 1988.
+[6] A. J. Brisben, S. S. Hsiao, and K. O. Johnson.
+Detection of Vibration Transmitted Through an
+Object Grasped in the Hand.J Neurophysiol,
+81(4):1548–1558, Apr. 1999.
+[7] C. Cadoz, L. Lisowski, and J.-L. Florens. A modular
+feedback keyboard design.Computer Music J.,
+14(2):pp. 47–51, 1990.
+[8] C. Chafe. Tactile audio feedback. InProc. Int.
+Computer Music Conf. (ICMC),1 9 9 3 .
+[9] F. Fontana, F. Avanzini, H. J¨arvel¨ainen, S. Papetti,
+F. Zanini, and V. Zanini. Perception of interactive
+vibrotactile cues on the acoustic grand and upright
+piano. InProc. Int. Conf. on Sound and Music
+Computing (SMC),2 0 1 4 .
+[10] F. Fontana, S. Papetti, M. Civolani, V. del Bello, and
+B. Bank. An exploration on the inﬂuence of
+vibrotactile cues during digital piano playing. In
+Sound Music Comput., Padua, Italy, 2011.
+[11] A. Galembo and A. Askenfelt. Quality assessment of
+musical instruments: e↵ects of multimodality. In
+ESCOM Conf., number September, pages 441–444,
+2003.
+[12] B. Gillespie. The Touchback Keyboard. InProc. Int.
+Computer Music Conf. (ICMC),1 9 9 2 .
+[13] W. Goebl and C. Palmer. Tactile feedback and timing
+accuracy in piano performance.Exp. Brain Res.,
+186(3):471–9, Apr. 2008.
+[14] E. Gunther and S. O’Modhrain. Cutaneous Grooves:
+Composing for the Sense of Touch.J. New Music
+Res.,3 1 ( 1 ) : 3 6 9 – 3 8 1 ,2 0 0 3 .
+[15] L. Hayes. Vibrotactile feedback-assisted performance.
+(June):72–75, 2011.
+[16] K. Huang, E. Y.-L. Do, and T. Starner. PianoTouch:
+A wearable haptic piano instruction system for passive
+learning of piano skills. InIEEE Int. Symposium on
+Wearable Computers, pages 41–44. IEEE, 2008.
+[17] H. J¨arvel¨ainen, S. Papetti, S. Schiesser, and
+T. Grosshauser. Audio-tactile feedback in musical
+gesture primitives: ﬁnger pressing. InProceedings of
+the Sound and Music Computing Conference SMC
+2013, pages 109–114, Stockholm, Sweden, 2013.
+[18] R. Jones, P. Driessen, A. Schloss, and G. Tzanetakis.
+A Force-Sensitive Surface for Intimate Control. In
+Proc. Conf. on New Interfaces for Musical Expression
+(NIME),2 0 0 9 .
+[19] J. Lagarde and J. A. S. Kelso. Binding of movement,
+sound and touch: multimodal coordination dynamics.
+Experimental Brain Research,1 7 3 : 6 7 3 – 6 8 8 ,2 0 0 6 .
+[20] M. T. Marshall and M. M. Wanderley. Vibrotactile
+feedback in digital musical instruments. InProc.
+Conf. on New Interfaces for Musical Expression
+(NIME),p a g e s2 2 6 – 2 2 9 ,2 0 0 6 .
+[21] M. T. Marshall and M. M. Wanderley. Examining the
+e↵ects of embedded vibrotactile feedback on the feel
+of a digital musical instrument. InProc. Conf. on New
+Interfaces for Musical Expression (NIME), June 2011.
+[22] C. Nichols.The vBow: Development of a virtual violin
+bow haptic human-computer interface, pages 1–4.
+2002.
+[23] S. O’Modhrain. A framework for the evaluation of
+digital musical instruments.Computer Music J.,
+35(1):28–42, Mar. 2011.
+[24] S. O’Modhrain and C. Chafe. Incorporating Haptic
+Feedback into Interfaces for Music Applications. In
+Proc. of ISORA, World Automation Conf.,2 0 0 0 .
+[25] S. O’Modhrain, S. Seraﬁn, C. Chafe, and J. O. Smith.
+Inﬂuence of attack parameters on the playability of a
+virtual bowed string instrument: tuning the model. In
+Proc. Int. Computer Music Conf. (ICMC),2 0 0 0 .
+[26] D. Overholt, E. Berdahl, and R. Hamilton.
+Advancements in actuated musical instruments.
+Organised Sound, 16(02):154–165, Jun 2011.
+[27] S. Papetti, H. J¨arvel¨ainen, and G.-M. Schmid.
+Vibrotactile sensitivity in active ﬁnger pressing. In
+IEEE World Haptics Conf.,2 0 1 5 .
+[28] G.-M. Schmid. Measuring Musician’s Playing
+Experience: Development of a questionnaire for the
+evaluation of musical interaction. InPractice-based
+Research Workshop at NIME, London, UK, 2014.
+[29] R. T. Verrillo. Vibration sensation in humans.Music
+Perception,9 ( 3 ) : 2 8 1 – 3 0 2 ,1 9 9 2 .
+[30] L. Wyse, S. Nanayakkara, P. Seekings, S. H. Ong, and
+E. A. Taylor. Palm-area sensitivity to vibrotactile
+stimuli above 1 kHz. InProc. conf. on New Interf. for
+Music. Expr. (NIME),2 0 1 2 .
+240
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 

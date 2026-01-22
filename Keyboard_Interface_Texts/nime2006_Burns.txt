@@ -1,0 +1,370 @@
+Visual Methods for the Retrieval of Guitarist Fingering
+Anne-Marie Burns
+Input Devices and Music Interaction Lab
+Schulich School of Music, McGill University
+555 Sherbrooke Street West, Montr´eal, Qu´ebec,
+Canada, H3A 1E3
+anne-marie.burns@mail.mcgill.ca
+Marcelo M. Wanderley
+Input Devices and Music Interaction Lab
+Schulich School of Music, McGill University
+555 Sherbrooke Street West, Montr´eal, Qu´ebec,
+Canada, H3A 1E3
+marcelo.wanderley@mcgill.ca
+ABSTRACT
+This article presents a method to visually detect and recog-
+nize ﬁngering gestures of the left hand of a guitarist. This
+method has been developed following preli minary manual
+and auto mated analysis of video recordings. These ﬁrst
+analyses led to so mei mportant ﬁndings about the design
+methodology of a vision system for guitarist ﬁngering, namely
+the focus on the eﬀective gesture, the consideration of the
+action of each individual ﬁnger, and a recognition system
+not relying on comparison against a knowledge base of pre-
+viously learned ﬁngering positions. Motivated by these re-
+sults, studies on three aspects of a complete ﬁngering system
+were conducted: the ﬁrst on ﬁnger tracking; the second on
+strings and frets detection; and the last one onmovement
+segmentation. Finally, these concepts were integrated into
+a prototype and a syste m for left hand ﬁngering detection
+was developed.
+Keywords
+gesture, guitar ﬁngering, ﬁnger-tracking, Hough transform,
+line detection, gesture segmentation
+1. INTRODUCTION
+Fingering is an especially important aspect of guitar play-
+ing, as it is a fretted instrument wheremany combinations of
+string, fret, and ﬁnger can produce the same pitch. Finger-
+ing retrieval is an important topic inmusic theory,music ed-
+ucation, automatic music generation and physicalmodeling.
+Unfortunately, as Gilardino noted [6] [7], speciﬁc ﬁngering
+information is rarely indicated in scores.
+Fingering information can be deduced at several points in
+the music production process. Three main strategies are:
+• Pre-processing using score analysis;
+• Real-time using Midi guitars;
+• Post-processing using sound analysis;
+Radicioni, Anselma, and Lombardo [10] retrieve ﬁngering
+information through score analysis. The score is fragmented
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on theﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME06, June 4-8, 2006, Paris, France
+Copyright 2006 Copyright remains with the author(s).
+in phrases, and the optimum ﬁngering for each phrase is de-
+termined by ﬁnding the shortest path in an acyclic graph
+of all possible ﬁngering positions. Weights are assigned to
+each position based on a set of rules. The problem with this
+approach is that it cannot account for all the factors inﬂu-
+encing the choice of a speciﬁc ﬁngering, namely philological
+analysis (interpretation of a sequence of notes), physical con-
+straints due to the musical instrument, and biomechanical
+constraints in themusician-instrument interaction. Outputs
+of these syste msa r es imilar to hu man solutions in many
+cases, but hardly deal with situations where the musical in-
+tention is more important then the biomechanical optimum
+ﬁngering.
+Other systems retrieve the ﬁngering during or after a hu-
+man plays the piece. One of these approaches uses a Midi
+guitar. Theoretically, using a Midi guitar with a separate
+Midi channel assigned to each string, it is possible to know
+in real-time what pitch is played on which string, thus deter-
+mining fret position. In practice however, Midi guitar users
+report several problems, including a variation in the recog-
+nition timef r om one string to another and the necessity to
+adapt their playing technique to avoid glitches or false note
+triggers [13].
+An approach using the third strategy is the study of the
+guitar timbre. Traube [11] suggested a method relying on
+the recording of a guitarist. The method consists of analyz-
+ing the sound to identify the pitch, ﬁnd the plucking point
+and then determine the string length to evaluate the ﬁnger-
+ing point. Shortcomings of thismethod are that it cannot be
+applied in real time, it works only when one note is played
+at the ti me, and error of the string length evaluation can
+be as high as eight centimeters in the case of fretted strings
+[12].
+This paper presents an alternative method for real-ti me
+retrieval of the ﬁngering information from a guitarist play-
+ing a musical excerpt. It relies on co mputer analysis of a
+video recording of the left hand of the guitarist. The ﬁrst
+part of this article discusses the preliminary manual and
+automated analyses of multiple-view video recordings of a
+guitarist playing a variety of musical excerpts. The sub-
+sequent sections present studies on three aspects of visual
+analysis of a guitarist ﬁngering: ﬁnger tracking, string and
+fret detection, andmovement segmentation. Finally a sys-
+tem integrating these three components is presented.
+2. PRELIMINARY ANALYSIS
+During the preli minary analysis, diﬀerent ca mera views
+were evaluated (global view, front view, and top view). The
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+196
+(a) Global view with
+zooms
+(b) Top view of the left hand
+Figure 1: Two diﬀerent views of a guitarist playing
+captured from a camera on a tripod placed in front
+of the musician: (a) Global view with zoom on dif-
+ferent zones for gesture a nalysis: facial expression
+and front view of right and left hands. (b) Top view
+of the left hand.
+(a) Ca mera
+mount
+(b) Camera view
+Figure 2: Depiction of the guitar camera mount that
+was used to eliminate the ancillary gesture problem:
+(a) The camera mount installed on an electric gui-
+tar. (b) The camera on a classical guitar. In this
+example, the camera is placed to capture the ﬁrst
+ﬁve frets.
+aim was to ﬁnd a viewpoint that allows the retrieval of the
+most information possible with the desired degree of accu-
+racy and precision.
+The top view (ﬁgure 1(b)) was retained for its interesting
+characteristics with respect to the proble m,n amely a de-
+tailed view of the ﬁngers, the possibility for string and fret
+detection, and the ability to observe ﬁnger-string proximity.
+However, slow motion observations of the video recording
+showed that the neck is subject to many ancillary move-
+ments. Preli minary automated tests have shown that this
+type of movement can inﬂuence the computer’s capacity to
+correctly identify ﬁngering. Consequently, the tripod was
+replaced by a camera mount on the guitar neck (ﬁgure 2).
+The preliminary automated ﬁngering recognition tests were
+performed by comparing two top view recordings of a mu-
+sician playing musical excerpts against top view i mages of
+previously recorded chords played by the sa mep e r f o rmer
+stored in the form of Hu moments vectors [8]. These tests
+allowed to identify three main issues:
+1. Using an appearance base method limits the system to
+previously learned material.
+2. Using the global shape of the hand li mits the system
+to the recognition of chords.
+3. Using a knowledge base makes the recognition ti me
+grow with the knowledge base size.
+From the above issues, themain speciﬁcations for a ﬁngering
+recognition system are:
+1. Focus on eﬀective gestures by further reducing the
+presence of ancillary movements and background el-
+ements.
+2. Use of a representation that considers the action of
+individual ﬁngers.
+3. Use of a recognition mechanism that eliminates the
+burden of a knowledge base and that is therefore not
+limited to previously learned material.
+The ﬁrst speciﬁcation can be achieved using the guitarmount
+as presented in ﬁgure 2. In order to fulﬁll the other spec-
+iﬁcations, three studies were conducted. In a ﬁrst study,
+the circular Hough transform was chosen to perform ﬁnger-
+tracking. The second study exa mined the use of the linear
+Hough transform for string and fret detection, and a third
+one explored movement segmentation.
+3. FINGER-TRACKING
+The circular Hough transform algorithm used in this pa-
+per was developed and i mplemented in EyesWeb [2]. It
+presents the following interesting characteristics:
+1. It demonstrated to have a high degree of precision and
+accuracy;
+2 .I tc a nb ea p p l i e di nc omplex environments and with
+partial view of the hand;
+3. It can work on edge versions of the images.
+3.1 Circular Hough Transform
+As illustrated in ﬁgure 3, the circular Hough transfor m
+[3] is applied on the binary silhouette i mage of the hand.
+The edge-image is obtained by applying the Canny edge de-
+tection algorithm [4] on the silhouette images. The circular
+Hough transform algorithmm akes use of the fact that ﬁn-
+ger ends have a quasi-circular shape while the rest of the
+hand ismore linearly shaped. In this algorithm, circles of a
+given radius are traced on the edge-images and regions with
+the highest match (many circles intersecting) are assu med
+to correspond to the center of ﬁngertips.
+4. STRING AND FRET DETECTION
+By tracking the ﬁngertips it is possible to know where each
+ﬁnger is in space. In the case of guitar ﬁngering, this space
+can be deﬁned in terms of string and fret coordinates. Prior
+to the detection stage, the region of interest (in that case the
+guitar neck)must be located in the i mage. Once the neck
+has been located, the strings and frets are seg mented from
+the grayscale neck image by applying a threshold. A verti-
+cal and a horizontal Sobel ﬁlter are applied on the threshold
+image in order to accentuate the vertical and horizontal gra-
+dients. A Linear Hough Transform [ 3 ]i st h e nc omputed on
+the two Sobel i mages. The linear Hough transfor m allows
+detection of linearity in a group of pixels, creating lines.
+These lines are then grouped by proximity in order to deter-
+mine the position of the six strings and of the frets. Once
+this is done, it is possible to create a grid of coordinates to
+which ﬁngertip positions will be matched.
+5. MOVEMENT SEGMENTATION
+Movement segmentation is essential in order to detect ﬁn-
+gering positions and not si mply track ﬁngertips during the
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+197
+Figure 3: Fingertip detection using the circular
+Hough transform algorithm
+playing sequence. Further more, in order to save co mputer
+resources, this segmentation must be done early in the global
+process so that subsequent analysis steps are not performed
+unnecessarily. Movement segmentation is used to separate
+the nucleus phase of the gesture fro m the preparation and
+retraction phase [9].
+In the preliminary analysis, movement segmentation was
+done by applying a threshold on the motion curve (ﬁgure 4
+a) generated by the computation of the pixel diﬀerence be-
+tween each frame. The characteristic lower velocity phase of
+the nucleus was easily detected between each chord. How-
+ever, in other playing situations, such as when playing a
+series of notes, the separation between themovement tran-
+sitory phases and the nucleus is not that clear (ﬁgure 4 b).
+This is due to a phenomenon called anticipatory placements
+of action-ﬁngers that has been studied in violin [1] and piano
+[5]. In these cases, the preparation phase of other ﬁngers oc-
+cur during the nucleus of the action-ﬁnger. Thus themotion
+is not serial and consequently, the globalmotion curve does
+not exhibit clear global minima like it is the case for chords.
+However, local minima can still be observed and detected
+as they can be assu med to correspond to the moment the
+note is trigged by the right hand. Local minima are found
+by computing the second derivative of themotion curve. As
+the prototypes work in real-time, this is done by subtracting
+the signal with its delayed version twice.
+6. PROTOTYPE
+The prototype was designed to fulﬁll the require ments
+for a ﬁngering recognition syste m highlighted by the pre-
+liminary analysis. The focus on eﬀective gestures is par-
+tially realized at the hardware level by a ﬃxing the camera
+to the guitar neck, thereby eli minating the motion of the
+neck caused by the ancillary gesture. Eli mination of back-
+ground elements is done by selecting a strict ROI (Region
+of Interest) around the neck and by applying a background
+subtraction algorithm on the image. Move ment segmenta-
+tion is perfor med by ﬁnding minimai nt h e motion curve,
+obtained by computing the diﬀerence of pixel between each
+(a) Chords motion curve
+ (b) Notes motion curve
+Figure 4: (a) Motion curve of a guitarist playing
+chords (b) Motion curve of a guitarist playing a se-
+ries of notes
+frame. The action of each individual ﬁnger is considered
+using the ﬁnger-tracking algorith m described above. The
+details of the algorithm are shown in ﬁgure 5.
+During preliminary tests, the prototype was able to cor-
+rectly recognize all fret positions. Due to the chosen camera
+view, the space between the strings is s maller for the high
+strings (E, B, G) than for the low strings (D, A, E), there-
+fore aﬀecting the accuracy of the recognition syste m.A s
+demonstrated in [2], the circular Hough transfor m has an
+accuracy of 5 +/- 2 pixels with respect to the color marker
+references. The resolution of the came r au s e di nt h i sp r o t o -
+type is 640x480 pixels, therefore giving a 610x170 pixels neck
+region. The distance in pixels between the ﬁrst and second
+string is of 12 pixels at the ﬁrst fret and 17 at the ﬁfth fret.
+Between the ﬁfth and sixth strings, the distance in pixels is
+16 and 20 pixels for the ﬁrst and ﬁfth fret, respectively.
+Since the chosen algorithm attributes the string position
+to the ﬁnger by proxi mity, in the worst case the ﬁnger-
+tracking algorithm error exceeds half the space between the
+higher strings, therefore confusion happens. However, since
+this problem does not happen with lower strings were the
+distance between two strings is greater, the proble m could
+be solved with an higher resolution ca mera. Another li mi-
+tation is that in the current system only the ﬁrst 5 frets are
+evaluated, but this could be solved with a wide angle cam-
+era. One problem that cannot be easily solved by changing
+the hardware is ﬁnger self occlusion. This proble m only
+rarely happens, but exists in the case of ﬁngerings were two
+ﬁngers play at the samef r e t ,f o re x ample in the case of C7
+and Dm7. In future develop ments, this problem could po-
+tentially be solved by estimating the ﬁngertip position using
+the ﬁnger angle.
+7. CONCLUSIONS
+This article discussed new strategies to capture ﬁnger-
+ing of guitarists in real-ti me using low-cost video ca meras.
+A prototype was developed to identify chords and series of
+notes based on ﬁnger-tracking and fret and string detection.
+It recognizes ﬁngerings bymatching ﬁngertip positions to
+the strings and frets’ grid of coordinates, therefore not rely-
+ing on any knowledge base. Results of the prototype are en-
+couraging and open possibilities of studies onmany aspects
+of a guitarist instrumental gesture, namely gesture segmen-
+tation, anticipatory movements, and bimanual synchroniza-
+tion. Applications of this research include auto matic chord
+transcription, music education, automatic music generation
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+198
+Figure 5: Prototype - algorithm
+and physical modeling.
+8. ACKNOWLEDGMENTS
+The study on ﬁnger-tracking was realized at InfoMus lab-
+oratory, D.I.S.T., Universit´a degli studi di Genova and has
+been partially supported by funding from the Qu´ebec Gov-
+ernment (PBCSE), the Italian Ministry of Foreign Aﬀairs,
+and by the EU 6 FP IST ENACTIVE Network of Excel-
+lence. The ﬁrst author would like to thank all students and
+employees of InfoMus lab who ”lent a hand” for the realiza-
+tion of the tests. Special thanks go to Barbara Mazzarino,
+Ginevra Castellano for her help in compiling the results,
+Gualtiero Volpe for his contribution to the develop ment of
+the EyesWeb blocks. Anne-Marie Burns would also like to
+thank Antonio Camurri for welcoming her as an internship
+student researcher.
+The authors would like to thank the guitarists that par-
+ticipated in the tests: Jean-Marc Juneau, Riccardo Casazza,
+and Bertrand Scherrer. Thanks also to Mr. Donald Pavlasek,
+Electrical and Computer Engineering, McGill University, for
+the conception and i mplementation of the ca mera guitar
+mount.
+9. REFERENCES
+[1] A. P. Baader, O. Kazennikov, and M. Wiesendanger.
+Coordination of bowing and ﬁngering in violin
+playing.Cognitive Brain Research, 23:436–443, 2005.
+[2] A.-M. Burns and B. Mazzarino. Finger tracking
+methods using eyesweb. In S. Gibet, N. Courty and
+J.-F. Kamp (Eds)., Gesture Workshop 2005
+Proceedings, LNAI3881, pages 156–167, 2006.
+[3] A.-M. Burns and M. M. Wanderley. Computer vision
+method for guitarist ﬁngering retrieval. In Proceedings
+of the Sound and Music Computing Conference 2006.
+Centre National de Cr´eation Musicale, Marseille,
+France, May 2006.
+[ 4 ] J .A .C a n n y .C omputational approach to edge
+detection. , IEEE Transaction on Pattern Analysis
+and Machine Intelligence, 8(6):679–698, 1986.
+[5] K. C. Engel, M. Flanders, and J. F. Soechting.
+Anitcipatory and sequential motor control in piano
+playing. experimental Brain Research, 113:189–199,
+1997.
+[6] A. Gilardino. Il problema della diteggiatura nelle
+musiche per chitarra. Il ”Fronimo”, 10:5–12, 1975.
+[7] A. Gilardino. Il problema della diteggiatura nelle
+musiche per chitarra. Il ”Fronimo”, 13:11–14, 1975.
+[8] S. Paschalakis and P. Lee. Pattern recognition in grey
+level images using moment based invariant features
+image processing and its applications. IEE Conference
+Publication, 465:245–249, 1999.
+[9] V. I. Pavlovic, R. Sharma, and T. S. Huang. Visual
+interpretation of hand gestures for human-computer
+interaction: A review. IEEE Transactions on Pattern
+Analysis and Machine Intelligence, 19(7):677–695,
+1997.
+[10] D. Radicioni, L. Anselma, and V. Lombardo. A
+segmentation-based prototype to compute string
+instruments ﬁngering. In Proceedings of the Conference
+on Interdisciplinary Musicology, Graz, 2004.
+[11] C. Traube. An Interdisciplinary Study of the Timbre
+of the Classical Guitar. PhD thesis, McGill University,
+2004.
+[12] C. Traube and J. O. Smith III. Estimating the
+plucking point on a guitar string. In Proceedings of the
+COST G-6 Conference on Digital Audio Eﬀects,
+Verona, Italy, 2000.
+[13] J. A. Verner. Midi guitar synthesis yesterday, today
+and tomorrow. an overview of the whole ﬁngerpicking
+thing. Recording Magazine, 8(9):52–57, 1995.
+Proceedings of the 2006 International Conference on New Interfaces for Musical Expression (NIME06), Paris, France
+199

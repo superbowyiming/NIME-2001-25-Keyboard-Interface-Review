@@ -1,0 +1,435 @@
+Using Music to Interact with a Virtual Character
+Robyn T aylor
+Department of Computing
+Science
+University of Alberta
+T6G 2E8, Edmonton, Alberta,
+Canada
+robyn@cs.ualberta.ca
+Daniel T orres
+Department of Computing
+Science
+University of Alberta
+T6G 2E8, Edmonton, Alberta,
+Canada
+dtorres@cs.ualberta.ca
+Pierre Boulanger
+Department of Computing
+Science
+University of Alberta
+T6G 2E8, Edmonton, Alberta,
+Canada
+pierreb@cs.ualberta.ca
+ABSTRACT
+We present a real-time system which allows musicians to
+interact with synthetic virtual characters as they perform.
+Using Max/MSP to parameterize keyboard and vocal in-
+put, meaningful features (pitch, amplitude, chord informa-
+tion, and vocal timbre) are extracted from live performance
+in real-time. These extracted musical features are then
+mapped to character behaviour in such a way that the mu-
+sician’s performance elicits a response from the virtual char-
+acter. The system uses the ANIMUS framework to generate
+believable character expressions. Experimental results are
+presented for simple characters.
+Keywords
+Music, synthetic characters, advanced man-machine inter-
+faces, virtual reality, behavioural systems, interaction tech-
+niques, visualization, immersive entertainment, artistic in-
+stallations
+1. INTRODUCTION
+We have created a system which enables a musician to in-
+teract with life-sized virtual characters within an immersive
+virtual environment. These virtual characters “listen” to the
+musician’s performance and modify their behaviour accord-
+ingly. The musician can perform speciﬁc musical gestures
+that have been predeﬁned to trigger speciﬁc behavioural re-
+sponses from the virtual characters or he or she may simply
+perform spontaneously and watch the characters’ responses
+as they unfold.
+This system may be used for many purposes, ranging from
+the recreational (users may simply be entertained by the
+ability to control virtual characters through a musical inter-
+face) to the educational (character responses could be used
+to encourage users to develop particular skill sets) to the
+artistic (scores and animations could be choreographed to
+produce a cohesive virtualized performance).
+In this paper, we will describe the motivation behind the
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’05, May 26-28, 2005, V ancouver, BC, Canada.
+Copyright 2005 Copyright remains with the author(s).
+creation of such a system. We will then describe the ANI-
+MUS [9] framework which enables virtual characters to re-
+spond to user input by using an accumulation of basic be-
+haviours. We will address the real-time extraction of musi-
+cal features from live musical performance and describe how
+these extracted features can then be used to control charac-
+ter behaviour. In addition, we will discuss the user interface
+and design decisions which must be considered when creat-
+ing this type of application. Finally, we will describe the
+current status of the system as well as future plans for ex-
+panding it to include more complex characters.
+2. MOTIV A TION
+Modern virtual reality environments are capable of pro-
+ducing compelling visualizations which draw the user into
+a virtual world bounded only by its designer’s imagination.
+These high-end visualization systems are capable of display-
+ing stereoscopic images on wall-sized display screens in such
+a way that the observer feels truly immersed in virtual sur-
+roundings that appear life-sized and three-dimensional. The
+primary objective of this project is that these visualization
+tools be used to enhance the experience of live musical per-
+formance by allowing both the performer, and his or her
+audience, to enter a virtual world populated by believable
+characters that react in response to real-time musical input.
+There exist several examples of previous research into the
+concept of immersive music visualization. Notably, Jack
+Ox’s “Color Organ” [6] uses immersive virtual reality sys-
+tems (in particular, the Cave Automatic Virtual Environ-
+ment) to create visual abstractions of music, allowing the
+user to explore the complexity of a composition in three di-
+mensions. Also, the “Singing Tree” [5], designed by Oliver
+et al. at the MIT Media Laboratory, uses digital displays as
+well as sculptured set pieces to enclose participants in a vir-
+tual environment which responds to their vocal utterances.
+Masataka Goto and Yoichi Muraoka’s Virtual Dancer, “Cindy”
+[4] provides visual enhancement to musical “jam” sessions
+by dancing in rhythm to musicians’ playing.
+Additionally, immersive music visualization techniques have
+been used successfully in live performance. Golan Levin and
+Zach Lieberman’s audiovisual performance piece, “Messa di
+Voce” [3], utilizes large scale projection screens along with
+motion tracking technologies to allow live vocalists to inte-
+grate their physical bodies into a projected virtual environ-
+ment, visualizing their vocalizations with relation to their
+physical locations on the performance stage.
+We strive to similarly reduce the barrier between the mu-
+sician and the virtualized environment, enabling us to cre-
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+220
+Figure 1: The User in the Virtual Environment
+ate a new performance space and medium. This system
+allows a musician to perform a piece of music in a natural
+fashion: playing a digital piano and singing into a micro-
+phone. The visualization system processes the musical in-
+put in real-time and stimulates visibly responsive behaviour
+in synthetic characters existing within the virtual space.
+The virtual environment is displayed on a large stereoscopic
+screen. It allows the participant to experience the virtual
+space at an appropriate scale, as if she or he was part of this
+space. Any observers will also perceive the performer and
+the virtual characters to be of similar size, increasing the
+realism of the performer/virtual character interaction (see
+Figure 1).
+3. THE ANIMUS FRAMEWORK
+The ANIMUS framework was developed in a previous
+project by Torres and Boulanger [9], to facilitate the cre-
+ation of “believable artiﬁcial characters”. They [11] describe
+the notion of a believable artiﬁcial character as follows:
+“A believable artiﬁcial character shows its own virtual
+thoughts and emotions, plans and beliefs; it can be tricked; it
+is not necessarily intelligent or eﬃcient, nor always makes
+the best decisions, but acts within the bounds of its role and
+personality. Its animation may not be realistic, but succeeds
+at expressing its internal state and makes it interesting to
+an audience.”
+Our goal is to create instances of believable artiﬁcial char-
+acters which respond to live music according to their own
+individual personalities.
+In the ANIMUS framework, responsive behaviour is con-
+structed by three separate layers:
+• Perception Layer:The characters must perceive data
+in their surroundings
+• Cognition Layer: The characters must assess the
+data they receive and determine how they should re-
+spond to it, based on their internal cognitive processes
+• Expression Layer:The characters must exhibit vis-
+ible behaviours to indicate their cognitive state
+We need to create a character, based on these three layers,
+which responds to user input received in the form of a real-
+time musical performance. In order to do this, we are adding
+a fourth layer to the ANIMUS architecture:
+• Musical Perception Filter Layer: A bank of
+Max/MSP[1] objects must extract musical features from
+the real-time performance and send them to the per-
+ception layer to be processed
+3.1 Perception Layer
+The ANIMUS Project uses a method of information or-
+ganization known as a “blackboard system”. All data that
+is perceivable by the ANIMUS characters is entered on the
+blackboard, and this blackboard is monitored and modiﬁed
+by each character. Our system must add information about
+the live musical performance to this blackboard in order for
+the ANIMUS characters to perceive the music as an input
+stimulus. To do this, our perception layer interfaces with the
+specialized Musical Perception Filter Layer which identiﬁes
+speciﬁc features within the live performance. See Section 4
+for further details on the musical feature extraction process.
+3.2 Cognition Layer
+To create ANIMUS characters which respond in a believ-
+able fashion to musical input, we need to create a cognition
+layer that assigns relevant meaning to the musical features
+received by the perception layer. This is the most complex
+step of the responsive behavioural process since this is where
+the character’s illusion of “personality” is constructed. In
+order to create an ANIMUS character that exhibits a dis-
+tinct personality in addition to appearing to be aware of the
+music in its surroundings, we must create a complex cogni-
+tion layer which maps the incoming musical data to mod-
+iﬁers aﬀecting the virtual character’s unique internal state
+which controls its expression layer. For discussion of how
+musical input is used to inﬂuence character behaviour, see
+Section 5.
+3.3 Expression Layer
+An ANIMUS character expresses its internal state by ex-
+ecuting an appropriate sequence of animations produced
+by the expression layer, using key frame based animation.
+These animations are created at run-time by using an inter-
+polation scheme that takes predeﬁned key frames and gen-
+erates intermediate transitions.
+4. MUSICAL PERCEPTION FILTER LA YER
+A live musical performance contains a wealth of real-time
+information which we as humans perceive as meaningful.
+In order for our synthetic character to assign any meaning
+to a stream of auditory information, it must receive this
+stream in a simpliﬁed format. We have chosen to create an
+additional layer to interface with the ANIMUS framework,
+the Musical Perception Filter Layer. In this layer we parse
+the stream of incoming auditory data in order to identify
+important musical features to send as input to the ANIMUS
+system’s perception layer.
+To extract features from live musical performance we use
+Max/MSP to monitor input from a microphone and MIDI
+controller.
+We determine the user’s vocal pitch and amplitude using
+Puckette, Apel and Zicarelli’sfiddle~ object [7]. Addition-
+ally we make use of thefiddle~ object’s ability to describe
+the harmonic spectra of the user’s voice. Our system exam-
+ines the raw peak data output byfiddle~ and generates a
+numerical description of the vocal tone based on the weight-
+ing of tone amplitude at the fundamental frequency versus
+multiples of the fundamental frequency.
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+221
+Figure 2: The Alebrije character
+We are also interested in identifying any speciﬁc chords
+present in the user’s keyboard playing. To extract infor-
+mation about any chords the user might play, we created a
+Max patch to monitor input from the MIDI controller and
+compare it to a list of known chords in order to report any
+identiﬁed matches.
+These extracted musical features are then communicated
+to the ANIMUS engine via a specially created Max exter-
+nal object calledvrpnserver which integrates the Virtual-
+Reality Peripheral Network (VRPN) [8] communication li-
+brary to standardize the information transfer between the
+computer in charge of sound analysis and the rendering
+computers. For further discussion of the how the system
+is structured, please see Section 6.
+The data commnicated by thevrpnserver object serves as
+input to the perception layer of an ANIMUS character. An
+ANIMUS character may be designed which is aware of pitch
+information, for example, so any pitch information extracted
+from the live user’s performance will be perceived by this
+character’s perception layer and sent to its cognition layer.
+5. MAPPING MUSIC TO BEHA VIOUR
+The ANIMUS cognition layer is where a character’s in-
+ternal state is deﬁned. This internal state is then visualized
+by the animations generated automatically by the expression
+layer. In order to use ANIMUS as a tool for character-based
+music visualization, we must create a character with cogni-
+tion and expression layers sophisticated enough to produce
+behaviours which the user and observers will recognize as
+being responsive to the musical input.
+ANIMUS characters must monitor perceptual data in their
+environment and decide how to respond. Each character can
+be customized to notice particular types of data and ignore
+others. Some characters may be interested in the pitch and
+amplitude of any singing voices in their vicinity, while oth-
+ers may only care about major and minor chords played on
+the keyboard. These decisions are made by the program
+designer who designs the characters to be attentive to par-
+ticular entries on the virtual world’s “blackboard”.
+To prototype this concept, a simple ANIMUS character
+who responds to musical input was developed. This charac-
+ter is a re-incarnation of Torres’ lizard-like character, Ale-
+brije [9] (see Figure 2). We have modiﬁed Alebrije so that
+he is aware of vocalized pitches and their directional source
+within his environment.
+When the user sings a pitch that is higher than middle
+C, a perceptual ﬁlter, specialized for this event, writes of
+its occurence to the ANIMUS engine’s blackboard. Alebrije
+monitors the blackboard for pitch information. When this
+event is perceived, Alebrije’s attention immediately becomes
+focused on what he believes to be the origin of the sound -
+another ANIMUS character in the scene. This is expressed
+by an animation which shows Alebrije turning to look at this
+other character. If Alebrije hears no singing for an extended
+period of time, he becomes bored and goes to sleep. He will
+only wake up again if the user chooses to vocalize another
+appropriate pitch, upon which time his attention will once
+more be directed toward the small noise-emitting character.
+This type of behavioural control is called a driver system.
+Similar to the behavioural system made widely familiar by
+the Sims [2], a driver system monitors the current level of a
+certain aspect of a character’s internal state. In this exam-
+ple, the particular aspect of Alebrije’s internal state that we
+are concerned with is boredom. When Alebrije’s “boredom”
+driver reaches a certain threshold, he succumbs to sleep. His
+“boredom” level is reduced when he hears the user vocalizing
+and it is increased when the user is silent.
+This is an example of a very simple mapping between user
+input and character behaviour. It would be much more in-
+teresting if Alebrije were to exhibit more complex behaviour.
+He could turn his head slowly towards a low, breathily sung
+pitch, or sharply shift his attention to a sound voiced with
+a more aggressive tone quality. He could even snidely cover
+his ears at the sound of a piercing high C. These behaviours
+are controlled by the designer. The designer chooses which
+animated poses to translate between based on the char-
+acter’s evaluation of the musical input, and also chooses
+how sharply or smoothly these transitions should take place
+based on the general mood of the music.
+As discussed in detail in the works of Torres [9] and Tor-
+res and Boulanger [11] [10], the ANIMUS engine facilitates
+complex responsive behaviour, encouraging the development
+of a believable synthetic character. The ability to connect
+Max/MSP to the ANIMUS engine makes it possible to cre-
+ate mappings between live musical performance and real-
+time animated character response.
+6. USER INTERFACE AND SYSTEM STRUC-
+TURE
+This system is designed to leverage the computing power
+of more than one machine; thereby reducing system load
+and enabling both musical analysis and visual rendering to
+run in real-time. All music processing work is done on a
+Macintosh G5 system running Max/MSP. The features ex-
+tracted from the live musical input are transmitted across
+the network to a PC running the ANIMUS engine using
+standard networking capacities of 100Mb/s. This is facili-
+tated by the creation of a Max external which integrates a
+ﬂexible library of virtual reality networking tools called the
+Virtual Reality Peripheral Network (VRPN). This external
+object which brings VRPN functionality into Max/MSP en-
+ables Max/MSP data to be represented in any “front-end”
+visualization engine which supports a VRPN connection.
+In keeping with our desire to allow the user to experi-
+ence immersive interaction with virtual characters, we use a
+desktop PC to render the virtual environment onto high-end
+display screens which provide life-sized stereoscopic images.
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+222
+This allows both the user and the observers to experience
+the illusion of the physical interacting with the virtual in a
+three dimensional life-sized landscape.
+It is also important that the user be able to interact with
+the virtual character using a natural means of expression -
+in this case, musical expression. Therefore, we have taken
+care to ensure that the system is designed in such a way
+that once the program is launched, the user need only in-
+teract with the program by providing musical input to the
+MIDI controller and to the microphone. The microphone
+and MIDI controller are positioned in such a way that the
+user can easily view the virtual character’s responses as she
+or he performs live music.
+It is our hope that our large-scale stereoscopic display and
+our natural means of user input help reduce the distance be-
+tween the physical and the virtual, and allow the user and
+observers to experience a compelling sense of true interac-
+tion between the musician and the virtual character.
+7. DISCUSSION AND FUTURE WORK
+We have created a functional system that is capable of
+visualizing a live musical performance by triggering respon-
+sive behaviour in synthetic characters. Currently, we have
+created simple ANIMUS characters that respond to musi-
+cal input in order to illustrate our system’s potential. We
+will now focus on the creation of more complex, “believable”
+characters.
+It is our goal that characters’ responses to music serve
+to illustrate the music’s emotive properties. This requires
+that not only must our characters visibly respond to the
+music, but also that these responses must be of suﬃcient
+complexity that a user would perceive them as portraying a
+sense of emotional understanding.
+In order to achieve this, we must create an ANIMUS char-
+acter with a cognitive layer far more complex than the ones
+we have created so far. Our character must make decisions
+not only based on the factual musical features extracted by
+the Musical Perception Filter Layer, but also based on a sim-
+ulated understanding of the emotional content of the music.
+To do this, our character’s cognitive processes must be de-
+veloped to include a relationship between the perceived mu-
+sical data and a believably simulated emotional state. Our
+character should be able to portray a simulated emotion of
+“unhappiness” when “sad” music is played, or “fear” when
+“scary” music is played. We must conduct further research
+to determine how we will choose to deﬁne these emotional
+contexts, both in terms of how we identify these character-
+istics in a musical work, and how we express these emotions
+via character behaviour.
+Additionally, in order for our animated characters to achieve
+“believability” as deﬁned by Torres and Boulanger [10], we
+must also design a more varied set of poses for use in the
+expression layer so that our character may perform more
+complex animations that convey a sense of personality to
+the observer. We aim to collaborate with a visual artist
+so as to obtain a greater number of poses from which our
+expression layer may generate character animation.
+As stated previously in this paper, we hope that through
+the creation of ANIMUS characters which respond believ-
+ably to musical stimulus, we may use this system to create
+works of recreational, educational, and artistic merit.
+8. ACKNOWLEDGMENTS
+The use of the VRPN library was made possible by the
+NIH National Research Resource in Molecular Graphics and
+Microscopy at the University of North Carolina at Chapel Hill.
+9. REFERENCES
+[1] Cycling ’74. Max/MSP.
+[2] Electronic Arts. The Sims, 2000.
+[3] G. Levin and Z. Lieberman. In-situ speech
+visualization in real-time interactive installation and
+performance. InProceedings of The 3rd International
+Symposium on Non-Photorealistic Animation and
+Rendering, pages 7–14. ACM Press, 2004.
+[4] Masataka Goto and Yoichi Muraoka. Interactive
+Performance of a Music-Controlled CG Dancer.
+http://staﬀ.aist.go.jp/m.goto/PROJ/ip-j.html.
+[5] W. Oliver, J. Yu, and E. Metois. The Singing Tree:
+design of an interactive musical interface. InDIS ’97:
+Proceedings of the conference on Designing interactive
+systems : processes, practices, methods, and
+techniques, pages 261–264. ACM Press, 1997.
+[6] J. Ox. 2 performances in the 21st Century Virtual
+Color Organ. InProceedings of the fourth conference
+on Creativity & Cognition, pages 20–24. ACM Press,
+2002.
+[7] M. Puckette, T. Apel, and D. Zicarelli. Real-time
+audio analysis tools for Pd and MSP. InProceedings
+of the International Computer Music Conference,
+pages 109–112. International Computer Music
+Association, 1998.
+[8] R. M. Taylor II, T. C. Hudson, A. Seeger, H. Weber,
+J. Juliano, and A. T. Helser. VRPN: A
+device-independent, network-transparent VR
+peripheral system. InProceedings of the ACM
+symposium on Virtual reality software and technology,
+pages 55–61. ACM Press, 2001.
+[9] D. Torres. The ANIMUS Project: A framework for
+the creation of synthetic characters. Master’s thesis,
+University of Alberta, 2003.
+[10] D. Torres and P. Boulanger. The ANIMUS Project: a
+framework for the creation of interactive creatures in
+immersed environments. InProceedings of the ACM
+symposium on Virtual reality software and technology,
+pages 91–99. ACM Press, 2003.
+[11] D. Torres and P. Boulanger. A perception and
+selective attention system for synthetic creatures. In
+Proceedings of the Third International Symposium On
+Smart Graphics, pages 141–150, 2003.
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+223

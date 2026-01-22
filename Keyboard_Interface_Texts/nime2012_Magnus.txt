@@ -1,0 +1,430 @@
+Musician Assistance and Score Distribution (MASD)
+Nathan Magnus
+University of Regina
+3737 Wascana Parkway
+Regina, Saskatchewan, Canada
+magnus2n@uregina.ca
+David Gerhard
+University of Regina
+3737 Wascana Parkway
+Regina, Saskatchewan, Canada
+gerhard@cs.uregina.ca
+ABSTRACT
+The purpose of the Musician Assistance and Score Distri-
+bution (MASD) system is to assist novice musicians with
+playing in an orchestra, concert band, choir or other musical
+ensemble. MASD helps novice musicians in three ways. It
+removes the confusion that results from page turns, aides a
+musician’s return to the proper location in the music score
+after the looking at the conductor and notiﬁes musicians
+of conductor instructions. MASD is currently veriﬁed by
+evaluating the time between sending beats or conductor in-
+formation and this information being rendered for the mu-
+sician. Future work includes user testing of this system.
+There are three major components to the MASD system.
+These components are Score Distribution, Score Render-
+ing and Information Distribution. Score Distribution passes
+score information to clients and is facilitated by the Inter-
+net Communication Engine (ICE). Score Rendering uses the
+GUIDO Library to display the musical score. Information
+Distribution uses ICE and the IceStorm service to pass beat
+and instruction information to musicians.
+Keywords
+score distribution, score-following, score rendering, musi-
+cian assistance
+1. INTRODUCTION
+Orchestras, concert bands and other large groups of musi-
+cians often rely upon a conductor to synchronize the group.
+The conductor’s formal duties, however, extend beyond sim-
+ply synchronizing the musicians. The conductor is also re-
+sponsible for listening critically to the music and shaping
+it based on a unifying musical interpretation. The conduc-
+tor’s modiﬁcations are communicated to musicians through
+a complex set of visual instructions such as hand gestures,
+body movement, breathing and even eye contact [6].
+Anecdotal evidence suggests novice musicians face chal-
+lenges related to following conductors and reading music.
+The diversity of a conductor’s gestures, variations between
+conductor styles and methods of conveying instructions may
+pose challenges for beginner musicians, making it common
+for these individuals to return to an incorrect measure after
+looking at the conductor. Furthermore, musicians that are
+still learning the score or are not yet skilled sight readers
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’12,May 21 – 23, 2012, University of Michigan, Ann Arbor.
+Copyright remains with the author(s).
+may completely fail to look at the conductor and thus miss
+some of the conductor’s instructions. Learning the right
+time to turn pages is also a challenge for novice musicians,
+and a missed page turn can lead to missed notes on the
+next page. Page ﬂips can be especially challenging for mu-
+sicians that play instruments that require two hands. Thus,
+assisting with these problems may help beginner musicians
+focus more upon the music they are playing and improve
+the quality of their performance.
+The MASD system was designed to assists musicians with
+some of the diﬃculties that they may encounter as a mem-
+ber of an orchestra, concert band, choir or other musical
+group. MASD is also intended to reach a broad audience
+of all levels of dedication. Thus, the project utilizes com-
+mon network infrastructure and computers to synchronize
+multiple displays as well as transmit information from con-
+ductor to musician. Since live musical performances have
+very strict latency requirements due to the importance of
+synchronization, latency was the primary evaluation metric
+used for this system.
+2. BACKGROUND
+Researchers have investigated score following methods that
+can follow music played with errors as well as allow un-
+trained partners to contribute to duets [5]. Some research
+has also been put into creating a virtual conductor to lead
+a group of musicians [7]. Other relevant research areas ex-
+plore generating digital information from conductor signals
+and distributed rendering engines.
+The problem of digitizing conductor tempo and other vi-
+sual cues has been address by Peng [6]. Peng’s system uti-
+lizes specialized equipment that extracts beat information
+and conductor gestures. This information is then used as
+input for a custom application. Similarly, iSymphony [4]
+extracts baton information and uses it as input to an ap-
+plication. MASD was developed to facilitate score and in-
+formation distribution, and these papers demonstrate the
+potential for input control.
+Some important work relevant to score engraving, con-
+ducted by Bellini, Nesi and Spinu [2], created a collabora-
+tive score editing and engraving system called Music Object
+Oriented Distributed System (MOODS). MOODS allows in-
+dividual musicians to create notes about the music that are
+visible by other musicians and the conductor. MOODS also
+addresses score display and automatic page turning. The
+paper indicates that the system works and is practical.
+A system know as muse [3] addresses music distribu-
+tion and some information distribution. The system also
+provides automatic, real time page turning but determines
+when to ﬂip pages by analyzing the music that is played.
+MASD approaches this problem diﬀerently by using the con-
+ductor’s gestures to determine when to ﬂip a page, removing
+the need for an acoustic analysis component in the system.
+3. INTERNET COMMUNICATION
+ENGINE (ICE)
+The Internet Communication Engine (ICE) [8] is used in
+several places within the MASD system. One of the advan-
+tages of this framework is the ability to write platform and
+language independent code. This is facilitated by an inter-
+face deﬁnition language, called Slice, and tools that con-
+vert Slice into languages such as C++, Java, C#, Python,
+Objective-C, Ruby, PHP and ActionScript. However, the
+main advantage of ICE is the ease and eﬃciency with which
+it handles communication between two or more machines.
+Using the language mapping tools provided with ICE, pro-
+grammers can easily create objects that are stored on the
+server or on a client and transmitted to another machine
+with only a few lines of code.
+ZeroC also provides a suite of programs which includes
+the IceBox server. IceBox allows developers to run other
+ICE services with minimal conﬁguration and eﬀort. For
+example, MASD uses IceBox to run the IceStorm service.
+IceStorm is a service that can be used by the ICE frame-
+work and provides a method of broadcasting information
+from one computer (publisher) to multiple other comput-
+ers (subscribers). The publisher creates the information it
+wants to send and passes this information to the IceStorm
+service which distributes it to all subscribers. Subscribers
+are responsible for informing the IceStorm service about
+what information (topic) they desire to receive.
+4. INTERNAL REPRESENTATION
+Transfering complete scores between hetrogenous machines
+is a challenge. For this reason, an internal representation
+was developed which transfers only required information to
+each client machine. The rendering is then completed sepa-
+rately using this representation. The internal representation
+is declared in Slice ﬁles and created as part of the automat-
+ically generated code made by the slice2java tool which
+is provided by ZeroC [8]. This allows information to be
+transmitted via ICE between client and server.
+4.1 Duration
+The Duration class is used to represent any note duration
+as a numerator and denominator pair. Originally it was
+created with a static common denominator of 128 and a
+note’s duration was converted to its appropriate value as
+a fraction with a denominator of 128. However, it became
+apparent that certain notes, such as triplets, would cause
+errors due to rounding of the numerator. This resulted in
+the implementation of a static variable denominator and
+an instance denominator. This static denominator is cal-
+culated from a list of denominators within the score and
+will increase whenever a denominator is encountered that
+results in a rounding error. As a result, all note durations
+can be accurately represented and handled.
+4.2 Beat Highlighting
+Many beat highlighting systems, such as Garage Band [1],
+present a “playhead” metaphor showing the position of time
+relating to notes. This method, however, may confuse musi-
+cians because they only see the playhead brieﬂy while glanc-
+ing between music and conductor. Therefore, we decided to
+highlight the current beat without moving a playhead. This
+leads to a requirement to select the position of the under-
+lying beat relating to the notes on the score.
+Beat highlighting information is contained within a sin-
+gle record. This record maintains a time signature, as well
+as a list of note oﬀsets, a list of note durations and a list
+of denominators. Each of these lists is the same size as
+the number of beats in a measure. Thus, each entry corre-
+sponds to a single beat within a measure. The list values
+are used for highlighting the notes within a beat or mea-
+sure. The denominator values represent beat units and are
+used as the denominator for both note oﬀset as well as note
+duration within a measure. Oﬀset is used to indicate the
+location within the beat that highlighting should begin, and
+duration indicates how much of the score should be high-
+lighted. Figure 1 shows an example of how these values are
+used. The denominator changes when a note is encountered
+that cannot be accurately represented, and all subsequent
+values are represented using the new denominator. Oﬀset is
+used to avoid overlapping a previously highlighted note by
+indicating where in the beat that highlighting must start.
+Figure 1: Example Guido Music Notation (GMN)
+and associated transcription, oﬀset, duration and
+denominator values. (see text for more details)
+5. COMPONENTS
+The project is composed of three major components. Each
+component is designed to be as modular as possible. Such
+a design allows individual components to be replaced with
+minimal reconﬁguration. Thus, when new technologies, li-
+braries or APIs are released that improve upon the func-
+tionality of the system, components can be partially or com-
+pletely modiﬁed to take advantage of the improvements.
+5.1 Score Distribution
+The Score Distribution component parses a musical score
+and facilitates the transfer of musical scores to clients. Since
+the client’s computer and score server are distinct machines,
+communication must occur between two potentially hetero-
+geneous computers. This process is facilitated using the In-
+ternet Communication Engine (ICE) framework (mentioned
+above) and has two sub components.
+Conductor scores are challenging to implement eﬀectively.
+This is due to the non-linear fashion in which conductors
+look through music and the sheer quantity of information
+that must be presented. Although MASD does not imple-
+ment a conductor interface, one could be implemented by
+making use of the internal representation that is already in
+place.
+5.1.1 Score Distribution Client
+The Score Distribution client’s sole purpose is to connect to
+the Score Distribution server and obtain a Part object from
+the server. This Part object represents a musical score,
+such as “ﬁrst trombone” or “soprano”, and only contains
+information relevant to the speciﬁc musician requesting the
+part. For example, a clarinet Part object only contains
+music and relevant cue notes for the clarinet, but will not
+contain any information about another instrument’s part
+unless required for queueing or reference.
+5.1.2 Score Distribution Server
+This component is responsible for parsing the Music XML
+and creating the internal representation. The parsing pro-
+cess separates the musical parts and creates unique sets of
+information (described in Section 4) that client machines
+can request. After completing the creation of the inter-
+nal representation, the Score Distribution Server handles
+requests for part or score information. It will continue do-
+ing this until it is shut down.
+5.2 Score Rendering
+Score Rendering is the process of displaying the score to the
+musician. This involves drawing the score onto the screen
+using a library or external tool to create the images. The
+method of displaying this information to the user may vary.
+This could allow instrument speciﬁc styles, such as guitar
+tablature or percussion score, to be displayed on an individ-
+ual basis. Thus, performers can view their music in what-
+ever format they are most comfortable reading. Addition-
+ally, score rendering can be done with diﬀerent rendering
+engines on diﬀerent computers. In our case, we focus on
+one speciﬁc score rendering engine.
+5.2.1 Page Display
+This implementation of Score Rendering displays the score
+one page at a time. The number of lines displayed on each
+page may vary depending on display requirements for the
+music. Using the information received from the conductor,
+the Page Display updates the score by changing the color
+of the notes to red as the beat is played. This is referred
+to as highlighting. Once the note has been highlighted,
+it will remain red. There are two modes of score highlight-
+ing: Measure Highlighting; and Beat Highlighting. Measure
+Highlighting uses the Guido Engine Library (GUIDOLib) to
+highlight each new measure as it is reached. When the ﬁrst
+beat of the measure is to be played, every note in the mea-
+sure will change color. Beat highlighting, however, is much
+more complex and more susceptible to a highlighting bug
+in the Guido Engine Library that highlights the stem of a
+note but does not highlight the head until the next beat.
+The beat highlighting method highlights any note that is
+entirely or partially within the duration of a single beat.
+Page Display also addresses another important issue. This
+issue is automatic page turning. As the note highlighting
+progresses, three measures ahead of the current location is
+checked to determine what page of the GUIDOLib render-
+ing it is located upon. If it is located on the next page, a
+small portion of the top of the score is removed and replaced
+with the ﬁrst bit of the next page. The replaced area is not
+highlighted since it has not yet been played. This allows the
+musician to look ahead in the music when at the bottom of
+a page. Once the musician has reached the next page of the
+score, the current page is completely replaced with the next
+page. This method removes the need to manually ﬂip pages
+and will assist novice musicians by allowing them to focus
+on more important aspects of the conductor’s gestures and
+the performance.
+5.3 Information Distribution
+The Information Distribution component is responsible for
+transmitting beat information and conductor instructions
+to each musician’s client computer. The Information Dis-
+tribution portion of the project has pieces present on both
+a centralized server and musician computers.
+5.4 Combining Components
+In order to complete the system, the Score Distribution,
+Information Distribution and Score Rendering components
+are combined to create two applications. These applications
+are the Client Application, which is used by musicians, and
+the Sever Application, which is conﬁgured by the conduc-
+tor. Figure 2 shows the high level structure of the MASD
+applications and how they interact with each other.
+Figure 2: MASD high level structure and interac-
+tion.
+5.4.1 Client Application
+The Client Application’s job is relatively simple. The ap-
+plication ﬁrst determines which servers contain information
+about the parts and will be conducting the IceStorm distri-
+bution of beats. The application then presents the musician
+with a list of parts to choose from. Once the musician has
+selected what part he or she wishes to receive, the applica-
+tion requests only the relevant information from the Score
+Distribution Server and renders the appropriate score. The
+application then waits for conductor instructions or beat in-
+formation from the Information Distribution system. When
+information is received, the application updates what it is
+rendering using the buﬀered next image. The computer
+running the Client Application does not need to be partic-
+ularly powerful because this program is waiting for updates
+throughout the majority of its execution and its responsi-
+bilities are relatively undemanding.
+5.4.2 Server Application
+The Server Application is responsible for creating and up-
+dating the Score Distribution and Information Distribution
+components of the project. This application allows the con-
+ductor to select a score to load and then broadcast incom-
+ing beat and instruction information until the application
+is closed. Since the digitization of beat information and
+conductor instructions is not the focus of MASD, an inde-
+pendent system is responsible for detecting this information
+and passing it to MASD. The Server Application is used to
+manage two heavily used functions and will likely require
+a relatively powerful machine to run well. These functions,
+however, could be run on two individual machines should
+performance become an issue.
+6. PERFORMANCE
+Latency tests were conducted to determine the eﬃciency of
+the system and speed at which it performs. Tests were per-
+formed using 1, 5, 10, 15, 20 and 25 client machines and a
+single server. These tests calculated the time between the
+server sending information and the client receiving this in-
+formation (distribution time) and utilized the system clock
+of an independent machine to help reduce synchronization
+issues. Testing showed that distribution time increases dra-
+matically with the number of clients. On average with 25
+clients, beat distribution takes 38ms and instruction distri-
+bution takes 3ms. Rendering limitations make the theoreti-
+cal limit of MASD approximately six beats per second, how-
+ever this corresponding to a theoretical maximum tempo of
+360 bpm which is suﬃcient for most musical applications.
+7. CONCLUSIONS
+MASD successfully implements page rendering, page turn-
+ing and score distribution and can be used to aid novice mu-
+sicians when playing from a musical score. The limited hu-
+man resources of the project and diﬃculties accurately mea-
+suring transmission time make it diﬃcult to deﬁnitively de-
+termine the usability and eﬀectiveness of this system. How-
+ever, score rendering can achieve approximately 360 bpm
+and subjective analysis indicates that the response time of
+MASD is acceptable. We believe exploring push distribu-
+tion using common infrastructure as a method of synchro-
+nizing an orchestra or other musical group most certainly
+warrants further research.
+7.1 Improvements & Future Research
+A potential improvement to MASD is the use of multi-
+ple IceStorm servers. This change would allow multiple
+IceStorm services to be connected in a hierarchy or tree.
+This distributes the load of pushing updates to multiple
+servers. However, this distribution method would introduce
+additional system latency due to the increased number of
+servers that must process the information before reaching
+the musician. The ability of MASD to be used as a distri-
+bution method for non-traditional orchestras, such as lap-
+top orchestras or musical groups with members in diﬀerent
+physical locations, is an area for possible future research.
+In order to improve displays, usability tests and diﬀerent
+methods for displaying the music could be considered. For
+example, one possible method could be displaying an arbi-
+trary number of lines of music on the screen at a time and
+replacing a line with the next line to be displayed when a
+line is completed. The musician would play a line and then
+look to the next line, with the order wrapping around from
+the last line on the page to the ﬁrst line on the next page.
+Usability tests of display methods could assist in improving
+the interface and identifying improvements for the system.
+In order to ensure that the beat and instruction distribu-
+tion is prompt, several methods that do not rely on network
+protocols and mediums could be implemented. Specialized
+hardware, for example, could be created to directly connect
+the conductor’s server to musicians. This would allow for
+near instantaneous transmission of simple information such
+as indicating the next beat has occurred. Infrared or other
+broadcast mediums could also be used to simultaneously
+send information to all clients. Another radically diﬀerent
+direction that could be explored is predicting the occurrence
+of the next beat using previous beat arrival information and
+knowledge about the score’s tempo. The musician computer
+would then use this information to update its graphical dis-
+play and update the next beat prediction when it receives
+the notiﬁcation from the server.
+A hybrid method could also be employed, for example,
+using specialized hardware or broadcast mediums to com-
+municate small amounts of information and a network to
+communicate larger pieces of data. This would allow for the
+immediacy required for beat synchronization as well as the
+transmission of more complex information such as conduc-
+tor instructions without too much specialized or expensive
+hardware.
+8. REFERENCES
+[1] Apple Inc. Garage band ‘11, January 2012.
+http://www.apple.com/ilife/garageband.
+[2] P. Bellini, P. Nesi, and M. B. Spinu. Cooperative visual
+manipulation of music notation. ACM Trans.
+Comput.-Hum. Interact., 9:194–237, September 2002.
+[3] C. Graefe, D. Wahila, J. Maguire, and O. Dasna. muse:
+a digital music stand for symphony musicians.
+interactions, 3:26–35, May 1996.
+[4] E. Lee, H. Kiel, S. Dedenbach, I. Gr ¨ull, T. Karrer,
+M. Wolf, and J. Borchers. isymphony: an adaptive
+interactive orchestral conducting system for digital
+audio and video streams. In CHI ’06 extended abstracts
+on Human factors in computing systems, CHI EA ’06,
+pages 259–262, New York, NY, USA, 2006. ACM.
+[5] C. Oshima, K. Nishimoto, and N. Hagita. A piano duo
+support system for parents to lead children to practice
+musical performances. ACM Trans. Multimedia
+Comput. Commun. Appl., 3, May 2007.
+[6] L. Peng. A gestural interface in a computer-based
+conducting system. Master’s thesis, University of
+Regina, 3737 Wascana Parkway, Regina, SK, S4S 0A2,
+2008.
+[7] D. Reidsma, A. Nijholt, and P. Bos. Temporal
+interaction between an artiﬁcial orchestra conductor
+and human musicians. Comput. Entertain.,
+6:53:1–53:22, Dec. 2008.
+[8] ZeroC, Inc. Ice, January 2012.
+http://www.zeroc.com/.

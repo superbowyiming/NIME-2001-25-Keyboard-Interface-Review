@@ -1,0 +1,618 @@
+Challenges and Performance of High-Fidelity Audio Streaming for Interactive
+Performances
+Nicolas Bouillot
+Centre for Interdisciplinary Research
+in Music Media and Technology
+McGill university
+Montreal, Qc, Canada
+nicolas@cim.mcgill.ca
+Jeremy R. Cooperstock
+Centre for Interdisciplinary Research
+in Music Media and Technology
+McGill university
+Montreal, Qc, Canada
+jer@cim.mcgill.ca
+Abstract
+Low-latency streaming of high-quality audio has the poten-
+tial to dramatically transform the world of interactive musi-
+cal applications. We provide methods for accurately mea-
+suring the end-to-end latency and audio quality of a deli-
+vered audio stream and apply these methods to an empiri-
+cal evaluation of several streaming engines. In anticipation
+of future demands for emerging applications involving au-
+dio interaction, we also review key features of streaming
+engines and discuss potential challenges that remain to be
+overcome.
+Keywords: Networked Musical Performance, high-ﬁdelity
+audio streaming, glitch detection, latency measurement
+1. Introduction
+Current high-ﬁdelity audio streaming activity covers a wide
+range of interactive applications between remote perform-
+ers. Sample applications include ensemble recording [1],
+group interaction with minimal latency [2, 3], group inter-
+action with controlled latency [4, 5], and outdoor mobile in-
+teraction [6]. Recent advances in distributed interactive per-
+formance have shown the need for coupling video, gesture
+and other sensor-based interactions with audio transmission
+in order to support simultaneous music, dance, theater and
+other interactions in contexts including rehearsal, teaching
+and performance. These requirements motivate high-ﬁdelity
+audio streaming as the foundation for many aspects of music-
+making and remote performing. High-ﬁdelity audio stream-
+ing engines will be a key part of large-scale distributed ap-
+plications, such as the i-Maestro 1 and the World Opera 2
+1 http://www.i-maestro.org/
+2 http://www.theworldopera.org/
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies
+are not made or distributed for proﬁt or commercial advantage and that
+copies bear this notice and the full citation on the ﬁrst page. To copy
+otherwise, to republish, to post on servers, or to redistribute to lists
+requires prior speciﬁc permission and/or a fee.
+NIME09, June 3-6, 2009, Pittsburgh, PA
+Copyright remains with the author(s).
+projects, where many distributed applications are run simul-
+taneously in a highly heterogeneous environment. In this
+context, high quality streaming engines face several chal-
+lenges, including simplicity of conﬁguration, latency con-
+trol, and adjusting to the competition for network resources
+resulting from additional independent streams.
+In prior literature, latency has typically been the ﬁrst chal-
+lenge to be addressed. Although the International Telecom-
+munication Union deﬁnes a latency of 150 ms as the thresh-
+old for acceptable quality telephony, musicians perceive the
+effects at much lower values, often less than 25 ms, depend-
+ing on the style of music they are playing. Experiments con-
+ducted at CCRMA and USC [7][8] have investigated these
+limits. Chew found that latency tolerance in piano duet per-
+formance varied depending on the tempo and types of onset
+synchronization required; for a particularly fast movement,
+this ﬁgure was as low as 10 ms. However, for certain genres
+of pattern-based music, signiﬁcantly higher latency (several
+seconds) was found to be acceptable, and in fact, preferable
+to low latency, provided that the delay value corresponded
+to a whole-number multiple of the pattern duration [4].
+These studies helped characterize the impact of latency
+on musicians interacting exclusively via audio but did not
+consider the quality of audio delivery itself. Here, quality
+implies playout of the correct audio sample at the desig-
+nated instant of time. Latency can be reduced at the expense
+of quality, but deployment of audio streaming in most prac-
+tical contexts requires both accurate control of user-to-user
+latency and sufﬁcient quality of audio delivery, regardless
+of the hardware and software used. We are thus motivated
+to gain a better understanding of the capabilities and perfor-
+mance provided by current high-ﬁdelity streaming engines,
+as relevant to supporting distributed audio interaction. In or-
+der to do so, we must ﬁrst deﬁne the methods and metrics for
+evaluating user-to-user latency and the quality of delivered
+audio, across systems. With such tools, we can then conduct
+a performance evaluation of uncompressed audio streaming
+engines, taking into account these issues in addition to the
+choice of parameter conﬁguration. The experiments take a
+consistent black-box approach, in which only the audio in-
+put and output are analyzed. Our subsequent analysis pro-
+vides the basis for an extended discussion of the challenges
+NIME 2009135
+Audio 
+acquisition
+Streaming engine
+(sender side)
+Driver
+Optional
+format 
+conversion
+Packetization Audio 
+playout
+Streaming engine
+(receiver side)
+Driver
+Optional
+format 
+conversion
+Buffering 
+Network
+Figure 1: Components involved during audio streaming
+that must be addressed by such systems. To our knowledge,
+such methods and comparisons have not previously been ad-
+dressed formally in this context.
+The remainder of this paper is organized as follows. First,
+we present a general overview of high-ﬁdelity audio stream-
+ing engines in Section 2. We then introduce our methodo-
+logy for measuring audio latency and delivered audio qua-
+lity in Section 3. Next, we provide experimental results in
+Section 4, and ﬁnally, we review current streaming engine
+features and discuss challenges that audio streaming engines
+will need to overcome in the future in Section 5.
+2. Streaming engines
+In general, streaming engines are intended to transmit media
+from a source location to one or more destinations. Whereas
+the ideal for networked musical performance is to enable
+performers to interact through the audio link as if physi-
+cally co-present, traditional audio streaming systems fail to
+support such interactivity due to their use of high-latency
+buffering and/or heavy compression. In contrast,live per-
+formance streaming uses small buffers and no compression
+or computationally lightweight compression algorithms to
+minimize latency. A signiﬁcant challenge such engines face
+is maintaining the periodicity, at delivery, of the audio data.
+However, in IP networks such as the Internet, available band-
+width and scheduling are shared equally among clients, which
+often leads to variable performance, including packet delay
+variation or jitter. 3 Live audio streaming engines employ
+various strategies to reduce these network effects.
+Figure 1 shows the components involved during live au-
+dio streaming. At both ends, sound cards accessed by the
+streaming engine through a driver provide audio acquisition
+and playout. Signal quality and introduced latency can be
+optimized using professional audio equipment; however, re-
+mote sound cards are subject to clock skew [9], which can
+cause data underﬂow or overﬂow. Streaming engines op-
+tionally provide a format conversion component to enable
+audio transmission among heterogeneous hardware, but this
+introduces additional latency. Audio compression can be
+considered a format conversion, but this may also introduce
+signiﬁcant latency and quality degradation. 4
+3 Note that this is a general assumption concerning end-to-end commu-
+nication. Even if some sub-parts of the Internet provide guaranteed perfor-
+mance, this cannot be assumed for every possible IP communication.
+4 Note that ultra-low-delay codecs, such as ULD [10] and CELT (www.
+celt-codec.org), which introduce less than 10 ms of latency, allow
+for high-ﬁdelity audio transmission over low bandwidth networks.
+The packetization component, present on the server side,
+is responsible for ﬁlling a network packet with audio data.
+Since data are produced periodically, packetization deter-
+mines the tradeoff between introduced latency and network
+scheduling: using a smallpacket size means waiting less
+time before sending the current packet, but this increases
+the number of transmitted packets, as well as the packet
+rate, which can have negative effects on performance. On
+the receiver side, the buffering component is responsible for
+ordering received packets, concealing the effects of network
+losses, and dealing with network jitter. This is achieved by
+placing the data in a queue, from which samples are passed
+to the sound card at regular intervals. The queue size must
+balance between variability in packet arrival times and la-
+tency overhead: a small queue size minimizes latency, but
+may result in a disrupted audio stream if data is received late
+due to higher than expected jitter. A buffer manager decides
+when audio data must be unqueued and forwarded either
+directly to the sound card driver, or to an optional format
+conversion component.
+The description above provides an overview of some of
+the challenges faced by streaming engines designed for in-
+teractive installations and performances. However, the en-
+gine itself is not the sole determinant of audio quality. Rather,
+this is additionally dependent on external parameters, in-
+cluding the varying state of the network and operating sys-
+tem scheduling. Accurate measurement of end-to-end la-
+tency and resulting audio quality has thus remained an open
+problem, despite the fact that it is critical to the successful
+deployment of interactive remote applications.
+3. Methodology
+Streaming engine settings engine are typically tweaked man-
+ually to optimize perceived quality. In most cases, an un-
+dersized queue, failing to avoid network jitter, and network
+losses lead to missing audio data that produces audible glitches
+during playout. While subjective evaluation by the actual
+performers exacerbates the complexity of deployment, it is
+nevertheless important to allow the performers to evaluate
+the effects of latency while actually interacting. In this sec-
+tion, we provide methodologies for latency and signal defect
+measurement. To our knowledge, such methodologies have
+not previously been described formally in this context.
+Although end-to-end latency measurements are difﬁcult
+to accomplish over long distances, they can be completed
+easily in a laboratory. Figure 2 shows a setup where a trans-
+136
+  
+Transmitter Receiver 
+Multichannel recorder 
+Networked
+audio streaming
+Audio cable Audio cable 
+Figure 2: Setup for end-to-end latency measurement of a single
+audio stream
+mitter streams audio to a physically nearby receiver. In this
+way, the sound source, as well as the resulting audio, can
+be duplicated and recorded using a multichannel recorder.
+Since we assume that every channel is recorded simultane-
+ously, the resulting audio ﬁle allows for an off-line compar-
+ison of both audio quality and temporal differences.5
+3.1. Accurate end-to-end latency measurement
+End-to-end latency measurements, e.g., from sound source
+to the listener, rely on many aspects of hardware, software
+and the underlying network. As such, accurate measure-
+ment cannot be obtained from within the operating system
+or streaming engine. Fortunately, the previously described
+conﬁguration allows for simultaneous recording of the source
+and delivered audio, outside of the operating system and
+sound engine. Although it may be useful to compute latency
+and audio quality automatically and continuously from the
+sound ﬁle by using cross analysis, such a tool does not,
+unfortunately, appear to exist within the sound processing
+community. The MATCH software [11] includes an algo-
+rithm for temporal alignment of audio, but this cannot pro-
+vide useful statistics for our purposes since it is unable to
+cross analyze sound ﬁles containing glitches. A cross-analysis
+algorithm that would allow such an evaluation is under de-
+velopment by the Audacity software team,6 but at the time
+of this writing, is not yet available for use.
+Instead, we employ a simple manual method for latency
+evaluation, illustrated in Figure 3. Using a multichannel au-
+dio editor, sound ﬁles are displayed and temporally com-
+pared. We can zoom into the waveform and identify two
+samples that represent the exact same sound, using their
+offset to measure the temporal difference. This method, al-
+though manual, provides measurements accurate to a single
+5 This use of a multichannel audio recorder, connected directly to both
+the transmitter and receiver constrains the two units to be close together. To
+perform similar measurements over a long distance, i.e., with the audio in-
+put and output recorded remotely from each other, over a network, globally
+synchronized clocks are required. In this case, each audio sample could
+be time-stamped and re-aligned ofﬂine. However, further investigation is
+required to demonstrate the reliability of such a method.
+6 http://audacityteam.org/wiki/index.php?title=
+Audio_Diff_Notes
+latency
+Source audio
+Delivered audio
+Figure 3: End-to-end latency measurement using a multichannel
+editor. Here a 30 ms window is displayed.
+sample. In our case, we employ a 48 kHz sampling rate,
+which provides an accuracy of 0.02 ms. Note that the audio
+content must be non-periodic in order to be amenable to vi-
+sual pattern recognition; we must avoid purely sinusoidal or
+other repeating signals.
+3.2. Measuring audio quality
+As noted in Section 2, the typical primary source of qua-
+lity degradation is missing audio data at one of the compo-
+nents. When such a problem occurs, a glitch can be heard
+in the playout. A secondary source of distortion is a for-
+mat conversion component that alters the audio ﬁdelity. For
+the purposes of our present study, since we use high-ﬁdelity
+transmission without compression, we only consider glitch
+distortions due to missing audio data.
+During our experiment, we observed that delivered audio
+was subject to two kinds of defect. The ﬁrst, seen in Figure
+4, is the result of signiﬁcant amplitude variation over a small
+time interval, while the second, called micro silence, is the
+result of silence insertion inside an audio stream. These two
+distortions are heard as clicks.
+Glitch 
+detection
+Figure 4: The quality of streamed audio can be evaluated off-line
+by counting glitches. A band pass ﬁlter set to 8-9.5kHz, followed
+by an ampliﬁcation of 25 dB, allows for isolation of glitches in the
+resulting audio ﬁle, and allows us to count glitches over time by
+using an additional algorithm.
+In order to characterize the quality of the delivered audio
+after transmission, we developed an algorithm that detects
+and counts such audio glitches. This detection, illustrated by
+137
+Figure 4 consists of applying a band-pass ﬁlter that isolates
+frequencies between 8 and 9.5 kHz, followed by an ampliﬁ-
+cation of +25 dB. The resulting audio ﬁle, when displayed,
+exhibits spikes that correspond to the previously described
+audio distortions. A simple algorithm is then employed to
+count these spikes, based on amplitude analysis. As seen on
+Figure 4, this approach provides accurate glitch detection,
+but is subject to false positive error when the original audio
+source contains signiﬁcant frequency components inside our
+window of analysis. To address this problem, we also ap-
+ply our algorithm to the recorded source to locate (false)
+glitches in the original signal, and exclude these from the
+corresponding analysis of the received audio signal.
+4. Experimental results
+Our experiments used a one hour radio broadcast containing
+both speech and music. We measured latency every 10 min-
+utes in the recording, then computed averages for the entire
+sound ﬁle. We compared the following four low-latency,
+high-ﬁdelity streaming engines:
+•JackTrip version 1.0.2 alpha, 7 developed by Juan-
+Pablo Caceres at Stanford University is a client for
+the Jack audio connection kit 8
+•jack-tools version 0.0.2-4,9 developed by Rohan Drape,
+includes a streaming engine that acts as a Jack client
+•Soundjack, 10 developed by Alexander Car ˆot at the
+University of L ¨ubeck, is a stand-alone program that
+can also act as a client for Jack
+•nStream version 1.0, 11 developed by Nicolas Bouil-
+lot at McGill University, is an external object for Pure-
+Data [12] and PureData anyWhere12 [13]
+The conﬁguration of these streaming engines consists pri-
+marily of manually setting the packet and queue sizes. Al-
+though some engines allow dynamic parameter changes, we
+did not vary the parameters during our one hour sessions.
+This ensured that we could analyze the stability of end-to-
+end latency throughout an extended session.
+Our experiments consisted of three conditions. In the
+ﬁrst, we used large parameter values to evaluate the quality
+of the resulting audio when the engine components executed
+essentially without temporal constraints. Second, we eval-
+uated the latency and audio quality of transmissions with
+the engine conﬁgured using the minimum values allowed.
+Third, we manually optimized the parameters for each en-
+gine to ﬁnd a balance between reducing latency and mini-
+mizing the number of resulting glitches.
+7 http://ccrma.stanford.edu/groups/soundwire/
+software/jacktrip/
+8 http://jackaudio.org/
+9 http://slavepianos.org/
+10 http://www.livemusicportal.eu
+11 http://www.audioscape.org
+12 a ﬁxed point version of PureData for small form factor hardware
+Our setup, illustrated in Figure 2, used computers run-
+ning Ubuntu Linux 8.04 with a real-time kernel and RME
+Hammerfall Multiface II sound cards. Each streaming en-
+gine was conﬁgured to access the sound card through the
+Jack audio connection kit, conﬁgured with 64 samples per
+frame and two frames per buffer. We used a sampling rate
+of 44.1 kHz, except for the Soundjack engine, which only
+supported a 48 kHz sampling rate. 13
+For the ﬁrst set of experiments, a common theoretical
+latency was speciﬁed by setting the packet and queue size
+parameters to the values required to produce an overhead
+of 10240 samples, corresponding to an anticipated latency
+of 232 ms at 44.1 kHz sampling, or 213 ms at 48 kHz.
+However, the actual (much smaller) observed latencies, seen
+in Table 1, for jack-tools and JackTrip, suggest that these
+two engines use the parameters to determine buffer capa-
+city rather than buffer latency. Interestingly, perhaps due to
+sound card clock skew, Soundjack latency decreased from
+218 to 165 ms, indicating that its buffer management did not
+try to maintain a constant amount of queued data within the
+buffer. While this is not necessarily critical, it could lead to
+undesirable underﬂow or overﬂow in longer sessions. The
+quality results indicate a range of 7 to 16 glitches through
+the transmission of the one hour recording. Since these va-
+lues are all non-zero, this justiﬁes the need to establish the
+range of parameters we seek in the third experiment.
+Table 1: Best audio quality observed, expressed as the number of
+glitches measured during a one hour streaming session (ordered by
+decreasing quality)
+Engine #
+of glitches Anticipated
+Latency
+(ms)
+Actual
+latency
+(ms)
+Soundjack 7 213 165–218
+nStream 10 232 243
+jack-tools 13 232 22
+JackT
+rip 16 232 11
+In our second set of experiments, we set the packet and
+queue sizes to their minimum allowed values. In theory, this
+should result in the smallest possible end-to-end latencies.
+For all the engines, the minimum packet and queue sizes
+were both 64 samples, apart from jack-tools, for which the
+minimum buffer size was 256 samples.
+Not surprisingly, as observed in Table 2, there was a clear
+inverse relationship between latency and number of glitches.
+Both JackTrip and Soundjack exhibited more than one glitch
+per second, on average, over the one hour recording. While
+this is clearly unacceptable from the perspective of listening
+experience, it is nonetheless encouraging to note the feasi-
+bility of networked audio transmission under a 10 ms thresh-
+13 Note that using a higher sample rate should result in better end-to-end
+latency results, but at the expense of increasing both the bandwidth used
+and the packet rate.
+138
+Table 2: Latency and quality observed using minimum theoretical
+latency (ordered by increasing latency)
+Engine latency
+(ms)
+# of glitches
+JackTrip 5.12 20229
+Soundjack 8.75 5387
+nStream 11.87 130
+jack-tools 12.47 78
+old using high-performance networks.
+The last set of experiments involved setting packet and
+queue sizes manually to obtain an approximate “best” trade-
+off between latency and quality. As it was not feasible to do
+so exhaustively for every possible combination of parameter
+values, conﬁgurations for optimized transmission were de-
+termined manually starting from the minimum packet and
+queue sizes and increasing the latter until this resulted in a
+subjectively acceptable low number of glitches. In the case
+of Soundjack, however, further increase to the packet size
+was necessary before acceptable quality was achieved. 14
+Algorithmic measurement was then used to conﬁrm that a
+good tradeoff was achieved. The resulting conﬁgurations,
+along with measured latency and number of glitches, can be
+seen in Table 3. As a proof of concept, this demonstrates that
+low latency can be achieved using existing high-ﬁdelity au-
+dio streaming engines, provided that the parameters (at least,
+buffer size) is adjusted manually to achieve the best trade-
+off between latency and audio quality. However, it is im-
+portant to note that this experiment was conducted using an
+isolated 100 Mbps Local Area Network, where performance
+was signiﬁcantly better than one can expect from the wide-
+area Internet. Moreover, a given conﬁguration that works
+well at one time may fail later because of network perfor-
+mance variations. Such ﬂuctuations dramatically compli-
+cate the deployment of distributed applications that require
+audio streaming.
+Table 3: Results observed while minimizing latency and maximiz-
+ing quality (ordered by increasing latency)
+Engine Results Settings
+latency
+(ms)
+# of glitches packet
+(samples)
+buffer
+(samples)
+JackTrip 7.04 18 64 128
+jack-tools 12.92 13 64 320
+nStream 14.54 18 64 128
+Soundjack 21.44 52 512 512
+14 This may be due to limitations of the operating system scheduler,
+which is unable to support the Soundjack requirements efﬁciently when
+packet size is below 512 samples.
+5. Current features and future challenges
+Today, projects involving distributed musical systems touch
+on many aspects of interactivity, and integrate a variety of
+software technologies and communication modes. At the
+communication level, audio, as well as video, real-time data,
+ﬁle sharing, monitoring data and other streams are transmit-
+ted simultaneously, each requiring its own level of perfor-
+mance. Far from being fully integrated, a high degree of
+ﬂexibility is needed to ensure adequate usability in meet-
+ing each scenario. In this context, we enumerate multiple
+challenges for future research and for implementing high-
+ﬁdelity streaming engines.
+Auto-conﬁguration Our experiments have illustrated the
+difﬁculties that arise when deploying a system that seeks
+to achieve optimal audio quality. This complexity is a si-
+gniﬁcant obstacle to creating a system covering multiple
+sites. Appropriately conﬁguringpacket and queue sizes, the
+two parameters used by the streaming engines, is crucial for
+overcoming the problems presented by a variable network.
+Fortunately, network state can be monitored in real-time
+by the receiver side of the engine, which can continuously
+track both network losses and jitter for adapting packet and
+buffer sizes. Format conversion, including sample depth
+variation and ultra-low delay compression, is also an inte-
+resting option that can provide the necessary foundation for
+designing adaptive algorithms that will be able to dynami-
+cally compute appropriate data rates. By ensuring efﬁcient
+use of network resources while optimizing latency vs. qua-
+lity, such algorithms may signiﬁcantly enhance the capabil-
+ities of streaming engines.
+User control While we believe that auto-conﬁguration is
+critical for the future use of audio streaming, engines should
+allow users to increase latency optionally. This can be criti-
+cal in various performance scenarios, where the perceptible
+delay is a key part of the desired interactivity, or when audio
+delivery must be synchronized with other real-time data.
+Integration Facing the challenges involved with future
+large scale distributed interactive applications, where inter-
+action is not limited only to audio, we anticipate that com-
+bining the audio information with other data, plus engine
+state monitoring, will both be required. In this environment,
+it is critical that engines provide state monitoring and con-
+trol using standard mechanisms, such as the Open Sound
+Control (OSC)[14] protocol.
+Mobility As interactive mobile applications become more
+dominant, we must contend with limitations of mobile pro-
+cessors, such as low-power and ﬁxed-point architectures.
+Support for heterogeneity within larger distributed interac-
+tive systems, taking into account both ﬁxed- and ﬂoating-
+point systems, along with any associated format conversions,
+as appropriate, will be needed.
+Table 4 summarizes the features provided by each of the
+streaming engines considered in this paper. Most of these
+are basic requirements for addressing the high-level chal-
+139
+Table 4: Streaming engine features
+Engine Multichannel Compr
+ession User
+controlled
+delay
+Multicast Fixed-point
+v
+ersion
+Dynamical
+conﬁguration
+nStream √ √ √ √ √
+Soundjack √ √ √ √
+JackT
+rip √
+jack-tools √
+lenges described above. In addition, we consider dynamic
+conﬁguration, i.e., the ability to modify conﬁguration pa-
+rameters during streaming, since this is necessary both to
+supportuser control, as previously discussed, and as a ﬁrst
+step toward auto-conﬁgurable engines.
+Another option to consider is IP multicasting, which en-
+ables a single stream to be received by multiple hosts, taking
+advantage of a speciﬁc packet routing performed directly by
+the network hardware. While this allows a more effective
+use of available bandwidth and increases system scalability,
+it also increases the challenge of sender auto-conﬁguration
+when transmitting to multiple heterogeneous receivers.
+6. Conclusion
+Many distributed audio performances employ high-ﬁdelity
+audio streaming engines to support audio interactivity. These
+performances require both low latency as well as high au-
+dio quality. In this paper, we investigated the trade-off be-
+tween these two factors in four high-ﬁdelity streaming en-
+gines. After describing our methods for accurately measur-
+ing latency between source and destination and evaluating
+quality based on the resulting number of audio glitches, we
+presented the results of a preliminary experiment involving
+these metrics. The engines we tested provided high ﬁdelity
+transmission with end-to-end latency ranging between 7 and
+21 ms, well withing the thresholds suggested by the litera-
+ture (10 - 25 ms) for networked musical performance.
+In addition, taking into account recent trends in distributed
+interactive audio applications, we discuss several challenges,
+includingauto-conﬁguration, user control, integration and
+mobility, which should be considered as the next generation
+of streaming engines is designed for use in increasingly de-
+manding applications. Similar investigations should also be
+performed over long distance transmission, and might also
+be extended to include other computer music related data,
+including video and sensor data. We expect the results of
+such studies will continue to provide a better understanding
+of distributed musical interactions.
+7. Acknowledgments
+The authors would like to thank Jeff Blum for his valuable
+comments and suggestions for revising earlier drafts of this
+paper and Alexander Carˆot for his generous assistance with
+the Soundjack software.
+References
+[1] J. Cooperstock and S. Spackman, “The recording studio that
+spanned a continent,” inWEDELMUSIC ’01: Proc. First In-
+ternational Conference on WEB Delivering of Music, (Wash-
+ington, DC, USA), IEEE Computer Society, 2001.
+[2] U. Kraemer, J. Hirschfeld, G. Schuller, S. Wabnik, A. Carot,
+and C. Werner, “Network music performance with ultra-low-
+delay audio coding under unreliable network conditions,” in
+Proceedings of the 123rd Audio Engineering Society Con-
+vention, (New York, USA), 2007.
+[3] Z. Kurtisi, X. Gu, and L. Wolf, “Enabling network-centric
+music performance in wide-area networks,”Commun. ACM,
+vol. 49, no. 11, 2006.
+[4] N. Bouillot, “nJam user experiments: Enabling remote mu-
+sical interaction from milliseconds to seconds,” in Proc. of
+the International Conference on New Interfaces for Musical
+Expression (NIME), (New York, NY , USA), ACM, 2007.
+[5] J.-P. Caceres, R. Hamilton, D. Iyer, C. Chafe, and G. Wang,
+“To the edge with china: Explorations in network perfor-
+mance,” inARTECH 2008: Proceedings of the 4th Interna-
+tional Conference on Digital Arts, (Porto, Portugal), pp. pp.
+61–66, 2008.
+[6] M. Wozniewski, N. Bouillot, Z. Settel, and J. R. Cooper-
+stock, “Large-scale mobile audio environments for collabo-
+rative musical interaction,” inIntl. Conference on New Inter-
+faces for Musical Expression, (Genova, Italy), 2008.
+[7] C. Chafe, M. Gurevich, G. Leslie, and S. Tyan, “Effect of
+time delay on ensemble accuracy,” in Proceedings of the In-
+ternational Symposium on Musical Acoustics, 2004.
+[8] E. Chew, A. A. Sawchuk, R. Zimmerman, V . Stoyanova,
+I. Tosheff, C. Kyriakakis, C. Papadopoulos, A. R. J.
+Franc ¸ois, and A. V olk, “Distributed immersive perfor-
+mance,” inProceedings of the Annual National Association
+of the Schools of Music (NASM), (San Diego, CA), 2004.
+[9] E. Brandt and R. Dannenberg, “Time in distributed real-time
+systems,” inProc. of the 1999 International Computer Music
+Conference, (San Francisco), pp. pp. 523–526, 1999.
+[10] S. Wabnik, G. Schuller, J. Hirschfeld, and U. Kr ¨amer, “Re-
+duced bit rate ultra low delay audio coding,” in Proceedings
+of the 120th AES Convention, May 2006.
+[11] S. Dixon and G. Widmer, “Match: A music alignment tool
+chest,” in in Proc. ISMIR, 2005.
+[12] M. Puckette, “Pure Data,” in Proceedings of the Inter-
+national Computer Music Conference, (San Francisco),
+pp. 269–272, 1996.
+[13] G. Geiger, “PDa: Real time signal processing and sound
+generation on handheld devices,” in International Computer
+Music Conference (ICMC), 2003.
+[14] M. Wright, “Open sound control 1.0 speciﬁcation.” Pub-
+lished by the Center For New Music and Audio Technology
+(CNMAT), UC Berkeley, 2002.
+140

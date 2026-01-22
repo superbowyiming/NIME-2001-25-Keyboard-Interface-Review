@@ -1,0 +1,672 @@
+The Sophtar:
+a networkable feedback string instrument
+with embedded machine learning
+Federico Visi
+Luleå University of Technology, School of Music in Piteå
+Snickargatan 20, 941 63 Piteå, Sweden
+Universität der Künste Berlin, Berlin Open Lab
+Einsteinufer 43, 10587 Berlin, Germany
+Einstein Center Digital Future
+Wilhelmstraße 67, 10117 Berlin, Germany
+mail@federicovisi.com
+ABSTRACT
+The Sophtar is a tabletop string instrument with an embed-
+ded system for digital signal processing, networking, and
+machine learning. It features a pressure-sensitive fretted
+neck, two sound boxes, and controlled feedback capabili-
+ties by means of bespoke interface elements. The design of
+the instrument is informed by my practice with hyperorgan
+interaction in networked music performance. I discuss the
+motivations behind the development of the instrument and
+describe its structure, interface elements, and the hyperor-
+gan and sound synthesis interactions approaches it imple-
+ments. Finally, I reflect on the affordances of the Sophtar
+and the differences and similarities with other instruments
+and outline future developments and uses.
+Author Keywords
+augmented instruments, novel instruments, hyperorgans, feed-
+back, embedded systems
+CCS Concepts
+•Applied computing → Sound and music computing; Per-
+forming arts;
+1. INTRODUCTION
+The Sophtar is a new electroacoustic string instrument fea-
+turing an embedded system for digital signal processing
+(DSP), networking, and machine learning. It is meant to
+lie on a table or horizontal stand to be played, similarly
+to a keyboard or steel guitar. The instrument is shown
+in Figure 1. Structurally, it bears resemblance to an elec-
+tric guitar, albeit with some notable differences. It features
+two wooden sound boxes: a larger one corresponding to the
+body (Figure 3) of the instrument, and a second, smaller
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’24, 4–6 September, Utrecht, The Netherlands.
+Figure 1: A Sophtar built in 2023-24.
+one in place of the headstock on the other end of the neck
+(Figure 2). The former houses a set of single-string pickups
+(see section 3.2), while the sound of the latter is captured
+by a built-in piezoelectric contact microphone, making it
+possible to amplify the sound from both sides of the fretted
+string.
+A salient feature of the instrument is a large fretboard di-
+vided in long strips, one for each of the eight strings. Each
+fretboard strip is pressure-sensitive. This allows the instru-
+ment to sense the pressure exerted on each string separately
+while fretting. The mechanism is comparable to the poly-
+phonic aftertouch feature found on some keyboards. This
+allows for sound processing techniques designed to affect the
+sound of each string after it is fretted or tapped by means
+of pressure. This enables playing techniques that borrow
+from the affordances of both fretted string instruments and
+keyboards.
+Another notable feature of the instrument is a pressure-
+sensitive, spring-mounted button on the body of the instru-
+ment. The button can be assigned to different functions, but
+is mainly used to control the amount of audio signal sent
+from the pickups to a transducer housed inside the head
+sound box. The vibrations produced by the transducer res-
+onate through the strings and the neck of the instrument,
+generating audio feedback that can be used to make sus-
+tained, droning sounds. The more the button is pressed,
+the higher the amplitude of the audio signal sent to the
+transducer. This way feedback can be controlled subtly by
+the same hand used to pluck the strings.
+Finally, a third distinctive feature of the Sophtar is an em-
+bedded computer housed inside the body of the instrument.
+This allows to run machine learning models and DSP algo-
+rithms on board and to network the instrument to other in-
+struments and performers in networked music performance
+scenarios.
+Figure 2: Detail of the head sound box.
+1.1 Background and Motivation
+I1 designed the Sophtar to address some needs that arose
+following my engagement with various research and artis-
+tic topics. I am a member of TCP/Indeterminate Place
+(TCP/IP), a quartet whose practice is focused on networked
+performance with remotely controlled hyperorgans [4]. Hy-
+perorgans are pipe organs that can be played via protocols
+such as MIDI and Open Sound Control [32], thereby en-
+abling interactions beyond the conventional manuals and
+pedals found in organ consoles. TCP/IP is part of a larger
+network of musicians and scholars that looks at the creative
+opportunities offered by networking multiple pipe organs
+for real-time, geographically distant performance [8]. In
+my performances with TCP/IP, I experimented with var-
+ious ways of interacting with hyperorgans, including the
+use of gestural controllers and artificial agents [4, 8], as
+well as pressure sensitive controllers and music information
+retrieval (MIR) techniques on live electric guitar feedback
+sounds to generate MIDI notes.2
+As my work with TCP/IP continued, I increasingly felt
+the need to consolidate what I had learnt through experi-
+menting with ever-changing setups into a single, self-contained
+instrument. One of the reasons behind this is that such an
+instrument would allow me to focus on practicing and re-
+fining the techniques that proved more rewarding in previ-
+ous performances and experiments without the instrumental
+setup becoming too cumbersome or complicated. Further, I
+expect (and hope) that bringing these techniques together
+within the boundaries of a single instrument would lead to
+the emergence of new instrumental techniques that previ-
+ous setups could not afford. Thus, in light of my practice
+with TCP/IP – itself partly informed by my previous work
+using feedback guitar in sound interaction design [29] and
+interactive machine learning [30] – I attempted to list a few
+requirements that the instrument should fulfil:
+1I am deliberately adopting a first-person point of view in
+writing this article as my own perspective and experience
+as a practitioner and researcher was central in the develop-
+ment of the Sophtar. I will try to avoid the passive voice
+and other impersonal forms as much as possible. When us-
+ing the plural pronoun “we” I mostly refer to work done in
+collaboration with Sukandar Kartadinata.
+2Examples of using MIR on electric guitar feedback can
+be seen in this video: https://www.youtube.com/watch?
+v=tnUg_fe40Ig. A full networked performance involv-
+ing feedback and other electric guitar extended techniques
+can be seen here:https://www.youtube.com/watch?v=
+fegi23aaruY
+Figure 3: Detail of the body.
+• Connectivity for networked performance
+• Additional interface elements to perform with machine
+learning models
+• Affordances of table-top guitar played with extended
+techniques
+• Feedback capabilities
+• On-board DSP for interacting with hyperorgans
+For developing the Sophtar I worked closely with the in-
+strument builder and musician Sukandar Kartadinata. His
+long-time background in embedded hardware design and
+software development for NIMEs [14, 15], his skill as a
+luthier, and his aesthetic sensitivity as a musician have all
+been crucial for finding solutions and exploring possibilities
+while designing and building the Sophtar.
+2. RELATED WORK
+Since 2007, Echo Ho has been examining and reinventing
+Guqin performance through the SlowQin [10], an electroa-
+coustic string instrument made of plexiglas that resembles
+the Guqin but also acts as an interface to sound synthesis
+software.
+Stapleton’s Volatile Assemblage also known as VOLA [26]
+combines “a metal resonator with strings and contact mi-
+crophone, belt-driven turntable with modified vinyl records,
+upcycled HHD drive controller with a LattePanda Alpha
+embedded computer running Arduino and Max/MSP patches,
+and two Bugbrand Postcard Weevils all connected via a
+mini-mixer to an amplified array of transducers, along with
+an assortment of actuators” [25].
+The Electro Steel by Snyder et al. [24] uses interface
+elements of the pedal steel guitar to control an embedded
+digital sound synthesis engine.
+There is a renewed focus on harnessing audio feedback for
+musical expression [20], with instruments such as Halld´ or
+´Ulfarsson’s halldorophone [28] and Adam Pultz Melbye’s
+FAAB (feedback-actuated augmented bass) [22].
+SEMILLA AI is a project by Mois´ es Horta Valenzuela
+that explores ways of interacting with sound synthesis mod-
+els based on deep learning through custom-designed instru-
+ments. Particularly, Horta Valenzuela uses “the techno-
+poetics of Mesoamerican divination through “maiz throw-
+ing” and positions it as an interface for uncovering and ex-
+ploring the “latent space” or hyperdimensional data distri-
+bution within a generative neural network for audio synthe-
+sis” [11].
+Several controller keyboards and surfaces allow for con-
+tinuous, polyphonic manipulation of sound. David Wessel
+and collaborators developed the Slabs, an array of force-
+sensitive touchpads, itself inspired by Wessel’s practice with
+the Thunder controller designed by Don Buchla [31]. Other
+examples include the Soundplane3, the Continuum Finger-
+board4, the Seaboard 5, and the Osmose 6. Some of these
+were analysed by Jensenius [13].
+There is a long tradition of unconventional electroacous-
+tic string instrument practice outside of academia. Keith
+Rowe has been playing tabletop prepared guitar for several
+decades, with the AMM free improvisation group and oth-
+ers [2]. Rowe’s tabletop guitar playing has been compared
+to John Cage’s prepared piano as well as Jackson Pollock’s
+painting techniques.7 In 2006, after a series of prototypes,
+guitarist Xabier Iriondo builds the first Mahai Metak: a
+10-string tabletop electroacoustic chordophone with built-in
+sound processing capabilities [12]. Amplifying sound from
+both sides of fretted strings has also been used extensively
+by musicians such as Glenn Branca (who built a guitar with
+a second body in place of the headstock), Hans Reichel [7],
+and Fred Frith among others [6]. Musician and instrument
+builder Yuri Landman also experimented extensively with
+multiple bridges, preparations, and tabletop setups [16].
+In the 1960’s, a few musical instrument makers built elec-
+tric guitars that were capable of triggering notes on elec-
+tronic organs through a sort of proto- fret scanning mech-
+anism.8 They were very heavy and awkward to play, 9 and
+very few were made.10
+3. FEATURES OF THE SOPHTAR
+As I described in section 1, the Sophtar blends acoustic,
+electro-mechanical, and digital audio techniques. In this
+section I will look at these elements and their interplay more
+in detail.
+3.1 Interface elements
+The sound boxes and the neck of the Sophtar are made
+of amaranth tonewood, also known as purpleheart. The
+instrument has 8 strings, tuned low to high to D1, A1, D2,
+G2, D3, G3, D4, D4 (the top two strings are tuned to the
+same note). The scale length is 73 cm, or approximately 29
+inches. The string spacing is 11.5 mm and is the same at
+both ends of the neck, making the strings parallel.
+We made the composite pressure-sensitive fretboard by
+fixing eight separate force sensing resistor (FSR) strips to
+the neck, covering its entire length (see top of Figure 4).
+The fretboard itself is made up by eight separate fretted
+strips, which are mounted on top of the FSRs and attached
+to the body through screws at both ends (see bottom of
+Figure 4).
+We made the bottom section of the fretboard, below the
+lowest string, larger in order for it to work as a thumb
+3https://www.madronalabs.com/soundplane
+4https://www.hakenaudio.com/continuum-fingerboard
+5https://roli.com/products/seaboard/rise2
+6https://www.expressivee.com/2-osmose
+7https://en.wikipedia.org/wiki/Prepared_guitar
+8https://en.wikipedia.org/wiki/Guitorgan
+9https://en.wikipedia.org/wiki/Vox_(company)
+#GuitarOrgan
+10https://reverb.com/item/
+5227224-1966-vox-guitorgan-v251-guitar-organ
+Figure 4: The Sophtar with the fretboard removed, showing
+the pressure-sensitive strips (top); a detail of the composite
+fretboard attached to the body of the instrument and the
+multichannel pickup system.
+rest. This edge of the fretboard is fitted with a silver touch-
+sensitive strip, which can be seen in Figures 1 and 3. This
+sensor can track the position of the thumb resting on it,
+allowing for an additional control dimension to be used to
+interact with machine learning models as I will describe fur-
+ther in section 3.4.
+The body of the instrument includes a custom tremolo
+bridge and various interface elements that we arranged in
+order for them to be easily reachable with the right hand
+when plucking the strings using a thumb pick (see Figure 5.
+All controls are mapped via software, so they could poten-
+tially be assigned to control any parameter, but we arranged
+them with specific functions in mind that I will describe be-
+low.
+Figure 5: The interface elements on the Sophtar body with
+a transparent overlay of a hand to better illustrate the er-
+gonomics.
+The rectangular button placed under the index and ring
+fingers is a custom spring-mounted, pressure-sensitive ex-
+pression block. We designed it taking thetouche d’intensit´ e
+found on the Ondes Martenot as inspiration. It is made of
+two 3D-printed elements, the button and a box mounted in-
+side the body. The box houses two springs pushing against
+the button and two distance sensors placed longitudinally.
+Differently from the touche d’intensit´ e, the expression block
+of the Sophtar can be tilted left and right (see Figure 6) and
+the amount of tilting is sensed by calculating the difference
+between the outputs of the two sensors. The main function
+of the expression block is to adjust the intensity of the sig-
+nal sent to the head transducer and therefore modulate the
+overall amount of feedback. Tilting the block left or right in-
+creases the feedback intensity of the low or the high strings
+respectively. Thus, the expression block allows to subtly
+and continuously vary the amount of feedback generated by
+the instrument and at the same time change the spectrum
+of the feedback within the same instrumental gesture.
+Figure 6: The tilt action of the expression block.
+The two buttons above the expression block can be used
+for various purposes. The left one allows to latch the gain
+values set using the expression block, thereby freeing the
+right hand without loosing the feedback. Pressing the right
+one releases the gain latch. Pressing both buttons together
+allows to interact with reinforcement learning algorithms
+by temporarily assigning feedback functions to the buttons
+(see section 3.4). Further to the right there is a third but-
+ton placed so that it can be reached with the pinky finger
+while pushing the expression block with index and ring fin-
+gers. This works as a “kill switch” that mutes the headstock
+transducer audio output entirely when pressed. This can be
+used to let the feedback decay quickly and let the instru-
+ment resonate, or perform staccati and other effects.
+On the left of the expression block there are eight sliders
+and on/off buttons, placed within reach of the index finger.
+The sliders allows to adjust the feedback gain of each string
+individually, similarly to other feedback instruments such as
+the halldorophone [28] and the FAAB [23]. The on/off but-
+tons work instead as a mute buttons to selectively remove
+specific strings from the mix sent to the head transducer.
+On the opposite side of the body there is another group of
+eight sliders and buttons. These are used to adjust how
+much signal of each string is sent through the processing
+pipeline that generates MIDI and OSC to interact with hy-
+perorgans.
+Finally, the potentiometer at the top is used as a volume
+knob.
+3.2 Embedded Hardware and Connectivity
+The main processor of the Sophtar is a LattePanda 3 Delta11
+single board computer (SBC) housed inside the lower half
+of the body. LattePanda SBCs have been used in other
+NIMEs, such as the VOLA [26] and the Vodhr´ an [21]. We
+carved a rose on the body where the SBC is mounted, right
+above the cooling fan (see bottom of Figure 5). This way
+the opening acts as a sound hole and it also lets the heat
+produced by the microprocessor out. The design represents
+11https://www.lattepanda.com/lattepanda-3-delta
+Figure 7: The electronics housed in the body of the Sophtar.
+The ADC/DAC board is on the top left (yellow), whilst the
+SBC is on the top right (black). The two Teensy microcon-
+trollers are in the centre and bottom sections.
+eight interlocked ouroboroi (i.e. snakes eating their tails)
+echoing the eight feed-backing strings. The SBC is con-
+nected to an ADC/DAC board designed by Sukandar Kar-
+tadinata. This acts as a multichannel (16 inputs and 16
+outputs) audio interface for the Sophtar and is USB Class
+Compliant. The board converts the signals coming from the
+string pickups and the output of the software run on the
+SBC. We used eight Cycfi Nu Capsules12 pickups to cap-
+ture the sound of each string individually. The signals of
+the interface elements are handled by two microcontrollers:
+a Teensy 3.6 13 for the sliders, knob, and buttons; and a
+Teensy 4.014 for the fretboard FSRs and the thumbs touch
+strip. The embedded hardware housed in the Sophtar body
+is shown in Figure 7.
+The Sophtar has ten ports distributed on both sides of
+the body (see Figure 8). The output of each port is listed
+below.
+• Audio
+– 4-ch. audio in
+– 8-ch. unprocessed audio out (unbalanced signals
+from the pickups)
+– 4-ch. processed audio out (balanced, ch. 1-4)
+– 4-ch. processed audio out (balanced, ch. 5-8)
+– headphones stereo output (not shown in Figure 8)
+– unprocessed mono mix (to be used with conven-
+tional amps)
+• Data
+– Ethernet
+– USB Type A
+• Other
+– Power supply input
+– HDMI video output
+12https://www.cycfi.com/projects/nu-v2-capsule/
+13https://www.pjrc.com/store/teensy36.html
+14https://www.pjrc.com/store/teensy40.html
+We decided to include unprocessed outputs to make it
+possible to play the Sophtar even without the SBC. This
+way if the computer stops working one can use outboard
+gear to process the individual signals from the pickups or
+simply the mono output with an amplifier just like with an
+electric bass or guitar.
+Figure 8: The ports on the sides of the Sophtar’s body.
+3.3 Interaction with Hyperorgans
+One of the motivations behind the design of the Sophtar is
+to consolidate (and possibly enhance) some of the hyper-
+organ interaction techniques I experimented with in my re-
+search and practice with the TCP/IP quartet. In the exam-
+ple I referred to in section 1, I used spectral analysis of gui-
+tar feedback audio to generate MIDI notes. In that instance
+I particularly appreciated the textures and clusters the or-
+gan was producing as the analysis algorithm attempted to
+track the continuously changing pitch of the guitar strings
+being slowly bent using the whammy bar. The glitchy out-
+put of the analysis and the fact that the organ can hardly
+play a continuous glissando without intervening on the air
+pressure contributed in creating an interaction that I find
+interesting. This was one of the main reasons for including
+a tremolo bridge in the Sophtar design and deal with the
+challenges and costs that come with building a custom one.
+This hyperorgan interaction idea is pushed further with the
+Sophtar. Each string is analysed separately, extracting the
+pitch frequency and spectral energy of the ten loudest par-
+tials in the signal. This generates up to 80 MIDI notes at
+the same time. The eight sliders on the right side of the
+body can then be used to select how much each string con-
+tributes to generating the notes, making it possible to go
+from playing just a few organ notes when tapping on a spe-
+cific string to generating a large amount of notes that result
+in massive blocks of sound.
+Another interaction enabled by some hyperorgans is the
+possibility of quickly and continuously change stops via con-
+trol data, resulting in ever-changing registrations and com-
+plex, evolving timbres. I find working with stops generally
+more stimulating than focusing on pitches, as the process
+tends to bring out the unique timbral character of each or-
+gan. The “general crescendo” pedal found in the console of
+the Sauer organ and Utopa Baroque Organ at the Orgelpark
+in Amsterdam is a “stop-crescendo device” [5] that makes it
+possible to progressively add stops to the registration while
+playing by means of an expression pedal. Inspired by this
+idea, I designed a hyperorgan interaction using the pressure-
+sensitive fretboard of the Sophtar. Increasing the pressure
+on the fret after playing a note progressively add stops to
+the registration. Conversely, reducing the pressure reduces
+stops. This way, a long note triggered by a sustained sound
+played on the Sophtar can be continuously modulated us-
+ing a pressure-controlled stop-crescendo. Since pressure is
+sensed for each string, different stop-crescendo sequences
+can be programmed and activated independently for each
+string.
+3.4 Interaction with Machine Learning
+Models
+Currently, I am experimenting with embedding two sound
+interaction and synthesis approaches into the Sophtar. Firstly,
+I am trying to navigate the latent dimensions of models
+trained using RAVE [3] (a variational autoencoder for real-
+time audio synthesis). The feedback sound modulated via
+the expression block is used as audio input to the model,
+while the pressure on the fretboard and the thumb posi-
+tion on the touch strip as ways of continuously navigate the
+latent space of the models. So far, I have obtained inter-
+esting results with a model I have trained with recordings
+of traditional chants for the interactive installation project
+CORALS by artist Marco Barotti [1]. Secondly, I adapted
+the Assisted Interactive Machine Learning [30] approach
+based on reinforcement learning and corpus-based concate-
+native synthesis that I used in previous projects to be used
+with the Sophtar. Positive and negative feedbacks given
+to an artificial agent running on the SBC allow to explore
+different areas of a large sound corpus, which is activated
+through the sound of the Sophtar strings. The pressure on
+the fretboard controls the cutoff frequency of eight band-
+pass filters that process the sound synthesis output. This
+allows one to blend the sounds from the strings and the
+corpus-based synthesis engine continuously, for each indi-
+vidual string, through pressure.
+4. EARLY REFLECTIONS
+I was not interested in “hybridising” an electric string in-
+strument with some kind of polyphonic aftertouch controller
+just for the sake of adding controls and complexity. What
+led me to it was primarily a reflection on the affordances
+of sound synthesis models and my dissatisfaction with how
+I was approaching performing with them. Both variational
+autoencoders like RAVE and corpus-based sound synthesis
+approaches rely on various ways of reducing dimensionality
+in order to offer a more compact representation of the timbre
+space of the model and make it more usable in performance
+and composition. Similarly, interacting with the sound con-
+cepts enshrined in a remotely controllable pipe organ is,
+for me, to explore its timbre dimensions through the affor-
+dances offered by its design. A pipe organ is a sound syn-
+thesis model. Adding pressure sensitivity to each string was
+a way for me to embed ways of exploring the latent space
+offered by such models within the familiar instrumental ges-
+tures of fretting and plucking a string. Throughout the
+design process, I intentionally constrained performance ac-
+tions to the haptic and tactile domains. I purposely avoided
+adding any visual feedback such as built-in displays, backlit
+buttons, and LEDs. The only LED on the instrument is
+on the on/off button on the side, and the HDMI port is to
+connect a screen primarily for programming and debugging
+purposes. I am resisting displays and visual feedback not
+just for constraining instrumental interaction mostly to the
+aural and haptic domains, but also for avoid the temptation
+of reprogramming, or changing the constraints of the instru-
+ment, while playing. This is not to avoid the use of presets
+or similar solutions (which I find totally fine and acceptable)
+but is motivated by the desire of moving within a specific
+set of constraints consolidated in a single instrument. I find
+this particularly rewarding and inspiring in improvisation. I
+see my work with the Sophtar as a form of postdigital prac-
+tice and I resonate very much with how Thor Magnusson
+defines its rationale: “the point is not to go back to pre-
+digital technologies [...] but to transcend the general digital
+computer to arrive at a more distinctive, limited, designed,
+and characterful musical instrument” [19].
+The design of the Sophtar is still being explored, I ex-
+pect to make changes to its software and hardware, but
+I also expect to progressively shift my focus from design
+to performance and consolidate how the instrument works.
+Working with Sukandar Kartadinata has brought about a
+dialogue between the two of us that productively forced me
+to make decisions on what the instrument could and could
+not do. Given the technical complexity of the instrument, I
+was relatively reluctant about adding features to the initial
+design. The idea of adding the touch strip to the thumb
+rest, which I have initially envisioned simply as a surface of
+bare wood, came from an exchange with Sukandar. While
+initially sceptical about adding such feature, I progressively
+changed my mind after mimicking how my hands would ap-
+proach fretting the strings while moving my thumbs along
+the sensor strip. The idea was also in agreement with the
+concept of adding dimensions to string fretting and plucking
+actions to explore sound synthesis models, so I eventually
+opted for adding the touch strip to the thumb rest.
+To submit this paper to NIME I had to choose one pri-
+mary and up to three secondary subject areas. Among
+these are “Augmented, embedded and hyper instruments”
+and “Novel controllers, interfaces or instruments for musi-
+cal expression”. Having to make a decision, I asked myself
+whether the Sophtar is an augmented instrument, given its
+resemblance to an electric guitar, or an entirely new instru-
+ment, given its peculiar affordances and playing techniques.
+I suspect the line between the two categories is blurry. In
+their paper “When is a Guitar not a Guitar?”, Harrison et
+al. ask: “which is more important to a performer’s impres-
+sion of an instrument, global form or input modality?” [9].
+They suggest that there are complex interactions between
+a certain ‘cultural load’ of the guitar form and the input
+modalities of the instrument. At first sight, the Sophtar
+looks like a strangely shaped electric guitar. I expect the
+perception of the instrument might quickly evolve as it is
+used in performance, particularly for its instrumental ges-
+tures focused on subtle modulations of pressure on the neck
+and expression block, which brings it somewhat closer to in-
+struments such as the Haken Continuum Fingerboard, the
+Ondes Martenot, and the Slabs. Perhaps at this stage trying
+to answer this question is not particularly useful beyond fig-
+uring out which box to tick in the NIME submission system.
+What will shape the identity of the Sophtar as an instru-
+ment is likely going to depend on how people will play it and
+what kind of music they will make with it. I look forward to
+going back to this and other questions after some Sophtar
+practice. There is only one Sophtar in existence at the time
+of writing. Thus, its ergodynamics [18] will likely be shaped
+by my own idiosyncrasies and biases as a performer and re-
+searcher, at least initially. Feedback from other musicians
+and co-performers will likely broaden my view on what the
+instrument could and should do. Whilst having other musi-
+cians pick up and learn how to play the Sophtar might take
+some time, I expect that working with composers might re-
+veal latent articulations – or ergodynamics to once again
+use Thor Magnusson’s clever term – relatively quickly.
+5. FUTURE WORK
+I am planning to enhance the Sophtar with a set of mov-
+able actuators that can be activated remotely to mechani-
+cally pluck the strings. I regularly perform with live coder
+and composer Mattias Petersson, who is also a member of
+TCP/IP. Having actuators on the Sophtar would open a
+window for him to send live-coded patterns to the instru-
+ment, creating potentially interesting interplays of shared
+agency between him live coding, myself moving the actua-
+tors, and the Sophtar interacting with hyperorgans.
+Alongside RAVE and AIML, I am planing to try to run on
+the Sophtar some audio corpus manipulation patches based
+on the FluCoMa library [27].
+The work on hyperorgan interaction design will continue
+with interfacing the Sophtar with the Sinua 15 system, a
+control protocol dedicated to pipe organs that allows for
+more sound shaping possibilities.
+In conclusion, the aim of this contribution is mainly to in-
+troduce and describe the instrument. I expect that working
+with and within a single instrument might lead to vertical
+explorations that dig deeper on some instrument-specific
+aspects, as opposed to the more horizontal investigations
+that occur when changing setup often. Resonating with the
+thought that musical instruments are epistemic tools [17],
+I look forward to sharing what I will learn by playing the
+Sophtar.
+6. ACKNOWLEDGMENTS
+This work received funding from Helge Ax:son Johnsons
+stiftelse, and the Swedish Research Council (project num-
+ber 2022-02386). Building the Sophtar would have not
+been possible without Sukandar Kartadinata’s exceptional
+interdisciplinary expertise, skill, patience, and dedication.
+Thanks to Till Riecke for the useful input on wood finishes.
+7. REFERENCES
+[1] M. Barotti. Corals — marcobarotti.com.
+https://www.marcobarotti.com/Corals.
+[2] J.-E. Berendt and G. Huesmann. The Jazz Book:
+From Ragtime to the 21st Century . Lawrence Hill
+Books, Chicago, Ill, seventh edition, seventh edition
+edition, Aug. 2009.
+[3] A. Caillon and P. Esling. RAVE: A variational
+autoencoder for fast and high-quality neural audio
+synthesis. 2021.
+[4] R. Ek, S. ¨Osters¨o, F. G. Visi, and M. Petersson. The
+TCP/Indeterminate Place Quartet: A Global
+Hyperorgan Scenario. In International Conference on
+New Interfaces for Musical Expression (NIME) ,
+Shanghai, China, 2021.
+[5] H. Fidom. The Utopa Baroque Organ at the
+Orgelpark. VU University Press, Amsterdam, second
+edition, 2020.
+[6] M. Frengel and M. Frengel. The Unorthodox Guitar:
+A Guide to Alternative Performance Practice . Oxford
+University Press, Oxford, New York.
+[7] J. Gore. Crossing the Bridge by Hans Reichel. Guitar
+Player, Jan. 1989.
+[8] R. Harlow, M. Petersson, R. Ek, F. Visi, and
+S. ¨Ostersj¨o. Global Hyperorgan: A platform for
+15https://sinua.de
+telematic musicking and research. In NIME 2021,
+pages 1–15. PubPub, 2021.
+[9] J. Harrison, R. H. Jack, F. Morreale, and A. P.
+McPherson. When Is A Guitar Not A Guitar?
+Cultural Form, Input Modality And Expertise. June
+2018.
+[10] E. Ho, A. de Campo, and H. Hoelzl. The SlowQin:
+An Interdisciplinary Approach to reinventing the
+Guqin. Zenodo, June 2019.
+[11] M. Horta Valenzuela. Semilla.ai. https://semilla.ai/.
+[12] X. Iriondo. Solo | Xabier Iriondo.
+https://www.xabieririondo.com/en/solo.
+[13] A. R. Jensenius. Sound Actions: Conceptualizing
+Musical Instruments. The MIT Press, Dec. 2022.
+[14] S. Kartadinata. The Gluiph: A Nucleus For
+Integrated Instruments. June 2003.
+[15] S. Kartadinata. The Gluion Advantages Of An
+{Fpga}-Based Sensor Interface. June 2006.
+[16] Y. Landman and B. Hopkin. Nice Noise.
+Experimental Musical Instruments, Oct. 2012.
+[17] T. Magnusson. Of Epistemic Tools: Musical
+instruments as cognitive extensions. Organised Sound,
+14(02):168, Aug. 2009.
+[18] T. Magnusson. Ergodynamics and a Semiotics of
+Instrumental Composition. Tempo, 73(287):41–51,
+2019.
+[19] T. Magnusson. Sonic Writing: Technologies of
+Material, Symbolic, and Signal Inscriptions .
+Bloomsbury Publishing Inc, 1 edition, 2019.
+[20] T. Magnusson, C. Kiefer, and H. Ulfarsson. Reflexions
+upon Feedback. Proceedings of the International
+Conference on New Interfaces for Musical Expression ,
+pages 1–14, 2022.
+[21] L. S. Pardue, M. Ortiz, M. van Walstijn, P. Stapleton,
+and M. Rodger. Vodhr´ an: Collaborative design for
+evolving a physical model and interface into a
+proto-instrument.Proceedings of the International
+Conference on New Interfaces for Musical Expression ,
+pages 623–625, 2020.
+[22] A. Pultz Melbye. A continuously receding Horizon.
+ECHO, a journal of music, thought and technology ,
+(3), Jan. 2022.
+[23] A. Pultz Melbye. A Continually Receding Horizon:
+Making, Performing, and Improvising with
+Semi-Autonomous Double Bass Feedback Instruments.
+Doctoral Thesis, Queen’s University Belfast, Belfast,
+United Kingdom, July 2023.
+[24] J. Snyder, D. Polito, and M. Wang. The Electrosteel:
+An Electronic Instrument Inspired by the Pedal Steel
+Guitar. In NIME 2023, 2023.
+[25] P. Stapleton. | Volatile Assemblage (VOLA).
+http://www.paulstapleton.net/portfolio/volatile-
+assemblage-vola.
+[26] P. Stapleton. Uncertain rhythms. In F. Visi, editor,
+Music Proceedings of the International Conference on
+New Interfaces for Musical Expression, pages 60–62,
+Porto Alegre, Brazil, June 2019. UFRGS.
+[27] P. A. Tremblay, G. Roma, and O. Green. Enabling
+Programmatic Data Mining as Musicking: The Fluid
+Corpus Manipulation Toolkit.Computer Music
+Journal, 45(2):9–23, June 2021.
+[28] H. ´Ulfarsson. The Halldorophone: The Ongoing
+Innovation Of A Cello-Like Drone Instrument. June
+2018.
+[29] F. Visi. Methods and Technologies for the Analysis
+and Interactive Use of Body Movements in
+Instrumental Music Performance. PhD thesis,
+Plymouth University, 2017.
+[30] F. G. Visi and A. Tanaka. Interactive Machine
+Learning of Musical Gesture. In Handbook of
+Artificial Intelligence for Music , pages 771–798.
+Springer International Publishing, Cham, 2021.
+[31] D. Wessel, R. Avizienis, A. Freed, and M. Wright. A
+Force Sensitive Multi-Touch Array Supporting
+Multiple{2-D} Musical Control Structures. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression, pages 41–45.
+Zenodo, June 2007.
+[32] M. Wright. Open Sound Control: An enabling
+technology for musical networking. Organised Sound,
+10(3):193–200, 2005.

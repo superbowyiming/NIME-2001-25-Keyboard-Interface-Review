@@ -1,0 +1,660 @@
+The Sound Space as Musical Instrument:
+Playing Corpus-Based Concatenative Synthesis
+Diemo Schwarz
+UMR STMS
+Ircam–CNRS–UPMC
+Paris, France
+schwarz@ircam.fr
+ABSTRACT
+Corpus-based concatenative synthesis is a fairly recent
+sound synthesis method, based on descriptor analysis of any
+number of existing or live-recorded sounds, and synthesis
+by selection of sound segments from the database matching
+given sound characteristics. It is well described in the litera-
+ture, but has been rarely examined for its capacity as a new
+interface for musical expression. The interesting outcome
+of such an examination is that the actual instrument is the
+space of sound characteristics, through which the performer
+navigates with gestures captured by various input devices.
+We will take a look at diﬀerent types of interaction modes
+and controllers (positional, inertial, audio analysis) and the
+gestures they aﬀord, and provide a critical assessment of
+their musical and expressive capabilities, based on several
+years of musical experience, performing with the CataRT
+system for real-time CBCS.
+Keywords
+CataRT, corpus-based concatenative synthesis, gesture
+1. INTRODUCTION
+Corpus-based concatenative synthesis (CBCS) is a recent
+method for sound synthesis [12, 14], that has been imple-
+mented from 2005 on in an interactive sound synthesis sys-
+tem namedCataRT [16], used in sound design, composi-
+tion, and installation contexts, and used by the author1 and
+other musicians for live music performances [18].
+While the technological and scientiﬁc bases of CBCS have
+been well described and theorised, its use as a new inter-
+face for musical expression has not been treated speciﬁcally.
+Yet, it introduces an important and novel concept that is the
+essence of the interface: the space of sound characteristics
+with which the player interacts by navigating through it,
+with the help of gestural controllers. Therefore, this article
+will try to take a ﬁrst step towards formalising the experi-
+ence of this use of CBCS as a musical instrument made by
+the author mainly in a setting of improvisation with other
+musicians.
+We will start by giving a short general introduction to the
+principle of CBCS and mention some related approaches,
+before investigating the central notion of this article, the
+1http://music.concatenative.net
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’12,May 21 – 23, 2012, University of Michigan, Ann Arbor.
+Copyright remains with the author(s).
+sound space as an interface to CBCS in section 2, and var-
+ious gestural controller devices that allow to interact with
+it, each with certain advantages and disadvantages, in sec-
+tion 3. After that, we turn to examining the types of ges-
+tures aﬀorded by these interfaces, and the diﬀerent trigger
+modes that determine if sound is played by interaction or
+at a ﬁxed rate, in section 4, before investigating how to con-
+struct the sound space, and optimise its representation in
+section 5. Finally we provide a critical assessment of the
+diﬀerent variants of the interface in section 6 followed by
+general conclusions and avenues for future work in section 7.
+In order to better convey the interactive and gestural as-
+pects of the interfaces, a companion web-page 2 gives video
+and audio examples for each of the controllers.
+1.1 Principle of CBCS
+Corpus-based concatenative synthesis systems build up a
+database of prerecorded or live-recorded sound by seg-
+menting it intounits, usually of the size of a note, grain,
+phoneme, or beat, and analysing them for a number of
+sound descriptors, which describe their sonic characteris-
+tics. These descriptors are typically pitch, loudness, bril-
+liance, noisiness, roughness, spectral shape, etc., or meta-
+data, like instrument class, phoneme label, etc., that are
+attributed to the units, and also include the segmentation
+information of the units, like start time, duration, source
+sound ﬁle index. These sound units are then stored in a
+database (thecorpus). For synthesis, units are selected from
+the database that are closest to given target values for some
+of the descriptors, usually in the sense of a weighted Eu-
+clidean distance. Non real-time CBCS [12] can also make
+use of aunit selection algorithm based on dynamic program-
+ming or constraint solving [1] that ﬁnds the sequence of
+units that match best a given sound or phrase to be synthe-
+sised (the target). The selected units are then concatenated
+and played, after possibly some transformations.
+1.2 Motivations for CBCS
+Ever larger sound databases exist on all of our harddisks
+and are waiting to be exploited for synthesis, which is ever
+less feasible to do completely manually. Therefore, the help
+of automated sound description allows to access and exploit
+a mass of sounds eﬃciently and interactively, unlike tradi-
+tional query-oriented sound databases [19].
+As with each new synthesis method, corpus-based con-
+catenative synthesis gives rise to new sonorities and new
+methods to organise and access them, and thus expands
+the limits of sound art. Here, by selecting snippets of a
+large database of pre-recorded sound by navigating through
+a space where each snippet takes up a place according to
+its sonic character, it allows to explore a corpus of sounds
+interactively, or by composing this path, and to create novel
+2http://imtr.ircam.fr/imtr/CataRT_Instrument
+sound structures by re-combining the sound events, propos-
+ing novel combinations and evolutions of the source mate-
+rial. The metaphor for composition is an explorative navi-
+gation through the sonic landscape of the corpus.
+Last, using concatenative synthesis, as opposed to pure
+synthesis from a signal or physical model, allows a sound
+composer to exploit the richness of detail of recorded sound
+while retaining eﬃcient control of the acoustic result by
+using perceptually and musically meaningful descriptors to
+specify the desired target sound features.
+1.3 The CataRT System
+The CataRT software system realises corpus-based con-
+catenative synthesis in real-time. It is a modular sys-
+tem in Max/MSP with the freely available FTM, Ga-
+bor, and MnM extensions3 [10, 11, 2], providing optimised
+data structures and operators in a real-time object sys-
+tem. CataRT is released as free open source software at
+http://imtr.ircam.fr.
+CataRTanalyses any number of sound ﬁles or live audio
+by a modular descriptor extraction framework [20]. Batch
+analysis runs faster than real-time thanks toGabor’s arbi-
+trary rate signal processing in message domain. Segmenta-
+tion is by ﬁxed size, by pitch or spectral change, by attack
+detection, or imported externally. The representation of
+the corpus of sound units is a numerical matrix; classes and
+labels are therefore represented as integer indices, making
+them accessible to selection by Euclidean distance. (For
+more ﬂexibility, see the recent extension of distance map-
+ping [15].)
+For synthesis, the target of the selection is most intu-
+itively controlled in a 2D representation of the corpus, where
+each unit is a point that takes up a place according to its
+sonic character. Access via 3 or more dimensions is equally
+possible, depending on the degrees of freedom of the con-
+troller. Selection is accelerated by a tree-based search in-
+dex [21] and can be extended to choose a set of units either
+within a user-speciﬁed selection radius around the target
+position or its k nearest neighbours, from which one ran-
+domly chosen unit will be triggered.
+CataRT must be seen as a whole family of possible in-
+struments, around the core concept of the timbral sound
+space that is played by navigation through, and transfor-
+mation of, its elements. The actual instrument and the
+interaction it aﬀords is determined by the controller that
+steers the navigation, and the choice of gestural interaction
+and trigger modes, detailed in section 4.
+1.4 Related Work
+Corpus-based concatenative synthesis and related ap-
+proaches have been developed independently in a number
+of projects, summarised in a survey [13] that is constantly
+kept up-to-date on-line.4
+The most prominent related approach is that of audio
+mosaicing [25], which is a special case of corpus-based con-
+catenative synthesis, when the selection target is derived
+from another audio signal. Most often, the descriptors used
+in that case are a representation of the audio spectrum in
+a low number of frequency bands, resulting in a lookup of
+sounds from the corpus by timbral match.
+CBCS can also be seen as a content-based extension to
+granular synthesis providing direct access to grains with
+speciﬁc sound characteristics in real-time, thus surpassing
+its limited selection possibilities, where the only control is
+position in one single sound ﬁle.
+3http://ftm.ircam.fr/
+4http://imtr.ircam.fr/imtr/Corpus-Based_Sound_
+Synthesis_Survey
+For laptop orchestra pieces, Bruno Ruviaro has developed
+a simpliﬁed interface to CataRT named CatORK5 using
+the computer keyboard and mouse as controllers, together
+with a conducting system.
+2. THE SOUND SPACE AS INTERFACE
+By now it should be clear that the central notion of CBCS
+as an instrument resides in the representation of the corpus
+as an abstract space of sound characteristics, spanned up
+by n audio and meta-data descriptors as its axis. In the
+case of CataRT, n is 24, of which 15 are informative.
+In this space, similar sounding segments are close to-
+gether, and large distances mean that the sounds are very
+diﬀerent (within the limits of what can be captured by audio
+descriptors). Note that this concept is similar but not equiv-
+alent to that of thetimbre space put forward by Wessel and
+Grey [7, 24], since timbre is deﬁned as those characteristics
+that serve to distinguish one sound from another, that re-
+main after removing diﬀerences in loudness and pitch. Our
+sound space explicitly includes those diﬀerences that are
+very important to musical expression.
+The sound space is populated by units of sound, placed at
+the coordinates given by their audio descriptors or class in-
+dices. In order to make this high-dimensional representation
+into an interface, the visual representation is a projection
+into a lower-dimensional space—two or three dimensions are
+best adapted to the commonly available display and control
+devices (see ﬁgure 1 for an example).
+Figure 1: Example of the 2D visualisation of
+CataRT: Corpus used in the pieceAlarm–Signal in ex-
+ample video 5.3, plotted by Spectral Centroid (x),
+Periodicity (y), NoteNumber (colour).
+While already the indexing of the corpus by only a
+few high-level perceptual descriptors allows a musical and
+close-to-symbolic access to sound, the further projection of
+the descriptor space to a low-dimensional navigation space
+makes the interaction with the sound corpus very straight-
+forward and intuitive.
+Here, playing means navigating through the space
+(whereas in audio mosaicing, playing means querying the
+space by audio examples), and triggering the segments clos-
+est to the current position according to one of several pos-
+sible trigger modes that determine the gestural aﬀordances
+of the interface, detailed in section 4.
+5http://www.brunoruviaro.com/catork
+3. CONTROLLERS
+The actual instrument is determined by the controller that
+steers the navigation, which fall into the two groups of 2D
+or 3D positional control (3.1), and control by the analysis
+of audio input (3.2)
+This section will describe the controllers from a technical
+point of view. The following section 4 will link their input
+to the gestures they aﬀord, while section 6 will compare and
+discuss them.
+3.1 Positional Control
+This is the straightforward control method for CataRT,
+mapping a 2D or 3D controller to the target position.
+For composition and micro-montage, even standard point-
+ing devices such as the mouse or trackpad can do, as seen
+in example video 1.1, however they lack possibilities of dy-
+namic play.
+3.1.1 XY–Controllers and Surfaces
+The most intuitive access to CataRT is provided by XY
+controllers, such as MIDI control pads (like the KAOSS
+pad), MIDI joystick controllers, etc., for giving the tar-
+get position in 2D. Better still are pressure-sensitive XY-
+controllers such as a graphics tablet (Wacom), or the Mer-
+curial STC-1000 (see ﬁgure 2), to control also dynamics.
+The Wacom tablet allows a very precise positioning of
+the target via a pen, and can register (light) pressure. Ad-
+ditionally, the tilt of the pen can be used to control two
+more parameters. See video example 3.1 and 3.2.
+The Mercurial Innovations Group STC-1000 MIDI con-
+troller, now no longer produced, has a Tactex surface with a
+grid of 3x3 pressure sensors. Using SysEx, one can make it
+send the raw 1024 bit pressure data, and recalculate the po-
+sition with higher precision as the standard output via the
+center of gravity of the pressure values. One can also de-
+termine the size of the touched area, given by the standard
+deviation. This allows to control one additional parameter
+by the distance between two ﬁngers. See video example 4.1.
+Figure 2: The Mercurial STC-1000 XY+pressure
+MIDI controller.
+3.1.2 Multi-Touch Surfaces
+Multi-touch controllers, such as the Jazzmutant Lemur
+or the touch-screen prototype Stantum SMK, especially
+when pressure sensitive, such as the Continuum Finger-
+board or the planned Linnstrument, are the dream interface
+forCataRT, providing an intuitive polyphonic access to a
+sound space. The Stantum SMK has been used for a one-oﬀ
+performance at SMC 2010 [3], see example videos 5.1–5.3.
+3.1.3 Motion Capture
+Motion capture systems, either by cameras and markers,
+or the Kinect, oﬀer a full-body access to a sound corpus
+mapped into physical 3D space. These interfaces have not
+yet been used for music performance with CataRT, but are
+beginning to be used in installation settings [6].
+3.1.4 Accelerometers
+Accelerometer equipped devices such as Wiimotes, smart-
+phones, or iPads can be used to navigate the 2D space by
+tilting and shaking (see example video 6.1).
+In the mapping used in CataRT, this falls within posi-
+tional control, since the accelerometer readout of the device
+is mapped to 2D position: held ﬂat, the target is in the mid-
+dle of the navigation space, tilted 90 degrees left, it is at the
+left border, 90 degrees right at the right border, and anal-
+ogously for forward/backward tilting. However, the mass
+and inertia of the device add an immediate physical compo-
+nent and force feedback to the interaction, making the ges-
+tural aﬀordance of the controller very diﬀerent from above
+pointing devices.
+3.2 Audio Control
+3.2.1 Piezo Microphones
+Piezo pickups on various surfaces allow to hit, scratch, and
+strum the corpus of sound, exploiting all its nuances accord-
+ing to the gestural interaction, the sound of which is anal-
+ysed and mapped to the 2D navigation space ofCataRT
+see ﬁgure 3 and example videos 8.1 and 8.2:
+The approach here uses an attack detector ( bonk∼ by
+Miller Puckette) that also outputs the spectrum of the at-
+tack audio frame in 11 frequency bands. Total energy and
+centroid of this spectrum is calculated inCataRT and
+mapped to the x and y target position in the 2D interface to
+select the segments to play from the corpus. This means, for
+instance, dull, soft hitting plays in the lower-left corner of
+the corpus descriptor space, while sharp, hard hitting plays
+more in the upper right corner.
+The attack detection is not 100% accurate, but since
+the signal from the piezos is mixed to the audio played by
+CataRT, the musical interaction still works.
+Figure 3: Piezo microphones under a corrugated
+plastic folder, allowing to hit, scratch, and strum a
+corpus.
+3.2.2 Audio Analysis
+The descriptor-analysis of incoming audio can serve to con-
+trol the selection of similar-sounding grains [23]. A mapping
+stage can automatically adapt the range of the input de-
+scriptor to the corpus, in order to exploit it fully, forsaking
+precise lookup of pitch, for instance, in favour of gestural
+analogies.
+This possibility of mapping makes for a signiﬁcant diﬀer-
+ence with the control of CBCS by audio spectrum analysis
+as in audio mosaicing, described in section 1.4.
+3.3 Additional Parameter Control
+The 14 granular playback and transformation parameters 6
+are conveniently controlled by a faderbox, now replaced by
+a multi-touch control surface software on the iPad.
+4. GESTURAL CONTROL AND TRIGGER
+MODES
+The controller devices explained in the previous section pro-
+vide the target position in the 2D navigation space and
+possibly one or more dynamic parameters such as pressure.
+How and when the units close to the target position are
+actually played is subject to the chosen trigger mode that,
+together with the control device, ﬁnally determines the ges-
+tural interaction.
+There are two groups of trigger modes that give rise
+to two diﬀerent styles of musical interaction: dynamic in-
+strumental gestures (4.1), and continuous or rhythmic tex-
+tures (4.2).
+We will in the following analyse the interaction gestures
+according to the framework of Cadoz [4, 5], that distin-
+guishes the three types ofexcitation, selection, and modiﬁ-
+cation gesture.
+4.1 Dynamic Gestures
+In the ﬁrst group of trigger modes, the speciﬁcation of the
+target position can at the same time trigger the playback of
+the unit.
+fence The fence trigger mode (named in homage to clat-
+tering a stick along a garden fence) plays a unit when-
+ever a diﬀerent unit becomes the closest one. Swiping
+gestures can trigger arpeggios of units, the speed and
+density of which depend on the speed of the swiping
+gesture.
+grab The grab trigger modes “grabs” the currently closest
+unit while a button is pressed (a modiﬁcation ges-
+ture) and triggers it repeatedly with a rate that is
+proportional to the speed of movement of the target
+position. Additionally, because the position has no
+selection function during grab, we can map this, for
+instance, to spatialisation of the sound source. 7
+Clearly, here the navigation in the sound space constitutes
+a selection gesture, and, in this group of trigger modes, it
+is at the same time an excitation gesture.
+6The transformation parameters are: grain rate, selec-
+tion radius, crossfade time, grain size and onset, reverse,
+transposition, gain, pan, and random ranges for some of
+these. They are documented at http://imtr.ircam.fr/
+imtr/CataRT_App_Documentation.
+7This is a musically motivated modiﬁcation of the naive
+bow mode that plays a unit whenever the selection moves.
+De-facto, the friction of the mouse, the then used input
+device, provided an appropriate force-feedback reminiscent
+of bowing a string.
+With controllers that aﬀord pressure sensitivity, very dy-
+namic, yet precisely controlled, sonic gestures can be pro-
+duced by eﬀecting diﬀerent trajectories, speeds and pressure
+proﬁles on XY controllers.
+With accelerometers, the speed of tilting, or the vigorous-
+ness of shaking the controller is proportional to the density
+of the produced sound, while the precision of the selection
+is much lower.
+4.2 Textures
+This other group of trigger modes separate selection from
+excitation, giving rise to continuous rhythms or textures.
+beat The beatmode triggers units regularly via a metronome,
+the frequency and randomisation of which is controlled
+via a modiﬁcation gesture on faders.
+When the rate is fast, units overlap and dense sonic
+textures are produced, the timbre of which can be pre-
+cisely chosen by the target position. Their variability
+or steadiness can be inﬂuenced by the selection ra-
+dius, and the random ranges of the granular playback
+parameters.
+chain The chain mode triggers a new unit whenever the
+previous unit has ﬁnished playing, and can thus loop
+one or more units from the corpus.
+continue Finally, the continue mode plays the unit follow-
+ing the last one, once it has ﬁnished, thus continuing
+to play in the original recording. Here we can recall
+parts of the corpus sound ﬁles in order, restarting by
+giving a new target position.
+In the textural trigger modes, the navigational gestures
+are solely selection gestures, while no excitation gestures
+are needed, since the system plays continuously. However,
+the trigger rate and the granular playback parameters are
+controlled by modiﬁcation gestures on faders.
+5. BUILDING THE SPACE
+We now turn our attention to three aspects of setting up
+the sound space for use as a musical instrument: How to ﬁll
+it with sounds, how to organise them by classes and voices,
+and how to optimise the 2D/3D layout for interaction.
+5.1 Filling the Corpus
+The corpus can be built either from any number of existing
+sound ﬁles, or can be recorded live during the performance
+from a co-musician or environmental sources 8, giving rise
+to live corpus-based concatenative synthesis [17, 8], which
+is very appropriate for improvised performances:
+Here, starting from an empty corpus, CataRTbuilds up
+the database of the sound played live by segmenting the
+instrument sound into notes and short phrases. The lap-
+top performer then re-combines the sound events into new
+harmonic, melodic and timbral structures, simultaneously
+proposing novel combinations and evolutions of the source
+material by navigating the ever-changing sound space being
+built-up from live recording.
+5.2 Organising the Space
+In order to create, and precisely and expressively control va-
+riety in the played sounds, the sound space can be organised
+in three aspects: First, any number of separate corpora can
+be loaded or recorded in CataRT and assigned to one of
+the synthesis channels. This provides completely separate
+8http://babiole.net/spip.php?article3
+http://diemo.free.fr/wp/?p=488
+sub-instruments, each with its own sound space, between
+which the performer can switch by modiﬁcation gestures.
+Then, within one corpus, sound ﬁles or individual units
+can be grouped into Sound Sets , which can be selectively
+enabled or muted, i.e. excluded from selection. When this
+choice is accessed by a modiﬁcation gesture, e.g. on buttons,
+quick changes in the played sounds can be eﬀected, similar
+to a percussionist changing instrument or mallets.
+Last, each synthesis channel in CataRT can generate
+several independent voices, with separate trigger mode and
+granular transformation parameters, allowing to simultane-
+ously play from a corpus with a metronome and with dy-
+namic gestures, for instance, or with diﬀerent ﬁlter settings.
+This is comparable to the clean and crunch channels on gui-
+tar ampliﬁers, or a multi setup on a synthesiser keyboard.
+5.3 Optimising the Navigation Space
+While a direct projection of the high-dimensional descriptor
+space to the low-dimensional navigation space has the ad-
+vantage of conserving the musically meaningful descriptors
+as axes (e.g. linear note pitch to the right, rising spectral
+centroid upwards), we can see in ﬁgure 1 that sometimes
+the navigation space is not optimally exploited, since some
+regions of it stay empty, while other regions contain a high
+density of units, that are hard to access individually. Espe-
+cially for the XY controller in a multi-touch setting, a lot
+of the (expensive and always too small) interaction surface
+can remain unexploited. Therefore, we apply a distribution
+algorithm [9] that spreads the points out using iterative De-
+launay triangulation and a mass–spring model, the results
+of which are illustrated in ﬁgure 4.
+Figure 4: Distribution of the corpus used in the
+pieceAlarm–Signal in example video 5.3.
+This last method starts from a 2D projection and opti-
+mises it. Alternatively, we can already integrate the high-
+dimensional descriptor similarity in the projection to 2D, by
+using the hybrid multi-dimensional scaling algorithm [19],
+based on a nearest-neighbour search and a randomly sam-
+pled mass–spring model.
+6. DISCUSSION
+In lieu of a formal evaluation, this section will try to provide
+a critical assessment of using the sound space as an inter-
+face for musical expression, and notably theCataRT sys-
+tem with its various controllers, based on the performance
+experience of the author.
+First, regarding musical expressiveness, the dynamic ges-
+tural trigger modes, combined with varied corpora, allow
+a great range of dynamics and densities to be produced.
+Throwing around clouds of grains, imprinting them with
+timbral evolutions, is one of the strong points ofCataRT.
+The continuous playing modes are also a staple for multi-
+layered musical scenes, where complex textural soundscapes
+can be built up out of virtually any source material, and
+ﬁnely yet dynamically controlled.
+A weak point is rhythmic play, a steady beat can be gen-
+erated, but is nearly impossible to vary enough to be musi-
+cally interesting;9 neither is tight percussive play, because of
+two sources of imprecision: The segmentation of the units,
+especially in live recording, might not be close enough to
+the actual attack of the segment, and the controllers all
+introduce a latency too noticeable for percussion.
+Turning to the controllers and their comparative advan-
+tages and disadvantages, a ﬁrst manifest diﬀerence in atti-
+tude can be seen in the play using a graphics tablet and a
+pressure-sensitive xy-pad: The use of a pen for the graph-
+ics tablet will allways lead to writing-like gestures, minute
+movements with high precision will have large eﬀects, and
+will be played sitting down. This stands against the physical
+force of pressure exerted on controllers like the STC-1000,
+being played standing, that allows to express musical dy-
+namics with implication of the full body. Even the (non
+pressure sensitive) multi-touch prototypes could not ren-
+der this physical implication, although they allow virtuoso
+multi-ﬁnger gestures and ambidextrous play.
+The piezo audio control permits very expressive play,
+sometimes creating gestural analogies, e.g. to violin play-
+ing, but much less precision, since the gestures are funneled
+through an attack detector.
+A more general questioning of the concept of the sound
+space as interface is the antagonism of large variety vs. ﬁne
+nuances, that need to be accomodated by the interface. In-
+deed, the small physical size of the STC-1000 does some-
+times not provide a ﬁne-enough resolution to precisely ex-
+ploit ﬁne nuances. Here, prepared sound sets and zooming
+could help, but ﬁnally, maybe less is more: smaller, more
+homogeneous corpora could invite to play with the minute
+details of the sound space.
+This reﬂection also leads to the only seemingly problem-
+atic point that the interface relies on visual feedback to
+support the navigation in the sound space, and that this
+feedback is on a computer screen, separate from the gestural
+controller (except for the multi-touch prototype from Stan-
+tum). Indeed, for ﬁxed corpora, this can be easily circum-
+vented by memorising the layout and practising with the
+corpora for a piece, as has been shown in the author’s inter-
+pretation of the pieceBoucle #1 by composer Emmanuelle
+Gibello, where the computer screen is hidden, so the per-
+former will base his interpretation solely on the sound, with-
+out being distracted by information on the screen, and can
+thus engage completely with the sound space he creates,
+and with the audience. This made the performer discover a
+diﬀerent approach to using CataRTin a more focused and
+expressive way, by concentrating on the interaction and the
+resulting sound, instead of relying on feedback via a visual
+representation.
+Last, as developed further in a recent article [8], perfor-
+mances using live corpus-based concatenative synthesis cre-
+9The grab trigger mode makes interactively changeable
+rhythms, but is not apt for generating a rhythmic base since
+it is too intermittent, and its phase can not be precisely con-
+trolled.
+ate a very special improvisational relationship, with very
+strong coupling between the acoustic and the electronic per-
+former. It could even be seen as an improvisation with two
+brains and four hands controlling one shared symbolic in-
+strument, the sound space, built-up from nothing and nour-
+ished in unplanned ways by the sound of the instrument, ex-
+plored and consumed with whatever the live instant ﬁlled it
+with. It creates a symbiotic relationship between the player
+of the instrument and that of the software.
+7. CONCLUSION AND FUTURE WORK
+CataRT is a tool that allows composers and musicians to
+work with an enourmous wealth of sounds, while still retain-
+ing precise control about its exploitation. From the various
+musical uses and experience we can conclude that CataRT
+is a sonically neutral and transparent tool, i.e. the software
+doesn’t come with its typical sound that is imposed on the
+musician, but instead, the sound depends completely on the
+sonic base material in the corpus and the gestural control
+of selection, at least when the granular processing tools are
+used judiciously. It allows expressive musical play, and to be
+reactive to co-musicians, especially when using live CBCS.
+For the future, classiﬁcation of the input gesture could
+make accessible corresponding classes in the corpus, e.g.
+by distinguishing attack, sustain, release phases. More ad-
+vanced gesture analysis and recognition could lead to more
+expressivity and deﬁnition of diﬀerent playing styles. Fi-
+nally, machine learning tools for the establishment of adap-
+tive mappings between corpora [22] could increase the us-
+ability of audio control.
+8. ACKNOWLEDGMENTS
+CataRT is essentially based on FTM&Co by Norbert
+Schnell and collaborators [10, 11, 2]. The work presented
+here is partially funded by the Agence Nationale de la
+Recherche within the project Topophonie, ANR-09-CORD-
+022, see http://topophonie.fr.
+9. REFERENCES
+[1] J.-J. Aucouturier and F. Pachet. Jamming With
+Plunderphonics: Interactive Concatenative Synthesis
+Of Music.Journal of New Music Research ,
+35(1):35–50, Mar. 2006. Special Issue on Audio
+Mosaicing.
+[2] F. Bevilacqua, R. Muller, and N. Schnell. MnM: a
+Max/MSP mapping toolbox. In New Interfaces for
+Musical Expression, pages 85–88, Vancouver, 2005.
+[3] A. Bonardi, F. Rousseaux, D. Schwarz, and
+B. Roadley. La collection num´ erique comme
+paradigme de synth` ese/composition interactive.
+Musim´ ediane: Revue Audiovisuelle et Multim´ edia
+d’Analyse Musicale, (6), 2011. http:
+//www.musimediane.com/numero6/COLLECTIONS/.
+[4] C. Cadoz. Instrumental gesture and musical
+composition. In Proceedings of the International
+Computer Music Conference, pages 1–12, 1988.
+[5] C. Cadoz and M. Wanderley. Gesture – Music. In
+M. Wanderley and M. Battier, editors, Trends in
+Gestural Control of Music , pages 71–94. Paris: Ircam,
+2000.
+[6] B. Caramiaux, S. Fdili Alaoui, T. Bouchara,
+G. Parseihian, and M. Rebillat. Gestural auditory and
+visual interactive platform. InDigital Audio Eﬀects
+(DAFx), Paris, France, Sept. 2011.
+[7] J. M. Grey. Multidimensional perceptual scaling of
+musical timbres. Journal of the Acoustical Society of
+America, 61:1270–1277, 1977.
+[8] V. Johnson and D. Schwarz. Improvising with
+corpus-based concatenative synthesis. In (Re)thinking
+Improvisation: International Sessions on Artistic
+Research in Music, Malm¨o, Sweden, Nov. 2011.
+[9] I. Lallemand and D. Schwarz. Interaction-optimized
+sound database representation. In Digital Audio
+Eﬀects (DAFx), Paris, France, Sept. 2011.
+[10] N. Schnell, R. Borghesi, D. Schwarz, F. Bevilacqua,
+and R. M¨uller. FTM—Complex Data Structures for
+Max. In Proc. ICMC, Barcelona, 2005.
+[11] N. Schnell and D. Schwarz. Gabor,
+Multi-Representation Real-Time Analysis/Synthesis.
+In Digital Audio Eﬀects (DAFx), Madrid, Spain, 2005.
+[12] D. Schwarz. Data-Driven Concatenative Sound
+Synthesis. Th` ese de doctorat, Universit´ e Paris 6 –
+Pierre et Marie Curie, Paris, 2004.
+[13] D. Schwarz. Concatenative sound synthesis: The early
+years. Journal of New Music Research , 35(1):3–22,
+Mar. 2006. Special Issue on Audio Mosaicing.
+[14] D. Schwarz. Corpus-based concatenative synthesis.
+IEEE Signal Processing Magazine, 24(2):92–104, Mar.
+2007. Special Section: Signal Processing for Sound
+Synthesis.
+[15] D. Schwarz. Distance mapping for corpus-based
+concatenative synthesis. In Sound and Music
+Computing (SMC), Padova, Italy, July 2011.
+[16] D. Schwarz, G. Beller, B. Verbrugghe, and S. Britton.
+Real-Time Corpus-Based Concatenative Synthesis
+with CataRT. InProceedings of the COST-G6
+Conference on Digital Audio Eﬀects (DAFx) , pages
+279–282, Montreal, Canada, Sept. 2006.
+[17] D. Schwarz and E. Brunet. theconcatenator Placard
+XP edit. Leonardo Music Journal 18 CD track, 2008.
+[18] D. Schwarz, R. Cahen, and S. Britton. Principles and
+applications of interactive corpus-based concatenative
+synthesis. InJourn´ ees d’Informatique Musicale
+(JIM), GMEA, Albi, France, Mar. 2008.
+[19] D. Schwarz and N. Schnell. Sound search by
+content-based navigation in large databases. In Sound
+and Music Computing (SMC) , Porto, July 2009.
+[20] D. Schwarz and N. Schnell. A modular sound
+descriptor analysis framework for relaxed-real-time
+applications. InProc. ICMC, New York, NY, 2010.
+[21] D. Schwarz, N. Schnell, and S. Gulluni. Scalability in
+content-based navigation of sound databases. In Proc.
+ICMC, Montreal, QC, Canada, 2009.
+[22] D. Stowell and M. Plumbley. Timbre remapping
+through a regression-tree technique. In Sound and
+Music Computing (SMC) , 2010.
+[23] P. A. Tremblay and D. Schwarz. Surﬁng the waves:
+Live audio mosaicing of an electric bass performance
+as a corpus browsing interface. In New Interfaces for
+Musical Expression, Sydney, Australia, June 2010.
+[24] D. Wessel. Timbre space as a musical control
+structure. Computer Music Journal , 3(2):45–52, 1979.
+[25] A. Zils and F. Pachet. Musical Mosaicing. In Digital
+Audio Eﬀects (DAFx), Limerick, Ireland, Dec. 2001.
+APPENDIX
+All referenced videos are viewable online at the address
+http://imtr.ircam.fr/imtr/CataRT_Instrument.

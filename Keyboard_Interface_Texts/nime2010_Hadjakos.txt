@@ -1,0 +1,532 @@
+Analysis of Piano Playing Movements
+Spanning Multiple Touches
+Aristotelis Hadjakos
+Telecooperation Group
+Hochschulstr. 10
+64289 Darmstadt, Germany
+telis@tk.informatik.tu-darmstadt.de
+Max M¨uhlh¨auser
+Telecooperation Group
+Hochschulstr. 10
+64289 Darmstadt, Germany
+max@tk.informatik.tu-darmstadt.de
+ABSTRACT
+Awareness of playing movements can help a piano student
+to improve technique. We are developing a piano pedagogy
+application that uses sensor data of hand and arm move-
+ment and generates feedback to increase movement aware-
+ness. This paper reports on a method for analysis of piano
+playing movements. The method allows to judge whether
+an active movement in a joint has occurred during a given
+time interval. This time interval may include one or more
+touches. The problem is complicated by the fact that the
+mechanical interaction between the arm and piano action
+generates additional movements that are not under direct
+control of the player. The analysis method is able to ig-
+nore these movements and can therefore be used to provide
+useful feedback.
+1. INTRODUCTION
+In the book “Famous Pianists and Their Technique” [8],
+Gerig provides an extensive survey of the diﬀerent schools
+of piano playing and teaching that have evolved over the
+last centuries.
+The early clavier methods [8, p. 9–34] can be charac-
+terized by a passive arm and active ﬁngers. Arm move-
+ment is used to change the horizontal position of the hand.
+Some arm and hand movement is used for chord playing.
+This technique is appropriate for the harpsichord, which is
+a predecessor to the piano and has a very light touch in
+comparison. The loudness of the generated sound is mainly
+predetermined by the action of the harpsichord and can only
+minimally be changed with force. However, an application
+of large force results in typically unwanted percussive noise.
+Therefore, ﬁnger activity is preferred over the forces of the
+stronger arm.
+The modern piano has a heavier touch and the percus-
+sive sounds are less noticeable. Despite of this, playing
+technique remained nearly unchanged during the transition
+from harpsichord to piano. The so-called ﬁnger school had
+a culmination in the work of Czerny (1791–1857) [8, p. 103–
+120]. Czerny’s ` etudes, which to the present day have a place
+in the curriculum, are eﬀective for training ﬁnger indepen-
+dency and for becoming accustomed to reoccurring musical
+patterns like scales, arpeggios, etc.
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME2010, 15-18th June 2010, Sydney, Australia
+Copyright remains with the author(s).
+Deppe (1828–1890) was one of the ﬁrst inﬂuential peda-
+gogues to put emphasis on the role of the arm [8, p. 229–
+270]. Deppe contributed only few written records about his
+method but his teachings were spread by his students. After
+Deppe’s death, a multitude of books that emphasized the
+functions of the arm were published. The most inﬂuential
+follower of that trend was Karl Maria Breithaupt (1873–
+1945), whose name is connected to the school of weight
+technique [8, p. 329–359]. An important aspect of the Bre-
+ithaupt’s method is the use arm weight to execute touches.
+Breithaupt has been criticized for marginalizing the role of
+the ﬁngers. He saw ﬁngers main function to be to transduce
+arm forces to the keys. Furthermore, he has been criticized
+to overly emphasize the role of weight and muscle relaxation
+and to marginalize the role of active muscle work.
+Ortmann (1889–1979) [8, p. 407–445] was one of the ﬁrst
+to examine piano technique with scientiﬁc methods. For
+this purpose he used various devices, some of them he in-
+vented himself, to record playing movements. One of his
+contributions is to conciliate ﬁnger and weight school. Both
+the advantages of ﬁnger activity and arm activity should be
+used. Fingers are ideal when speed is needed but lack the
+strength and control of the arm. The arm on the other hand
+lacks the speed of the ﬁngers because of its inertia.
+The exercise book “20 Lessons in Keyboard Choreogra-
+phy” [1] by the piano pedagogue Seymour Bernstein con-
+tains a collection of movement lessons. Each movement
+lesson starts with a brief description of the movement and
+provides exercises subsequently. The exercises are typically
+small pieces enriched with various notation marks to indi-
+cate the movement (see Table 1).
+The notation marks in Bernstein’s exercises can be
+grouped according to the timing of the described movement.
+There are marks that relate to a single touch (movements 1
+to 6), marks that relate to movements that span several
+successive touches (movements 12 to 14), marks that de-
+scribe preparatory movements that occur before a touch
+(movements 15 and 16), and marks that describe a prepara-
+tory movement followed by a touch movement (movements 9
+to 12). Movements that relate to a single touch can be an-
+alyzed with the Probabilistic Arm Model (PAM) [11]. This
+paper presents a method to analyze movements that span
+several successive touches.
+2. RELATED WORK
+2.1 Analysis of piano playing
+For quite some time, measurements have been used to
+examine piano playing movements. Early examples are the
+works by Binet & Courtier, who determined continuous key
+position by measuring the pressure in a rubber tube [2], Ort-
+mann [15, 16], who developed various devices to record key,
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+335
+Table 1: Bernstein’s movement notation
+Movement Sign
+1 Wrist up ↑
+2 Wrist down ↓
+3 Rotate right R
+4 Rotate left L
+7 Wrist up, rotate right /lcurvearrowne
+8 Wrist up, rotate left /rcurvearrownw
+5 Wrist down, rotate right /lcurvearrowse
+6 Wrist down, rotate left /rcurvearrowsw
+9 Upper arm roll
+/ucurlyleft/ucurlyright
+↑↓
+10 Double rotations
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+LR
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+RL
+11 Double rotations and
+upper arm rolls
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+/lcurvearrowne/rcurvearrowsw
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+/rcurvearrowsw/lcurvearrowne
+12 Continuous upper arm
+movement
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+↑↑↑ ↓↓↓
+/dcurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/dcurlyright
+13 Continuous rotation
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+RRR
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+LLL
+14 Continuous upper arm
+movement and rotation
+/ucurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/ucurlyright
+/lcurvearrowne/lcurvearrowne/lcurvearrowne /rcurvearrowsw/rcurvearrowsw/rcurvearrowsw
+/dcurlyleft/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/udcurlymod/dcurlyright
+15 Fingers are placed on the keys P
+16 Horizontal movement →
+ﬁnger, and arm movement, and Bernstein & Poppova, who
+used recorded lights that were placed on the player’s body
+with a camera system [12]. Modern studies of piano play-
+ing movements are typically performed with motion capture
+technology.
+Sakai et al. examined the role of ﬁnger and arm move-
+ments of pianists performing scales and chord repetitions
+[20]. Riehle et al. examined the ﬁnger movements of a pi-
+anist performing a repertoire piece [19]. Engel et al. stud-
+ied the role of coarticulation on pianist’s ﬁnger movements
+[4]. Wristen et al. studied compared movements when sight-
+reading and perfoming a repertoire piece [21]. Ferrario et
+al. studied diﬀerences in the amount of kinetic energy that
+is used for tone production and extraneous movements be-
+tween concert pianists, piano teachers, and students [5].
+Goebl & Palmer studied the role of tactile information
+gained when hitting the key from above for timing accuracy
+[9]. Loehr & Palmer studied the eﬀects of mental chunking
+[13] and ﬁnger independency [14]. Furuya et al. analyzed
+octave repetition movements by calculating the inverse dy-
+namics of the arm [7]. This allows to assess the gravita-
+tional, key-reaction, limb interaction, and muscular torques
+that are present in the arm and ﬁnger joints. A further
+study examined diﬀerences in proximal-to-distal coordina-
+tion of playing movements between novices and expert pi-
+anists [6].
+2.2 Instrument performance mining
+Peiper et al. developed a method that distinguishes
+ﬁve bowing patterns using electromagnetic motion cap-
+ture data, namely d´ etach´ e, martel´ e, staccato, spiccato, and
+legato [17]. The patterns are distinguished by a decision tree
+based on geometric features, like initial bow position, and
+movement features, like velocity, acceleration, and move-
+ment continuity.
+Rasamimanana et al. developed a method to distinguish
+three bowing patterns based on accelerometer data, namely
+d´ etach´ e, martel´ e, and spiccato [18]. Minimal and maxi-
+mal acceleration and velocity during a bow stroke are de-
+termined and used for classiﬁcation with k-NN. For this
+purpose the velocity signal is computed by integrating the
+acceleration signal.
+Young developed a method to distinguish six common
+bowing techniques, namely accented d´ etach´ e, d´ etach´ e lanc´ e,
+lour´ e, martel´ e, staccato, and spiccato [22]. The classiﬁca-
+tion is based on 6DOF inertial bow movement sensing and
+measurement of vertical and lateral bow forces. The di-
+mensionality of the sensor data is reduced using principal
+component analysis. A stroke is classiﬁed in the resulting
+low-dimensional space using k-NN.
+A method to distinguish German and French drum grip
+was developed by Bou¨ enard et al. [3]. The method iden-
+tiﬁes characteristic local extrema of the stick trajectory in
+the movement signal. The grips are distinguished using k-
+nearest-neighbor (k-NN) based on the timing and the height
+of the extrema of the stick trajectory.
+3. PROBABILISTIC ARM MODEL
+We coin conscious, goal-directed movements as primary
+movements. Examples for primary movement in piano play-
+ing are the movements of the ﬁngers, hands, and arms that
+are used to press down the keys, reposition the hands, or
+make a communicative gesture. Secondary movements are
+movements that are not directly controlled. They are the
+inevitable byproducts of the primary movements and are
+due to the mechanical interaction with the piano action and
+anatomical constraints of the body. The Probabilistic Arm
+Model (PAM) [11] models primary and secondary move-
+ment and is the basis for the analysis method described in
+Section 4. Therefore, it will be brieﬂy reviewed here.
+The human arm has mainly seven degrees of freedom.
+When a note is played, the amount of movement in each
+joint is computed from sensor data over a ﬁxed time interval
+of 0.08 s. These measurements, which are denotedF1 to
+F7, are composed of primary (M Pi ) and secondary ( MSi)
+movements and measurement error (Ei):
+Fi =MPi + MSi + Ei (1)
+The sum of secondary movement and measurement error is
+modeled as normally distributed, i. e.,MUi +Ei ∼N(µi,σi).
+The mean µi and standard deviation σi of the distribution
+are computed by evaluating an automatically learned func-
+tionf. Because a primary movement in a joint can generate
+secondary movements in other joints f is a function of the
+primary movements of all other joints. The function f also
+depends on the velocity of the pressed key ( Fv), which is
+computed from the MIDI signal. As true measurements of
+primary movements are not available,f is evaluated using
+F1 to F7 as approximations for the primary movements.
+(µi,σi) =fi(MP1,...,MPi−1 ,MPi+1 ,...,MP7,Fv) (2)
+≈fi(F1,...,Fi−1,Fi+1,...,F7,Fv) (3)
+The function f can be learned through maximum likeli-
+hood estimation from a data-set of examples (see [11] for
+details). By evaluating the learned function f the mean µi
+and standard deviation σi of the secondary movement can
+be determined.
+4. MOVEMENT ANALYSIS
+This section presents a method that detects movements
+that are spread over several notes. The method is based
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+336
+t
+−
+t
++
+µ i (1)
+σ i (1)
+µ i (2)
+σ i (2)
+µ i (3)
+σ i (3)
+b (1) e (1) b (2) e (2) e (3)b (3)
+Figure 1: The movement is spread over multiple
+notes.
+on the output provided by PAM. PAM is used to compute
+the mean and standard deviation of the secondary move-
+ment for all notes that occur between the beginningt− to
+the end t+ of the examined time interval (see Figure 1).
+The determined means and variances for joint i are denoted
+µi(1),µi(2),...,µ i(N) and σi(1),σi(2),...,σ i(N), where
+N is the number of touches in the analysis interval. The es-
+timation of secondary movement by PAM for a touch refers
+to the movement during a short time interval that ends
+when a note-on event is reported by the keyboard. The be-
+ginning of that time interval for the n-th note is denoted
+b(n)and the end, e(n).
+A movement in joint i is recognized if the movement
+Fi,total that is accumulated from t− to t+ exceeds the to-
+tal mean of the secondary movement µi,total more than a
+constant c times the total standard deviation σi,total, i. e.,
+if Fi,total > µi,total ± c⋅σi,total. The total mean and the to-
+tal standard deviation are computed from the means and
+standard deviations of the single notes, which are provided
+by PAM. When no note is played, the secondary movement
+is set to zero since there is no mechanical interaction with
+the piano action. In Figure 1, no secondary movement is
+expected during the time intervals [t−,b(1)), (e(1),b(2)),
+(e(2),b(3)), and (e(3),t+].
+Let mi(t) be the sensor angular rate of the movement in
+joint i, then Fi,total is the integral from t− to t+ of mi(t).
+Fi,total =/integral.disp
+t+
+t−
+mi(t) dt (4)
+In the following two possibilities of computing the total
+mean µi,total and total standard deviation σi,total will be
+explained: a restricted version and a generalized version.
+The restricted version requires that the beginningt− and
+the end t+ does not intersect any interval [b(n),e(n)]. The
+generalized version however does not require this.
+In the restricted version the total mean of secondary
+movement is computed by
+µi,total =
+N
+/summation.disp
+n=1
+µi(n) (5)
+and total standard variance by
+σi,total =
+N
+/summation.disp
+n=1
+σi(n)2 (6)
+according to the way of adding normally distributed random
+variables.
+The mean µi(n) and the standard deviation σi(n) of the
+secondary movement of the n-th note refer to the secondary
+movement accumulated over the time intervalb(n) to e(n).
+In order to compute µi,total and σi,total in the generalized
+form, it is necessary to distribute the valuesµi(n) and σi(n)
+over the continuous time interval given byb(n) to e(n). For
+this purpose, µi(n,t) and σi(n,t) are introduced. They are
+the continuous mean and standard deviation in joint i based
+on the PAM analysis of the n-th note.
+&68]]_X!ÛÛÛÛÛÛÛX!ÛÛÛÛÛÛbX!ÛÛÛÛÛÛ#X!ÛÛÛÛÛÛX!ÛÛÛÛÛÛÛX!ÛÛÛÛÛÛÛ}}&24]]_X!ÛÛÛÛÛÛÛX!ÛÛÛÛÛÛbX!ÛÛÛÛÛÛ#X!ÛÛÛÛÛÛ}} &44]]_X!ÛÛÛÛÛÛÛX!ÛÛÛÛÛÛbX!ÛÛÛÛÛÛ#X!ÛÛÛÛÛÛ#X!ÛÛÛÛÛÛX!ÛÛÛÛÛÛX!ÛÛÛÛÛÛX!ÛÛÛÛÛÛ}}
+Figure 2: Four-note motif (left), six-note motif (cen-
+ter), and eight-note motif (right)
+The distribution of a random variable that is generated
+by adding normally distributed random variables is also a
+normally distributed random variable. The mean of the
+new distribution is given by the sum of the original means,
+i. e., µsum = ∑i µi, and the standard deviation is given by
+σ2
+sum = ∑i σ2
+i . In order to distribute the mean and stan-
+dard deviation computed by PAM over the time interval
+[b(n),e(n)], the following equations, which are continuous
+counterparts of the previously discussed formulas, have to
+be satisﬁed:
+/integral.disp
+e(n)
+b(n)
+µi(n,t) dt=µi(n) (7)
+/integral.disp
+e(n)
+b(n)
+σi(n,t) 2 dt=σi(n)2 (8)
+Therefore, µi(n,t) and σi(n,t) are computed in the time
+interval from b(n) to e(n) as follows:
+µi(n,t) =µi(n)/slash.left(e(n)− b(n)) (9)
+σi(n,t) =σi(n)/slash.left
+/radical.alt1
+e(n) − b(n) (10)
+Outside the time interval [b(n),e(n)] the continuous mean
+µi(n,t) and the continuous standard deviation σi(n,t) are
+set to zero.
+The continuous mean µi(n,t) and the continuous stan-
+dard deviation σi(n,t) are needed to handle eventual tem-
+poral overlaps between secondary movements. The estima-
+tion of the secondary movement of a note n by PAM refers
+to the time interval[b(n),e(n)]. For two notes these time
+intervals can either be separated in time or overlap. If the
+time intervals overlap, the secondary movement generated
+by the two touches are superimposed.
+It is now possible to compute the total mean
+µi,total =/integral.disp
+t+
+t−
+N
+/summation.disp
+k=1
+µi(k,t) dt (11)
+and the total variance
+σ2
+i,total =/integral.disp
+t+
+t−
+N
+/summation.disp
+k=1
+σi(k,t)2 dt (12)
+5. EV ALUATION
+To determine the accuracy of serial analysis, the proposed
+method was evaluated based on recorded movement with
+our inertial sensors [10] and MIDI data from a pianist. The
+pianist played small musical motifs without primary move-
+ment of the arm and the same motifs but with forearm
+rotation movement that was spread over several touches.
+Since pitch, rhythm, loudness, and articulation can be var-
+ied, there exist a prohibitively high number of combinations
+so that the serial analysis has to be evaluated with exem-
+plary motifs. The used motifs (see Figure 2) were modiﬁed
+according to parameters that have a distinct inﬂuence on
+the movement:
+Number of notes:The ﬁrst motif contained four notes,
+the second, six, and the third eight notes. The motifs,
+which were played with the right hand, begin with as-
+cending intervals, which may be played with supina-
+tion, and end with the equal amount of descending
+intervals, which may be played with pronation. Since
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+337
+Table 2: Results of the evaluation
+Played Rotation No rotation
+Recognized
+Rotation 96.7% 3.03%
+No rotation 2.84% 97.16%
+secondary movement is generated through mechanical
+interaction with the piano action, a greater number
+of interactions leads to a greater amount of secondary
+movement, which makes primary movement detection
+more diﬃcult.
+Loudness: When playing louder, the amount of secondary
+movement is increased because the secondary move-
+ment is linked with the amount of mechanical interac-
+tion between the arm and the piano action. Therefore,
+the motifs were played with diﬀerent loudness: piano,
+mezzoforte, and forte.
+Tempo: The tempo has an eﬀect on the primary forearm
+rotation. When playing faster, the rotation is per-
+formed with greater speed. Furthermore, the over-
+all size of the movement could be reduced at greater
+speed, which would make primary movement detec-
+tion more diﬃcult. The motifs were recorded at diﬀer-
+ent tempos. The quarter note was played with 60, 100,
+140, and 180 beats per minute. To generate a record-
+ing that produces signiﬁcant overlaps in the analysis,
+the player also arpeggiated the motifs. The player
+sustained the highest and lowest note. The ascending
+and descending intervals were then played in rapid
+succession.
+The mentioned variations result in 45 combinations. Each
+combination was repeated 10 times with and 10 times with-
+out forearm rotation movement so that 900 samples were
+recorded in total.
+In the four-note motif, the following movement was used:
+The player begins to supinate shortly after playing c. The
+e ﬂat and f sharp are played while the forearm supinates.
+Shortly after the note f-sharp is reached, the player re-
+verses the movement direction and plays the e-ﬂat and c
+with pronation. The six- and eight-note motifs are executed
+similarly. The player supinates when playing ascending in-
+tervals and pronates when playing descending intervals.
+To use the method, it is necessary to deﬁne the analysis
+interval [t−,t+]. For detecting the supination movement,
+the beginning of the analysis intervalt− was deﬁned halfway
+between the ﬁrst and second note of a motif. The end of the
+analysis intervalt+ is the onset time of the highest note. For
+detecting pronation movement, t− and t+ were placed cor-
+respondingly, the beginning of the analysis interval t+ was
+deﬁned halfway between the highest note and the following
+note. The end of the analysis intervalt+ was deﬁned as the
+onset time of the lowest note.
+A primary movement was detected if the total move-
+ment Fi,total exceeds the total mean µi,total more than
+a four times the total standard deviation σi,total, i. e., if
+/divides.alt0Fi,total − µi,total/divides.alt0> c⋅σi,total with c = 4. The results are
+shown in Table 2.
+6. REFERENCES
+[1] S. Bernstein. Twenty Lessons In Keyboard
+Choreography. Seymour Bernstein Music, 1991.
+[2] A. Binet and J. Courtier. Recherches graphiques sur
+la musique. L’Ann´ ee Psychologique, (2):201–222,
+1895.
+[3] A. Bou¨ enard, M. M. Wanderley, and S. Gibet.
+Analysis of timpani preparatory gesture
+parameterization. In GW 2009, 2009.
+[4] K. C. Engel, M. Flanders, and J. F. Soechting.
+Anticipatory and sequential motor control in piano
+playing.Experimental Brain Research, 113(2), 1997.
+[5] V. F. Ferrario, C. Macri, E. Biﬃ, P. Pollice, and
+C. Sforza. Three-dimensional analysis of hand and
+ﬁnger movements during piano playing.Medical
+Problems of Performing Artists , 22(1), 2007.
+[6] S. Furuya and H. Kinoshita. Roles of
+proximal-to-distal sequential organization of the
+upper limb segments in striking the keys by expert
+pianists. Neuroscience Letters, 2007.
+[7] S. Furuya and H. Kinoshita. Expertise-dependent
+modulation of muscular and non-muscular torques in
+multi-joint arm movements during piano keystroke.
+Neurosience, 156, 2008.
+[8] R. R. Gerig. Famous Pianists and Their Technique .
+Indiana University Press, 2007.
+[9] W. Goebl and C. Palmer. Tactile feedback and timing
+accuracy in piano performance. In Experimental
+Brain Reserach, 2007.
+[10] A. Hadjakos, E. Aitenbichler, and M. M¨ uhlh¨ auser.
+Syssomo: A pedagogical tool for analyzing movement
+variants between diﬀerent pianists. InEnactive08
+Proceedings, 2008.
+[11] A. Hadjakos, E. Aitenbichler, and M. M¨ uhlh¨ auser.
+Probabilistic model of pianists’ arm touch
+movements. InNIME 2009, 2009.
+[12] B. Kay, M. T. Turvey, and O. G. Meijer. An early
+oscillator model: studies on the biodynamics of the
+piano strike (Bernstein & Popova, 1930).Motor
+Control, 7, 2003.
+[13] J. D. Loehr and C. Palmer. Cognitive and
+biomechanical inﬂuences in pianists’ ﬁnger tapping.
+Experimental Brain Research, 2007.
+[14] J. D. Loehr and C. Palmer. Sequential and
+biomechanical factors constrain timing and motion in
+tapping.Journal of Motor Behavior , 41(2), 2009.
+[15] O. Ortmann. The Physical Basis of Piano Touch and
+Tone. Kegan Paul, Trenc, Trubner & Co., 1925.
+[16] O. Ortmann. The Physiological Mechanics of Piano
+Technique. K. Paul, Trench, Trubner & Co., 1929.
+[17] C. Peiper, D. Warden, and G. Garnett. An interface
+for real-time classiﬁcation of articulations produced
+by violin bowing. InNIME 2003, Singapore,
+Singapore, 2003. National University of Singapore.
+[18] N. H. Rasamimanana, E. Fl´ ety, and F. Bevilacqua.
+Gesture analysis of violin bow strokes. In Gesture in
+Human-Computer Interaction, LNCS. Springer, 2006.
+[19] H. Riehle, R. Fritsch, and H. G¨ artner. A
+dynamometric anaylsis of piano playing. In ISBS’98
+Proceedings, 1998.
+[20] N. Sakai, M. C. Liu, F.-C. Su, A. T. Bishop, and
+K.-N. An. Motion analysis of the ﬁngers and wrist of
+the pianist. Medical Problems of Performing Artists ,
+11(1):24, 1996.
+[21] B. Wristen, S. Evans, and N. Stergiou. Sight-reading
+versus repertoire performance on the piano: A case
+study using high-speed motion analysis. Medical
+Problems of Performing Artists , 21(1), 2006.
+[22] D. Young. A Methodology for Investigation of Bowed
+String Performance Through Measurement of Violin
+Bowing Technique. PhD thesis, MIT, 2007.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+338

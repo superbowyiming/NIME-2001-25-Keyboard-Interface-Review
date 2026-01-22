@@ -1,0 +1,629 @@
+Dynamic Interactivity Inside the AlloSphere
+Charles Roberts, Matthew Wright, JoAnn Kuchera-Morin, Lance Putnam,
+Graham Wakeﬁeld
+AlloSphere Research Group and Media Arts & Technology Program
+University of California, Santa Barbara
+{c.roberts, matt, jkm, l.putnam, wakeﬁeld}@mat.ucsb.edu
+ABSTRACT
+We present the Device Server, a framework and applica-
+tion driving interaction in the AlloSphere virtual reality
+environment. The motivation and development of the De-
+vice Server stems from the practical concerns of managing
+multi-user interactivity with a variety of physical devices
+for disparate performance and virtual reality environments
+housed in the same physical location.
+The interface of the Device Server allows users to see
+how devices are assigned to application functionalities, al-
+ter these assignments and save them into conﬁguration ﬁles
+for later use. Conﬁgurations deﬁning how applications use
+devices can be changed on the ﬂy without recompiling or
+relaunching applications. Multiple applications can be con-
+nected to the Device Server concurrently.
+The Device Server provides several conveniences for per-
+formance environments. It can process control data ef-
+ﬁciently using Just-In-Time compiled Lua expressions; in
+doing so it frees processing cycles on audio and video ren-
+dering computers. All control signals entering the Device
+Server can be recorded, saved, and played back allowing
+performances based on control data to be recreated in their
+entirety. The Device Server attempts to homogenize the ap-
+pearance of diﬀerent control signals to applications so that
+users can assign any interface element they choose to appli-
+cation functionalities and easily experiment with diﬀerent
+control conﬁgurations.
+Keywords
+AlloSphere, mapping, performance, HCI, interactivity, Vir-
+tual Reality, OSC, multi-user, network
+1. INTRODUCTION
+1.1 Motivations
+The Device Server provides tools and methodologies for
+manipulating control data dynamically and ﬂexibly. It cur-
+rently drives interactivity inside the UCSB AlloSphere, a
+three-story, spherical, immersive environment dedicated to
+artistic performance and scientiﬁc research [2]. Applications
+deployed in the AlloSphere range from algorithmic music
+and visualization engines to simulations of sub-atomic elec-
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME2010, 15-18th June 2010Sydney, Australia
+Copyright remains with the author(s).
+tron spin in hydrogen atoms. The Device Server’s design
+stems from the practical concerns of managing interactivity
+in this wide variety of virtual environments; we believe it
+has reached a level of maturity and generality where it may
+be broadly useful in the NIME community.
+The initial design for the Device Server addressed the
+following primary concerns:
+• A physical space the size of the AlloSphere (approxi-
+mately 715m3) requires multiple computers to drive
+active stereo visualizations and spatialized soniﬁca-
+tions. A centralized hub for interactivity can dis-
+tribute control data to these computers concurrently.
+• Enable users to easily customize how they interact
+with applications.
+• Free application developers from worrying about de-
+vice drivers or any other implementation details of
+interactive devices, allowing them to focus on expos-
+ing interactive functionality within their applications.
+Instead of hard-coding any device-speciﬁc knowledge
+into applications, make all applications device-agnostic
+and relate device aﬀordances to application function-
+ality with an explicit mapping layer[10].
+• Visual and sonic rendering machines should not be re-
+sponsible for processing control data. Let the Device
+Server eﬃciently handle common control data process-
+ing tasks such as ﬁltering and thresholding.
+• Initializing visualization and soniﬁcation engines when
+switching from one virtual environment to another can
+be a complex task. A typical AlloSphere demonstra-
+tion involves experiencing ﬁve or six virtual environ-
+ments on diﬀerent hardware and software platforms
+in half an hour; moving between these environments
+must be as smooth as possible and avoid delays and
+technical glitches. Use of the Device Server should au-
+tomate changing interactive conﬁgurations so that no
+human intervention is required.
+• Provide a centralized console for monitoring all control
+data and troubleshooting all connections.
+1.2 Terminology
+A Device is a piece of hardware or software that provides
+interactive aﬀordances. A Device is often an aggregation of
+Controls. Example devices include Wiimotes, MIDI Key-
+boards and camera tracking systems.
+A Control is a single interactive element that is part of a
+Device. For example, a joystick on a gamepad Device has
+one Control for the X direction and a second Control for
+the Y direction.
+A Mapping links an application functionality to a partic-
+ular Control on a particular Device, with an optional Lua
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+57
+programming language expression that is evaluated when-
+ever data is received from the Control assigned to the Map-
+ping.
+1.3 Related Work
+Frameworks for interactivity can generally be divided into
+those geared towards use in Virtual Reality Environments
+(VREs) and those geared towards use in artistic expression.
+The Device Server is the ﬁrst framework for interactivity
+explicitly designed for both uses; brief descriptions of other
+frameworks from both ﬁelds are provided below.1
+1.3.1 Virtual Reality Interactive Frameworks
+The VR community has a longer history of creating soft-
+ware infrastructures for managing interactivity than that
+of the digital arts community. Although many interactive
+frameworks such as Vrui[4] and Gadgeteer[1] are part of
+larger VR development environments the most pervasive
+VR interactivity framework, the Virtual Reality Peripheral
+Network (VRPN)[8] is a standalone interaction library that
+has been in development and usage for over a decade.
+In addition to handling device drivers and networked com-
+munication, VRPN and other VR frameworks commonly
+feature abstractions that allow one device to be easily swapped
+with another. In VRPN this is enabled through the use
+of device categories: Tracker, Button, Analog, Dial and
+ForceDevice; the Vrui and Gadgeteer frameworks use a sim-
+ilar set of categories. Any tracker device can be substituted
+with any other tracker; any button with any other button
+etc. However, these abstractions require client application
+functionality to be built around them. An application pro-
+grammed to use a joystick for navigation cannot use a track-
+ing device instead without changing and recompiling appli-
+cation source code. This is in direct contrast to abstractions
+found in the Device Server which decouple application func-
+tionality from device-speciﬁc constraints.
+1.3.2 Interactive Frameworks for Musical and Artis-
+tic Expression
+Perhaps the most signiﬁcant diﬀerence between VR in-
+teractivity frameworks and those intended for artistic con-
+texts is the use of GUIs. None of the the VR frameworks
+mentioned has a GUI to monitor server state or device con-
+nections; in contrast, many tools geared towards musical
+expression prominently feature user interfaces.
+In addition to monitoring state and connections, the GUI
+for the Mapping Tools of the McGill Digital Orchestra Tool-
+box (DOT)[5] also enables users to conﬁgure and reconﬁgure
+how devices control applications. These conﬁgurations can
+be saved into XML documents and reloaded on demand.
+Unfortunately, in the current DOT externals for Max/MSP
+these conﬁgurations have to be loaded by hand; in the De-
+vice Server default conﬁgurations for client applications are
+loaded automatically so that no human interaction is re-
+quired.
+Other recent frameworks such as the SenseWorld DataNet-
+work[3] and The Bridge[6] emphasize dynamic registration
+of participants and devices in a musical network. The Bridge
+also features a decentralized network similar to what is
+found in VRPN; there is no central location for monitor-
+ing and manipulating control data ﬂow. The ability to dis-
+cover and utilize nodes on a network adds ﬂexibility and
+dynamism, however, the current lack of recallable conﬁgu-
+rations in these two frameworks makes them less than ideal
+for VREs in which multiple distinct projects are frequently
+run.
+1For a more thorough discussion please see
+http://www.charlie-roberts.com/docs/thesis.pdf
+Device
+Tracker
+Device
+Joystick
+Device
+iPhone
+Client 
+App
+Client 
+App
+Client 
+App
+Device Server
+Analysis 
+Computer
+Figure 1: A Sample Device Server Network
+2. THE DEVICE SERVER
+2.1 Overview
+The Device Server application runs under OS X. It col-
+lects data from connected interactive devices and routes
+them to registered client applications. All network commu-
+nication is performed using the Open Sound Control pro-
+tocol [9]; the ability to send and receive OSC messages is
+the only requirement for client applications to communicate
+with the server. OSC was chosen as the communication pro-
+tocol for both its ﬂexibility and its wide rate of adoption into
+programming platforms used in the digital arts.
+Each conﬁguration deﬁnes the mappings from devices’
+controls to application functionality, including arbitrary con-
+trol data processing (described in Section 2.7), with both
+mappings and processing algorithms represented using the
+Lua programming language. Lua was chosen for its speed,
+dynamism, ability to perform arbitrary computation, and
+roots as a conﬁguration language; more about the decision
+to use Lua can be read in sections 2.3 and 2.7 .
+Programmers can therefore deﬁne entire conﬁgurations at
+the Lua source code level. Alternately, the Device Server’s
+GUI allows easy loading, saving, and modiﬁcation of con-
+ﬁgurations, automatically translating GUI-deﬁned conﬁgu-
+rations into the appropriate Lua code. Client applications
+can also deﬁne conﬁgurations programmatically by indicat-
+ing (via OSC messages) which devices they are interested
+in and how they want device output to be processed before
+it is sent to them.
+The Device Server GUI (described in Section 2.4) also
+allows users to monitor device connections and the data
+entering and leaving the Device Server.
+2.2 Device Server Network Topology
+The Device Server runs on a single computer in an inter-
+active network; Figure 1 shows a simple sample network.
+Client applications typically running on diﬀerent comput-
+ers within the network register with the server by sending a
+handshake message that gives the name of the application
+and the port and IP address where the client would like to
+receive control messages. Multiple client applications can
+be connected to the Device Server concurrently; each client
+possesses its own conﬁguration ﬁles deﬁning which devices
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+58
+they will receive data from. These conﬁgurations can also
+deﬁne separate Lua functions for processing this data be-
+fore it is sent to client. Multiple clients can thus receive
+data generated by the same controls on the same devices
+but ﬁltered using diﬀerent algorithms.
+Devices can be connected to the Device Server through
+many diﬀerent mechanisms. Direct connections via cabling,
+network messages sent via OSC and network messages sent
+via VRPN are all supported. Other types of connections can
+be accommodated through the use of plugins (discussed in
+Section 2.5.1).
+2.3 Conﬁguration
+There are four types of conﬁgurations utilized by the De-
+vice Server and speciﬁed in Lua ﬁles. Alternatively, the Ap-
+plication Interface and Implementation conﬁgurations can
+be speciﬁed dynamically using OSC messages at runtime.
+• Master Device List - A global conﬁguration that as-
+signs a unique id to every device in an interactive sys-
+tem.
+• Device Conﬁguration - enumerates the Controls present
+on a Device and the range of values each one gener-
+ates.
+• Application Interface - Each client application has a
+single Interface that deﬁnes what functionalities the
+application is exposing for control, what range of val-
+ues each functionality expects to utilize, and the OSC
+address for each functionality.
+• Application Implementations (aka Conﬁgurations) -
+Client applications can have multiple conﬁgurations
+that each address the application’s Interface. The
+implementation ﬁle deﬁnes which speciﬁc controls on
+which speciﬁc devices are assigned to each applica-
+tion functionality, along with the Lua expressions and
+functions for processing control data.
+As mentioned above, client applications have a single in-
+terface ﬁle deﬁning the functionalities they expose and any
+number of implementation ﬁles deﬁning diﬀerent conﬁgu-
+rations of devices that feed control data to these function-
+alities. When an implementation ﬁle is loaded the Device
+Server createsmappings that deﬁne which controls on which
+devices feed into particular functionalities and what pro-
+cessing scripts are applied to the data generated by the
+controls. Applications can deﬁne implementations that in-
+clude wired devices instead of wireless ones, multiple users
+instead of a single one, MIDI devices instead of Wiimotes
+or any other combination of controls. Users can quickly
+change entire interactive conﬁgurations simply by choosing
+another implementation through a pull-down menu in the
+Device Server GUI.
+A very small example interface is given below for a client
+application that provides the aﬀordance of moving an avatar
+on a two dimensional plane.
+interface = {
+{ name = "Avatar X", destination = "/nav/a1x",
+min = -1, max = 1 },
+{ name = "Avatar Y", destination = "/nav/a1y",
+min = -1, max = 1 },
+}
+In the above interface ﬁle two functionalities, Avatar X
+and Avatar Y are deﬁned. The application is expecting to
+receive values ranging from -1 to 1 for both. The OSC ad-
+dress where these values should be received is also given.
+This information represents constants that are always the
+same regardless of what implementation ﬁle is currently
+loaded.
+Below is an example implementation for the the interface:
+mappings = {
+{ name = "Avatar X", device = "Wiimote 1",
+control = "Nunchuk X", expression = ""},
+{ name = "Avatar Y", device = "Wiimote 1",
+control = "Nunchuk Y", expression = ""},
+}
+For each functionality deﬁned in the interface (in this case
+Avatar X and Avatar Y) a mapping is deﬁned that denotes
+the name of a control on a particular device whose values
+should be sent to the corresponding OSC address in the in-
+terface. This is also where Lua expressions can be deﬁned;
+these will be evaluated whenever data from the correspond-
+ing control is received by the Device Server. This expression
+can call on predeﬁned Lua functions and enables powerful
+data processing capabilities. The Device Server originally
+used XML as its conﬁguration language and JavaScript for
+control data processing. We decided to move to Lua be-
+cause it could fulﬁll both roles; in addition to being one of
+the fastest scripting languages available Lua was originally
+intended as a data description language. One of the unan-
+ticipated advantages to using Lua as the conﬁguration lan-
+guage is that conﬁgurations can be dynamically generated.
+As one simple example, the for loop below would generate
+a conﬁguration dictionary that would allow an application
+to access a device with 128 buttons.
+controls = {}
+for i=1, 128 do
+controls[i] = {
+name = "Button Grid" .. i,
+device = "ButtonDevice",
+control = "Button " .. i,
+}
+end
+Another advantage of using Lua is that the device and
+control names can be assigned to Lua variables making it
+very easy to change one device for another throughout an
+entire implementation.
+2.4 Graphical User Interface
+The GUI of the Device Server, shown in Figure 2, is one of
+the elements that sets it apart from other VR frameworks
+as well as other tools for musical interactivity. It allows
+users to do the following:
+• Quickly see what client applications are connected and
+what controls are assigned to each application func-
+tionality
+• Select the current client implementation ﬁle deﬁning
+control mappings
+• Change the devices and controls assigned to applica-
+tion functionalities via pulldown menus. Changes to
+control conﬁgurations can be saved into new imple-
+mentation ﬁles for future recall.
+• Monitor data ﬂow. Users can see the raw data values
+generated by the devices and also see processed values
+that are routed to applications.
+• Monitor and manage device connections. The Device
+Server plugin system allows each device to have its
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+59
+Figure 2: A screenshot of the Device Server GUI showing one client application connected to a variety of
+devices.
+own encapsulated GUI for managing device connec-
+tions. This is necessary for devices requiring Blue-
+tooth pairing or other action sequences to establish
+connections.
+2.5 Integrating Devices With the Device Server
+To add a new Device that uses a driver or protocol the
+Device Server already has a plug-in for (such as HID, VRPN
+and MIDI) users create a Lua conﬁguration ﬁle that enu-
+merates the device’s controls and gives the range of values
+each control outputs. The Device Server can be extended
+to support additional devices and protocols via OSC for-
+warding or via its plug-in architecture.
+OSC forwarding of device data allows devices that are
+connected to other computers to be recognized by the De-
+vice Server. For example, the AlloSphere possesses a camera
+tracking system that gives the orientation and position of
+active infrared LED markers. The cameras are connected
+to their own dedicated computer which performs the com-
+puter vision processing needed to generate these values.
+This computer forwards these values to the Device Server
+which then routes them as required to registered applica-
+tions. OSC forwarding also allows software applications
+such as Max/MSP to generate control data to be used by
+the Device Server. Thus, if Max has a driver for a device
+that the Device Server doesn’t possess Max can be used to
+forward messages from that device to the Device Server. As
+one example of this the AlloSphere has a bridge mounted
+in its horizontal and vertical center lined with capacitive
+touch sensors. These sensors are mounted on the railings
+of the bridge and use a Max/MSP external to analyze their
+signals and forward data to the Device Server via OSC. Ap-
+plications conﬁgured to receive this data can thus tell when
+users are touching the railings and also obtain a rough idea
+of user positioning on the bridge.
+If a plugin has not been written for a device and there
+is no opportunity to feed the device data into the Device
+Server via OSC, a plugin can be written.
+2.5.1 Device Server Plugins
+The Device Server manages many types of device connec-
+tions (MIDI, HID, VRPN) via dynamically loaded plugins
+which can display optional GUIs. The plugin system is
+designed to be open-ended and ﬂexible; there are a wide
+variety of plugins currently available for the Device Server
+ranging in complexity from simple HID wrappers to an au-
+dio FFT analysis plugin that visualizes the bin magnitudes
+of incoming audio and allows applications to use this data
+as control sources. The infrastructure and GUI that allows
+the Device Server to record and play back performances is
+also completely encapsulated inside of a plugin.
+Although the Device Server comes with many plugins
+they are all compiled optionally so that users don’t have to
+load plugins they don’t need. An Xcode template project
+is included for developers to write their own Device Server
+plugins. The template compiles and runs immediately with-
+out modiﬁcation in the Device Server; by default it gener-
+ates a stream of placeholder data that can be easily altered
+by developers to use data from C or C++ device-speciﬁc
+drivers.
+2.6 Homogenization of Device Signals
+A fundamental goal of the Device Server is for application
+functionalities to be agnostic to the devices that control
+them[10]. The implementor of an oscillator should not care
+whether the oscillator’s pitch will be controlled by a MIDI
+keyboard or a joystick. However, the values generated by
+a MIDI keyboard (0-127) are diﬀerent than those of most
+joysticks (-1.0 to 1.0 or -127 to 127). The solution is for the
+application to deﬁne its own units for each functionality,
+e.g., Hertz or MIDI note number, and leave it to the Device
+Server to homogenize the data from diﬀering devices by
+automatically remapping them to the declared ranges of
+the application functionalities.
+To do this the Device Server ﬁnds the application’s de-
+clared range of input values for each functionality (from the
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+60
+Figure 3: A Screenshot Of The Hydrogen Atom Application
+interface ﬁle), compares it to the corresponding control’s
+declared range of output values (from the device conﬁgu-
+ration ﬁle, and automatically creates an aﬃne mapping to
+scale and oﬀset values appropriately. This transformation
+makes it very simple to change the device/control combi-
+nation feeding a functionality as the application will always
+receive the same range of values.
+2.7 Control Data Processing With Lua
+The Device Server processes control data via Lua expres-
+sions. Every mapping object may have a Lua expression as-
+signed to it; whenever the control assigned to the mapping
+emits data the data is passed into the expression and the
+expression is then evaluated. Lua expressions may call on
+predeﬁned functions to carry out common processing tasks
+such as integration and thresholding; these functions can
+be reused across multiple applications. The functions are
+Just-In-Time (JIT) compiled using LuaJIT 2.0[7]. LuaJIT
+2.0 compilation yields performance that can be comparable
+to Java and C in various benchmarks.23
+A great deal of data is accessible in the scripting environ-
+ment. Again, Lua scripts are triggered whenever a control
+assigned to a mapping generates data. But a script trig-
+gered by a mapping also has access to data values previously
+passed to other mappings; an expression being evaluated
+can even access the previous values of mappings from other
+client applications. This is useful in many situations; one
+example is when two controls manipulate the same value
+at diﬀerent granularities such as coarse and ﬁne pitch con-
+trols. Whenever the control assigned to ﬁne pitch is manip-
+ulated a pitch value should be sent to the client application,
+but in order for that pitch value to be generated both the
+coarse value and the ﬁne value need to be added together.
+The scripting environment is ﬂexible enough to handle these
+types of situations.
+2http://shootout.alioth.debian.org/
+3http://dada.perl.it/shootout/
+2.8 Recording And Playback Of Control Data
+The Device Server allows users to record control data
+from performances and interactive sessions. Each control
+event is stored in a simple dictionary that holds an oﬀset
+time from when the recording began, device and control
+identiﬁcation numbers and the value generated by the event.
+The event sequence can be saved into a Lua ﬁle which can
+then be edited or loaded and played back in the future.
+Performers routinely adjust their gestures to accommo-
+date ﬁxed gestural mappings to sound synthesis parame-
+ters. The ability to record and playback gestures makes
+the opposite practice possible: sound designers can adjust
+mappings and synthesis parameters to accommodate ﬁxed
+gestures. Performance gestures that have been recorded can
+be played back repeatedly while sound designers reconﬁgure
+synthesis parameters to yield interesting sonic results. The
+ability to record and play back timestamped control data is
+also useful to researchers conducting HCI experiments.
+These recording and playback features are implemented
+within a Device Server plugin, demonstrating that the plu-
+gin system is useful for purposes other than device drivers.
+3. THE DEVICE SERVER AND INTERAC-
+TIVITY IN THE ALLOSPHERE
+There are a wide variety of interactive applications de-
+ployed in the AlloSphere and all receive their control data
+from the Device Server. These applications include musi-
+cal works, data visualizations and scientiﬁc simulations but
+many applications in the AlloSphere blur these lines.
+The following research project within the AlloSphere shows
+the possibilities of interactive data mining with diﬀerent
+user and device conﬁgurations as enabled by the Device
+Server.
+3.1 Multimodal Representation of Quantum
+Mechanics: The Hydrogen Atom
+This work, shown in Figure 3, interactively visualizes and
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+61
+soniﬁes the wavefunction of an electron of a single hydro-
+gen atom. The atomic orbitals are modeled as solutions to
+the time-dependent Schr¨ odinger equation with a spherically
+symmetric potential given by Coulomb’s law of electrostatic
+force. Diﬀerent orbitals of the electron can be combined in
+superposition to observe dynamic behaviors such as photon
+emission and absorption.
+The interactive component of the simulation allows one or
+more users to ﬂy through the atom with probes that emits
+“stream particles” that follow along the largest changes in
+the probability current and gradient of the electron. The
+electron probability amplitude is soniﬁed by scanning through
+groups of stream particles in the space. The pitch can be
+adjusted by the rate at which a particular set of stream par-
+ticles is scanned. By assigning speciﬁc pitches to diﬀerent
+features of the wavefunction we can generate musical results
+in the soniﬁcation.
+The Device Server enables this simulation to be run with
+a variety of diﬀerent user conﬁgurations and devices. The
+default conﬁguration is for a single user using a wireless joy-
+stick to control both navigation and the emission of stream
+particles. The most common multi-user scenario is for one
+user to navigate through the simulation while two other
+users control the position of the probes and their stream
+particle emission.
+Users can experiment with diﬀerent sets of controls for
+navigation and data mining. More experienced computer
+users might prefer to navigate through the environment
+using a 6DOF 3Dconnexion Space Navigator while novice
+users use a gamepad. In the hundreds of demos we have
+given we have observed that wireless device communication
+will sometimes inexplicably fail; for this reason we also have
+a “all wired” conﬁguration to fall back on in the event that
+we experience diﬃculties with the wireless devices. Switch-
+ing to this fallback conﬁguration is accomplished through a
+single pulldown menu in the Device Server GUI.
+While developing and exploring the hydrogen atom repre-
+sentation, the Device Server helped when transitioning be-
+tween a single-user desktop environment, where more pre-
+cise control with a keyboard and mouse is often required
+for development, and a multi-user immersive environment,
+where more natural control with wireless tracking devices
+and game controls is desired for exploration. The separa-
+tion of physical control from application logic according to
+the Device Server model enforces a “write-once, control any-
+where” approach to application development that facilitates
+transitions between diﬀering working contexts.
+Key faculty and graduate student researchers associated
+with the Hydrogen Atom project: Professor JoAnn Kuchera-
+Morin, Professor Luca Peliti and Lance Putnam.
+4. CONCLUSIONS AND FUTURE WORK
+The Device Server provides abstractions and functionali-
+ties that have signiﬁcantly eased the challenges of designing
+interactive applications for use in the AlloSphere. It allows
+interactive conﬁgurations to be easily deﬁned and modi-
+ﬁed by both novice users and developers. It removes the
+burden of handling device drivers from application devel-
+opers and allows them to oﬄoad control data processing
+away from rendering machines. The Device Server has also
+been used in performances and research outside the Allo-
+Sphere; we hope that it will be adopted by the greater media
+arts community and as such have released it as open-source
+software under the MIT license. It can be downloaded at
+http://www.allosphere.ucsb.edu/software.php.
+Future work includes removing the unnecessary abstrac-
+tion between devices and applications; both should be thought
+of simply as a collection of inputs and outputs. We would
+like to provide an option to use VRPN as the communi-
+cation protocol in place of OSC as it is more familiar to
+VR researchers and computer scientists. We are interested
+in the possibility of a Device Server library that could be
+included in applications. This library would allow Lua con-
+ﬁguration and scripting of control signals but would not re-
+quire a server or network connection; device drivers would
+be included in the library as plugins. Finally, we would
+like to explore the possibilities of making the network more
+dynamically conﬁgurable akin to what is found in the previ-
+ously mentioned SenseWorld DataNetwork and the Bridge
+projects.
+5. ACKNOWLEDGMENTS
+This worked was supported by a grant from the National
+Science Foundation CreativeIT program.
+6. REFERENCES
+[1] Gadgeteer:device driver authoring guide. 2007.
+[2] X. Amatriain, J. Kuchera-Morin, T. Hollerer, and
+S. Pope. The AlloSphere: Immersive Multimedia for
+Scientiﬁc Discovery and Artistic Exploration
+(HTML).IEEE MultiMedia,1 6 ( 2 ) .
+[3] M. Baalman, H. Smoak, C. Salter, J. Malloch, and
+M. Wanderley. Sharing Data in Collaborative,
+Interactive Performances: the SenseWorld
+DataNetwork. InProceedings of the 2009 conference
+on New interfaces for musical expression. Carnegie
+Mellon, 2009.
+[4] O. Kreylos. Environment-independent VR
+development. InProceedings of the 4th International
+Symposium on Advances in Visual Computing,p a g e
+912. Springer, 2008.
+[5] J. Malloch, S. Sinclair, and M. Wanderley. From
+controller to sound: Tools for collaborative
+development of digital musical instruments. In
+Proceedings of the 2007 International Computer
+Music Conference, Copenhagen, Denmark,2 0 0 7 .
+[6] N. Mitani and L. Wyse. Information Sharing In
+Networked Music Application. InProceedings of the
+2009 Australian Computer Music Conference,2 0 0 9 .
+[7] M. Pall. The luajit project, 2008. http://luajit.org.
+[8] R. Taylor, T. Hudson, A. Seeger, H. Weber,
+J. Juliano, and A. Helser. VRPN: a
+device-independent, network-transparent VR
+peripheral system. InProceedings of the ACM
+symposium on Virtual reality software and technology,
+pages 55–61. ACM New York, NY, USA, 2001.
+[9] M. Wright and A. Freed. Open sound control: A new
+protocol for communicating with sound synthesizers.
+InInternational Computer Music Conference,p a g e s
+101–104. International Computer Music Association,
+1997.
+[10] M. Wright, A. Freed, A. Lee, T. Madden, and
+A. Momeni. Managing complexity with explicit
+mapping of gestures to sound control with osc. In
+International Computer Music Conference,p a g e s
+314–317. International Computer Music Association,
+2001.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+62

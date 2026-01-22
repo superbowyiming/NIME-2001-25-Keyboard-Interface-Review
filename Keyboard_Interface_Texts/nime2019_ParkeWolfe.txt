@@ -1,0 +1,682 @@
+Sound Control: Supporting Custom Musical
+Interface Design for Children with Disabilities
+Samuel Thompson
+Parke-Wolfe
+Department of Computing
+Goldsmiths Univ. of London
+London, United Kingdom
+samparkewolfe@protonmail.com
+Hugo Scurto
+Ircam - Centre Pompidou
+STMS IRCAM–CNRS–SU
+Paris, France
+Hugo.Scurto@ircam.fr
+Rebecca Fiebrink
+Department of Computing
+Goldsmiths Univ. of London
+London, United Kingdom
+r.ﬁebrink@gold.ac.uk
+ABSTRACT
+We have built a new software toolkit that enables mu-
+sic therapists and teachers to create custom digital
+musical interfaces for children with diverse disabili-
+ties. It was designed in collaboration with music ther-
+apists, teachers, and children. It uses interactive ma-
+chine learning to create new sensor- and vision-based
+musical interfaces using demonstrations of actions and
+sound, making interface building fast and accessible
+to people without programming or engineering exper-
+tise. Interviews with two music therapy and education
+professionals who have used the software extensively
+illustrate how richly customised, sensor-based inter-
+faces can be used in music therapy contexts; they also
+reveal how properties of input devices, music-making
+approaches, and mapping techniques can support a
+variety of interaction styles and therapy goals.
+Author Keywords
+Instrument design, accessibility, interactive machine
+learning
+CCS Concepts
+•Human-centered computing→Accessibility sys-
+tems and tools;•Applied computing→Sound
+and music computing;•Computing methodolo-
+gies →Machine learning;
+1. INTRODUCTION
+We have created a new software toolkit, Sound Con-
+trol, that uses interactive machine learning to enable
+music teachers and therapists to build custom dig-
+ital musical interfaces for and with children with a
+wide range of disabilities. This work was motivated by
+teachers’ and therapists’ desire to more ﬂexibly cus-
+tomise digital instruments for children they worked
+with. The software design was informed by eight
+Licensed under a Creative Commons Attribu-
+tion 4.0 International License (CC BY 4.0).
+Copyright remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+workshops with music therapists and teachers, seven
+sessions observing and supporting two practitioners
+working with children, and interviews with these two
+practitioners after more than six months of using the
+software. These activities helped ensure the new soft-
+ware would be appropriate and usable for teachers and
+therapists, including those without extensive technol-
+ogy experience. Further, they helped inform a bet-
+ter understanding of how more richly customised in-
+terfaces can be used in music therapy contexts, and
+of how properties of input devices, music-making ap-
+proaches, and mapping techniques can support a va-
+riety of musical interaction styles and therapy goals.
+2. RELATED WORK
+The British Association for Music Therapy deﬁnes
+music therapy as “an established psychological clin-
+ical intervention, [delivered by] registered music ther-
+apists to help people whose lives have been aﬀected
+by injury, illness or disability through supporting their
+psychological, emotional, cognitive, physical, commu-
+nicative and social needs” [1]. When oﬀered to peo-
+ple with disabilities, music therapy can “provide a
+means of self-expression,”“empower people by oﬀering
+choices,”“encourage and stimulate physical movement
+and co-ordination,”“help child[ren] to listen,”“nurture
+social interaction and communication skills,” and “ex-
+cite imagination and creativity.” Therapists tailor the
+activities and goals of a session to each client, and im-
+provisation is a common practice in therapy sessions.
+Several technologies have been developed to sup-
+port music performance and therapy for people with
+disabilities. Some function as simple instrument-building
+toolkits that combine speciﬁc sensing hardware (e.g.,
+Soundbeam1 uses ultrasonic distance sensors and switches,
+Skoog2 uses pressure-sensitive pads, AUMI [7] a web-
+cam) with sound playback and/or MIDI functionality.
+Their GUIs enable users to choose the sound samples
+and/or MIDI notes triggered, as well as the sensing
+sensitivity and range. These tools often oﬀer quite
+conventional music-making approaches, for instance
+making tonal melodies. With a few exceptions (e.g.,
+Skoog’s aftertouch control), they oﬀer little ability for
+users to continuously control sound qualities such as
+pitch or timbre. While some more general-purpose ac-
+1www.soundbeam.co.uk
+2http://skoogmusic.com
+192
+cessible input devices can also be used to make music
+(e.g., switch buttons3 or eye trackers4), usage is typi-
+cally to trigger samples or notes, with limited conﬁg-
+uration ability (e.g., changing the choice of sample).
+Instruments with more diverse sensing capabilities
+and musical control approaches have occasionally been
+engineered for speciﬁc individuals with disabilities.
+Such work is supported by organisations such as the
+British Paraorchestra5, Drake Music 6, and the One-
+Handed Musical Instrument Trust 7. However, the
+expertise and expense required to build such instru-
+ments puts this option out of reach for most people
+with disabilities and their collaborators or families.
+Frid [4] reviews 30 recent papers on accessible in-
+struments published at NIME, Sound and Music Com-
+puting, and the International Computer Music Con-
+ference. Most of these papers concern instruments
+with a limited degree of end-user conﬁgurability (e.g.,
+the ability to change samples or re-position sensors)
+rather than describing toolkits that disabled people,
+teachers, or therapists can use to assemble unique
+DMIs. Further, Frid notes that most of these were
+developed for performance, not therapy.
+Interactive machine learning (IML) methods can
+make it faster and easier to build complex interactions
+with sensors, even for people without programming
+expertise, and even with noisy and high-dimensional
+sensors. For instance, Wekinator [2] and GRT [5]
+enable users to create new mappings from actions
+(sensed with arbitrary sensors) to sound synthesis or
+playback parameters, by providing examples of ac-
+tions and sounds the user would like in response to
+those actions. A supervised learning algorithm learns
+the desired relationship between sensor data and sound
+parameters from these examples and produces a model
+capable of controlling sound as a user interacts with
+sensors in realtime. Users can modify an instrument
+by iteratively adding or removing examples.
+IML has been used by professional DMI creators
+(e.g., [9]) and for conﬁguring commercial DMIs8. Katan
+et al. [6] experimented with IML to support bespoke
+instrument creation for adults with disabilities in pub-
+lic event contexts, but found it cumbersome to train
+new personalised instruments on-the-ﬂy; instead, they
+used IML to create static instruments that could be
+played by people with diverse ranges and patterns of
+motion. Scurto and Fiebrink [8] conducted a work-
+shop with disabled youth in which they trialled a
+faster but less precise approach to building mappings
+from demonstrations, called“grab and play”mapping.
+They found this approach promising for quickly build-
+ing instruments matched to the unique range of mo-
+tion of each person. Yet to our knowledge, no other
+work has used IML to oﬀer greater musical customi-
+sation possibilities to people with disabilities, nor ex-
+plored how therapists or teachers might want to ex-
+ploit greater customisability.
+3www.inclusive.co.uk/ablenet-bigmack-p2039
+4www.inclusive.co.uk/ii-music
+5http://paraorchestra.com/
+6www.drakemusic.org/
+7www.ohmi.org.uk
+8e.g., https://mimugloves.com/
+3. DESIGN PROCESS, REQUIREMENTS
+The Sound Control project was initiated by music ed-
+ucators and music therapists associated with a com-
+munity music centre’s“Musical Inclusion”programme.
+Programme members worked with a wide variety of
+youth—including but not limited to children with phys-
+ical and learning disabilities—in one-on-one and group
+settings. Some had previously used technologies such
+as SoundBeam and Skoog. All had experience sup-
+porting youths’ acoustic music-making (e.g., singing,
+using simple percussion instruments) and using simple
+switch-based controllers to trigger pre-recorded sam-
+ples. They were aware of bespoke instrument design
+projects such as those led by Drake Music, and they
+were interested in how they might use bespoke sensor-
+based instruments with youth in their programmes.
+Our team led eight workshops (approximately 1–3
+hours each) with Musical Inclusion programme per-
+sonnel and other music therapists and educators from
+the local community. Early workshops showed par-
+ticipants demonstrations and videos of existing ap-
+proaches to creating bespoke musical instruments (e.g.,
+the British Paraorchestra, Wekinator), then engaged
+participants in brainstorming activities. In later work-
+shops, we taught participants to use prototype tech-
+nologies developed for the project, then elicited feed-
+back about them. In parallel, our team attended
+seven classroom and workshop sessions in which two
+practitioners from the programme worked with chil-
+dren with disabilities in a school (ﬁve sessions) or
+community centre (two sessions). In the ﬁrst three
+sessions, we used prototypes based on existing tech-
+nology to support the creation of new instruments.
+These used input devices such as webcams, game con-
+trollers, and eye gaze trackers; sound synthesis play-
+back patches written in Max/MSP and Chuck; and
+Wekinator and its “Grab-and-play” extension [8] for
+quickly building mappings. The last four sessions em-
+ployed increasingly mature prototypes of the software
+developed for this project, called Sound Control. A
+typical session involved one teacher or therapist work-
+ing one-on-one with 3–6 children for 10–30 minutes
+each, with members of our team helping with tech-
+nology as needed. Additionally, the two practitioners
+began using Sound Control independently after the
+fourth of these sessions, and they sent us bug reports,
+feature requests, and updates on their usage by email.
+By the ﬁfth design workshop, we had agreed on the
+target users and design requirements for the project.
+The target users were children with diverse disabil-
+ities (including profound and multiple learning dis-
+abilities, as well as signiﬁcant motor disabilities), ages
+6–11. A long-term goal was to support collaborative
+music-making (including supporting participation of
+disabled children in mainstream music classrooms),
+but the near-term focus was to support children in
+individual music sessions guided by a therapist or
+teacher who would manage the instrument creation
+in software. The new technology should enable adults
+to conﬁgure instruments for a child very quickly (di-
+verting the adult’s attention for under a minute at a
+time, ideally much less), and it should support music-
+making using a wide variety of physical actions and
+193
+ranges of motion. It should run on a standard lap-
+top and require a minimum amount of custom hard-
+ware. Further, it should support a variety of sound-
+making activities—not only playing melodies and trig-
+gering samples, but also other activities appropriate
+to diverse child preferences and educational or ther-
+apy goals (see Section 5).
+Functionality oﬀered by Wekinator and its Grab-
+and-Play extension [8] supported the creation of such
+instruments to an extent, but workshops showed these
+were too complicated to support eﬃcient use by music
+therapists and teachers. Further, those tools merely
+oﬀer functionality for mapping creation; they rely on
+external modules to acquire sensor data and produce
+sound. Implementing such modules is outside most
+teachers’ and therapists’ expertise, and in any case, it
+was unclear what functionality such modules should
+entail for this context of use. Designing appropriate
+sensing and sound-making capabilities for this new
+software therefore involved substantial research and
+prototyping eﬀort in the subsequent project activities.
+4. THE SOUND CONTROL SOFTWARE
+The Sound Control software (see Fig. 1 and accom-
+panying video) is implemented in Max/MSP and dis-
+tributed as a standalone application. 9 The current
+version supports ten types of inputs (Fig. 1, top).
+These include three webcam-based modes: two track
+one or more user-deﬁned colours (e.g., to track a toy or
+piece of clothing in front of the camera), and one uses
+low-level video features to capture changes in lighting
+or position. Mouse position and microphone volume
+(e.g., sensing breath on a headset mic) can also be
+used without any specialist hardware. Sound Con-
+trol also supports input from Leap Motion (to track
+palm position or hand width), BBC micro:bit (a de-
+vice many schools already use; senses 3 axes of tilt or
+touch), and GameTrak (a game controller sensing 3D
+position of two strings pulled from a base [3]). The
+software supports six modes of music-making (Ta-
+ble 1), which use digital sound synthesis, MIDI, and
+samples. The software comes pre-loaded with sample
+banks and users can also add their own.
+To create a new instrument, a user ﬁrst chooses one
+input and one music mode using the top interface in
+Fig. 1. Clicking the “Generate” button then launches
+a new window (e.g., Fig. 1, bottom) containing, from
+left to right: (i) a monitor of the input, with ability
+to customise the input if applicable; (ii) a GUI for
+controlling the sound mode (e.g., adjusting volume,
+choosing or importing samples); and (iii) a “training”
+GUI for specifying how the input should be mapped
+to control over the sound.
+Sound Control oﬀers two methods for creating map-
+pings. The ﬁrst (“precise”) employs IML in a manner
+similar to Wekinator. When a user clicks the“Precise”
+button, a series of training examples are created, each
+using the current input sensor values as its feature vec-
+tor and the current value(s) of its sound parameter(s)
+as its target(s). A learning algorithm immediately
+9Sound Control is open source and can be downloaded
+from http://www.soundcontrolsoftware.com.
+trains on these examples to build a model of the de-
+sired mapping. Clicking “Run” will run this model
+in realtime, so that new sound parameters are con-
+tinually predicted from the current sensor values. To
+modify a mapping, a user can click “Precise” again
+to add more examples and immediately train a new
+model on all previously recorded examples. Click-
+ing “Clear” erases all examples; “Undo” erases only
+the last batch. Sound Control employs the k-nearest-
+neighbour (“kNN”) algorithm for classiﬁcation and a
+multilayer perceptron neural network (“NN”) with one
+hidden layer for regression, using a Max external built
+on the RapidMix C++ machine learning library 10.
+These algorithms were chosen because they are capa-
+ble of learning complex mapping functions from small
+numbers of examples. (They are also the default al-
+gorithms in Wekinator.)
+All music modes but Sample Player and MIDI Map-
+per also oﬀer a second approach, “quick” mapping
+creation, which functions similarly to “grab-and-play”
+mapping [8]. In this mode, a user holds the “Quick”
+button while demonstrating a range of input values
+(e.g., demonstrating the full range of motion one in-
+tends to use for the instrument). Upon releasing the
+button, a new mapping is built that randomly asso-
+ciates diﬀerent input values in this range with diﬀer-
+ent sounds. This is implemented by generating a small
+supervised learning training set in which several of
+the observed input values are used as feature vectors,
+and each of these is randomly associated with a set of
+sound parameter values (within an allowable range).
+A supervised learning algorithm is then trained on
+this set. Users can therefore reﬁne these mappings
+simply by adding additional examples using the “pre-
+cise” mode to modify the trained model.
+5. HOW AND WHY PRACTITIONERS
+USED SOUND CONTROL
+The two practitioners (‘JH’ and ‘RP’) observed in the
+seven observation sessions have now each used Sound
+Control on their own for nearly one year. JH is a mu-
+sic therapist and music teacher with 25 years’ experi-
+ence working in special needs schools. She was previ-
+ously familiar with some music technologies (Sound-
+Beam, Skoog) but did not use them regularly in her
+work. RP is a professional musician and music teacher
+with 5 years’ experience working as a teaching assis-
+tant in a special needs school. She had not used any
+technology beyond switches before this project. Af-
+ter they had used Sound Control independently for
+more than six months, we conducted one-on-one semi-
+structured interviews with JH and RP to learn about
+how and why they integrated it into their work. In-
+terviews lasted 32 (JH) and 56 (RP) minutes. They
+were audio recorded and transcribed.
+5.1 Context of Use
+Nearly all their usage of Sound Control has been in
+one-on-one music therapy sessions in special needs
+schools, with children aged 6–11. The children have a
+very wide range of physical and learning disabilities.
+10www.rapidmixapi.com
+194
+Figure 1: The Sound Control software
+Table 1: Sound Control’s music/sound modes, chosen using the “Pick Instrument” list in Fig. 1.
+Name Description
+Sample Player Triggers sample playback (one sample at a time). Uses kNN to choose which sample.
+Granulator Smoothly controls a sample’s speed, pitch, and volume using 3 NNs. kNN turns sound on/oﬀ.
+Looper Uses kNN to choose a combination of up to 6 simultaneous samples to play as repeated loops.
+Mixer Smoothly control the volume of three samples, using 1 NN per sample.
+FMSynth Smoothly controls carrier frequency, harmonicity, and modulation index of FM synthesis using
+3 NNs. A kNN turns sound on/oﬀ.
+MIDI Mapper Triggers MIDI notes and/or chords; MIDI can be played from the app or in another application
+such as GarageBand. Uses kNN to choose current note(s).
+Many use wheelchairs, and many have signiﬁcant lim-
+itations in their motion range, accuracy, and strength.
+Many do not communicate verbally. Some are good
+at following complex instructions; others often do not
+respond in obvious ways to spoken interaction. Some
+are autistic. Some experience changes in their range
+of motion, energy level, and other factors over time.
+5.2 Reasons to Use Customisation
+JH and RP both made extensive use of the ability
+to create customised instruments, changing the input
+device, sound mode, and mapping often. As origi-
+nally anticipated, they made entirely diﬀerent inter-
+faces for diﬀerent children, tailoring their choice of in-
+put method and sound (see Sections 5.3, 5.4) to each
+child’s motor skills and preferences. However, the goal
+of customisation was almost never to build person-
+alised instruments that enabled children to play spe-
+ciﬁc musical material in a performance. Rather, JH
+and RP used their ability to create custom interfaces
+to achieve a number of other goals.
+5.2.1 Recognising and exercising agency
+Foremost among these goals was to build interfaces
+that enabled children to exercise control over their en-
+vironment, and to recognise that they were doing so.
+RP described “step one of using Sound Control” as
+getting children to discover that “that they are mak-
+ing a diﬀerence.” She often began sessions by build-
+ing a new instrument that mapped a child’s frequent
+movements (whether intentionally executed or not) to
+very obvious changes in sound, to encourage children
+to notice that their actions were changing the sound.
+JH saw instruments as vehicles for oﬀering a child
+more choice. For her, building instruments that oﬀer a
+richer space of possible sound qualities than existing
+interfaces (e.g., for sample triggering) was essential:
+“if [a child] really wants to do something really loud
+one day, then they can only do that [with other in-
+struments/tools] if I give them that option, whereas
+they’d be able to do that themselves [in Sound Con-
+trol].” Exercising choice is especially important for
+children who often cannot communicate their prefer-
+ences or control their environments in other contexts:
+“Because really what they need is to be able to tell
+people what they want and what they don’t want...
+even if they don’t do anything else, that’s huge, be-
+cause everything’s done to them, so this is a chance
+for them to do something for themselves.” Over time,
+JH often changed instrument conﬁgurations as she
+learned more about what sounds a child enjoyed—
+oﬀering them choices increasingly tailored to them.
+5.2.2 Encouraging moving and listening
+Encouraging particular physical movements was an-
+other common goal. For instance, JH described creat-
+ing an instrument for a child whom she knew needed
+practice “bringing his hands to mid-line.” This was
+usually frustrating for him, but linking sound changes
+to his motions was enough to motivate him.
+JH and RP both described building instruments
+with an aim to encourage children to listen or to ex-
+plore new sounds and movements. RP described mod-
+ifying a Gametrak/Looper instrument in real-time as
+a child moved: “I can see that they’re extending their
+movement and looking for another sound, and... if
+I’ve loaded the Looper with [all six samples], I can
+add another [training example with a new sound] ‘just
+195
+like that’ within the session, and it’s seamless. So if
+they’re reaching for another sound then it’s there.”
+RP also sometimes designed a sort of musical game
+using the Sample Player to encourage movement and
+listening: she “hid” a special sound (e.g., a dog bark)
+somewhere in the gesture space accessible to a child,
+then challenged the child to explore the space un-
+til they found the sound (e.g., “Now see if you can
+ﬁnd the doggy!”). JH described the value of giv-
+ing children unfamiliar sounds and mappings: “[It
+was] lovely to watch the way they explore where the
+sounds were—to see children really listening—because
+it’s something diﬀerent, they’re trying to work out
+‘why is that happening with their [movement]?”’
+5.2.3 Supporting social aims
+RP created a bespoke instrument for one physically
+disabled child to use in a school performance. She
+describes this child as “quite bright” and capable of
+“picking up [Sound Control] in a matter of minutes.”
+She worked with him to design the training set for a
+Gametrak/Looper instrument to trigger diﬀerent sea-
+side sounds to accompany a seaside-themed musical
+performance by other children. Her goal was not to
+make an instrument for him to play in an “accurate”
+way; rather, it was most important to build an instru-
+ment that enabled him to participate meaningfully in
+the larger social and musical context of group perfor-
+mance. “For him to be able to take part in a perfor-
+mance [with] an active part and a solo part... that’s
+so special for [him]... His parents said he didn’t eat
+breakfast that day... he was so excited with the antici-
+pation of knowing that he had this starring role in one
+of the pieces... Sound Control enabled that. Without
+that, he might’ve had a switch, but still that’s only
+a little bit of input from him, and [with this] he was
+improvising on the spot with the sounds he wanted.”
+RP has also experimented with using Sound Con-
+trol to adapt acoustic instruments for use by disabled
+children. For instance, she aﬃxed a micro:bit inside
+a euphonium and trained Sound Control to trigger
+brass samples as the instrument was tilted. RP and
+JH were enthusiastic about the potential of such tech-
+nology to enable students with physical disabilities to
+participate in acoustic band and orchestra ensembles.
+Finally, RP and JH saw instrument building as a
+way to better support two-way musical interaction be-
+tween them and a child. JH often plays recorder and
+sings during therapy sessions, and she was interested
+in creating Sound Control instruments that oﬀered
+children the chance to be “more equal” musical part-
+ners with her: “I can change how I play depending
+on what I pick up from them, how I’m feeling... But
+[Sound Control] means they can do some of that them-
+selves rather than [just] me supporting and matching
+[them].” RP stated she sometimes built instruments
+in which “I can give them a little musical arrange-
+ment, a collection of notes that might ﬁt in with what
+I’m doing on the piano, and see if there’s any focus
+towards trying to play sympathetically with me.”
+5.3 Input Methods
+RP and JH developed a set of favourite inputs that
+they used often: the Gametrak (RP and JH), micro:bit
+(RP and JH), colour tracker (RP and JH), and micro-
+phone (JH). Versatility was key: RP and JH used Ga-
+meTrak in many ways (held in the hand, attached to
+a bracelet, tied to a shoe). They aﬃxed the micro:bit
+to bracelets, shoes, and headbands. They used the
+colour tracker to track toys and parts of the body (e.g.,
+a coloured sticker on a chin). This variety of use was
+key not only to support children with diﬀerent move-
+ment abilities, but to support children’s unique pref-
+erences (e.g., an aversion to having something aﬃxed
+to their body, or a desire to interact with a favourite
+toy). The Leap Motion was considerably less versa-
+tile, as it required a hand placement and posture that
+was unnatural or impossible for many children. Vi-
+sual feedback on the Sound Control GUI and passive
+haptic feedback from the Gametrak were also cited
+as important, helping both children and practitioners
+understand what was being tracked.
+5.4 Music/Sound Modes
+RP and JH found uses for all music modes. RP found
+Granulator often “a good place to start”: its “diﬀer-
+ent” and “raw” sound was helpful in grabbing chil-
+dren’s attention. Both Granulator and FM Synthesis
+modes had wide timbral ranges that made it easy to
+map children’s natural movements to very noticeable
+sound changes, supporting the goal of helping children
+become aware that they were aﬀecting the sound.
+RP and JH also used sample-based sound modes
+in many activities. These included creating natural
+soundscapes and mimicking acoustic instruments (see
+above), triggering phrases from familiar pieces, and
+designing listening activities (e.g., “ﬁnd the doggy”).
+They sometimes recorded and used their own samples,
+but emphasised the usefulness of having access to a
+variety of sample libraries. This led us to provide
+them with libraries of instrument samples, classical
+music snippets, animal sounds, and “fart” sounds.
+RP and JH both emphasised the importance of ﬁnd-
+ing sounds that children enjoyed and responded to,
+even if they didn’t match adults’ ideas about what
+sounded “nice.” RP said, “I let them explore rather
+than me saying ‘this is what we’re doing today’ so
+it’s diﬃcult to [generalise about a favourite sound].”
+Exploration of new sounds seemed to strongly moti-
+vate some children, as well; RP described one child
+who seemed “really engaged” with Granulator instru-
+ments, “exploring and ﬁnding something new in there,
+something that surprises him, he seems to go for... it’s
+kind of play for him, rather than a deliberate ‘I want
+this sound’—he maybe doesn’t know what sound he
+wants till he ﬁnds it, and then he’s interested.”
+5.5 Mapping Methods
+At the time of the interview, JH had not yet learned
+how to use the “quick” mapping, but RP had become
+comfortable with it. She mainly used “quick” map-
+pings when beginning to work with a new child, as
+it oﬀered her a fast way to “sort of set the tone and
+get going straight away.” Mostly, however, she used
+“precise” mappings created with some care: “I love
+having the space bar function [a keyboard shortcut to
+record new examples] because it means I don’t have
+to be watching the screen, I just hover over and I can
+196
+watch the child and I can wait for the moment when
+they make the movement that I know they can make.”
+6. DISCUSSION
+This work suggests that, presented with the ability
+to create highly customised musical interfaces using
+a variety of input devices and music-making modes,
+music therapists and educators may employ customi-
+sation to support a range of goals. Unlike much of the
+work by organisations like the British Paraorchestra
+or Drake Music—and unlike many accessible instru-
+ments created in academic work cited by Frid [4]—
+our users’ goals were not usually to create polished,
+bespoke instruments that supported performance of
+particular musical material by individuals (or groups
+of individuals with similar abilities). Rather, they
+used customisation to dynamically support diverse
+goals such as developing a sense of agency, encour-
+aging movement and listening, and supporting social
+interactions.
+Despite the strong focus of existing technologies on
+triggering MIDI notes and enabling the production
+of conventional-sounding musical material, our users
+also saw clear beneﬁts to interfaces that allowed chil-
+dren to explore rich timbral spaces oﬀered by digital
+synthesis methods. And despite the limitation of most
+existing technologies to just one or two ﬁxed input
+modalities, our users exploited the ability to switch
+between multiple input devices—not merely choosing
+diﬀerent devices for diﬀerent children, but also chang-
+ing devices for diﬀerent activities with the same child.
+IML was essential to supporting fast and on-the-ﬂy
+customisation. It would be tedious if not impossible to
+use GUIs or programming to design many of the map-
+pings our users found valuable. Despite prior work
+[6] ﬁnding on-the-ﬂy re-training cumbersome, RP fre-
+quently re-trained to reﬁne interfaces while working
+with children. (A streamlined user interface, key-
+board shortcuts, and automatic re-training following
+recording of new examples helped facilitate this.) De-
+spite having little prior experience with technology or
+machine learning, our users were able to gain excellent
+proﬁciency in Sound Control. This works suggests
+that other music accessibility tools such as Sound-
+Beam and AUMI could likewise be extended using
+IML-based approaches.
+We encourage other researchers who want to sup-
+port people with disabilities to consider developing
+or contributing to instrument-building toolkits, rather
+than merely making one-oﬀ instruments designed for
+individuals or small populations. Our experience shows
+that music teachers and therapists—even those with
+little technology experience—are capable of ingenious
+instrument designs when given the right tools. Putting
+creation in the hands of teachers and therapists—or
+people with disabilities and their families and friends—
+is not only more scalable than relying on experts,
+it also leverages their expert personal and domain
+knowledge. Likewise, we underscore the importance
+of working closely with users in any such work; our
+workshops and observations were essential in pushing
+us beyond our initial assumptions about our collabo-
+rators’ goals and how technology could support them.
+7. CONCLUSIONS
+We have produced an open-source tool, Sound Con-
+trol, that others can use to create new musical inter-
+faces. We have shown that, given appropriate design
+tools, music therapists and educators can successfully
+create a wide variety of interfaces that help them to
+achieve goals beyond just the development of person-
+alised instruments. We have presented some prelimi-
+nary evidence about how input devices, music modes,
+and mapping strategies can support the creation of
+custom interfaces for children with disabilities.
+Further work is still needed to realise this project’s
+long-term goal of supporting integration of children
+with disabilities into musical ensembles. Achieving
+this will require creating new music-making modes
+and exploring cheaper platforms (e.g., Raspberry Pi).
+Additionally, now that the software has been released,
+studying the use of Sound Control by more people—
+including getting feedback directly from children with
+suﬃcient verbal communication skills—will help to
+validate our ﬁndings, improve usability of the software
+for new users, and further broaden our understanding
+of how and why richly customisable interfaces can be
+useful in music therapy.
+8. ACKNOWLEDGEMENTS
+We thank Jan Hall and Rebecca Price for their in-
+valuable contributions to shaping the design of the
+software and for participating in the interviews. We
+thank Simon Steptoe and NMPAT for their support
+of the project and involvement in establishing the
+project vision. Finally, we are very grateful for the
+funding received from the Paul Hamlyn Foundation.
+9. REFERENCES
+[1] British Association of Music Therapy.
+https://www.bamt.org/music-therapy/
+what-is-music-therapy.html , 2019.
+[2] R. Fiebrink, D. Trueman, and P. R. Cook. A
+meta-instrument for interactive, on-the-ﬂy
+machine learning. In Proc. NIME, 2009.
+[3] A. Freed, D. McCutchen, and A. Schmeder et al.
+Musical applications and design techniques for
+the Gametrak tethered spatial position
+controller. In Proc. SMC, pages 23–25, 2009.
+[4] E. Frid. Accessible digital musical instruments:
+A survey of inclusive instruments presented at
+the NIME, SMC and ICMC conferences. In Proc.
+ICMC, pages 53–59, 2018.
+[5] N. Gillian and J. A. Paradiso. The gesture
+recognition toolkit. The Journal of Machine
+Learning Research, 15(1):3483–3487, 2014.
+[6] S. Katan, M. Grierson, and R. Fiebrink. Using
+interactive machine learning to support interface
+development through workshops with disabled
+people. In Proc. ACM CHI, pages 251–254, 2015.
+[7] P. Oliveros, L. Miller, J. Heyen, G. Siddall, and
+S. Hazard. A musical improvisation interface for
+people with severe physical disabilities. Music
+and Medicine, 3(3):172–181, 2011.
+[8] H. Scurto and R. Fiebrink. Grab-and-play
+mapping: Creative machine learning approaches
+for musical inclusion and exploration. In Proc.
+ICMC, pages 12–16, 2016.
+[9] D. Trueman. Clapping machine music variations.
+In Proc. ICMC, 2010.
+197

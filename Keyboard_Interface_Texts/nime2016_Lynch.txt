@@ -1,0 +1,694 @@
+SensorChimes: Musical Mapping for Sensor Networks
+Evan F Lynch
+Responsive Environments
+MIT Media Lab
+75 Amherst Street
+Cambridge, Massachusetts 02139
+eﬂynch@media.mit.edu
+Joseph A. Paradiso
+Responsive Environments
+MIT Media Lab
+75 Amherst Street
+Cambridge, Massachusetts 02139
+joep@media.mit.edu
+ABSTRACT
+We present a composition framework that facilitates novel
+musical mappings for large-scale distributed networks of en-
+vironmental sensors. A library of C-externals called Chain-
+Flow for the graphical programming language Max/MSP
+that provides an interface to real-time and historical data
+for large sensor deployments was designed and implemented.
+This library along with spatialized audio techniques were
+used to create immersive musical compositions which can
+be presented on their own or complemented by a graphical
+3D virtual world. Musical works driven by a sensor network
+deployed in a wetland restoration project called Tidmarsh
+are presented as case studies in augmented presence through
+musical mapping.
+Author Keywords
+composition, mapping, soniﬁcation, sensor network, aug-
+mented reality, telepresence
+ACM Classiﬁcation
+H5.5 [Information Interfaces and Presentation] Sound and
+Music Computing H5.1 [Information Interfaces and Presen-
+tation] Multimedia Information Systems
+1. INTRODUCTION
+The modern world is increasingly documented not only by
+our writing, recording, and collective memory, but by the
+many sensors that are embedded in ubiquitous devices. Mod-
+ern sensor technology allows for eﬃcient collection of these
+data at a large scale. Our ability as humans to use this
+wealth of information is constrained by the physical limita-
+tions of human sensory perception and the limitations of the
+interfaces that mediate it. This paper focuses on how these
+data can be leveraged for new forms of musical composition,
+envisioning a synthesis of electronic music composition and
+ubiquitous sensing toward augmented acoustic ecosystems.
+We present a composition framework consisting of several
+tools that integrate with existing systems with the dual goal
+of facilitating artistically meaningful interactive music and
+facilitating auditory display driven by environmental sen-
+sor networks. A sensor network deployed in a wetland in
+southern Massachusetts called Tidmarsh is the impetus and
+focal point of the exploration. This paper contributes both
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’16,July 11-15, 2016, Grifﬁth University, Brisbane, Australia.
+.
+the composition framework and speciﬁc patterns of musical
+mapping demonstrated through case study works by collab-
+orating composers inspired and driven by Tidmarsh.
+The main components of the SensorChimes framework
+are ChainFlow and DoppelMarsh. ChainFlow is an inter-
+face for the graphical programming environment Max/MSP1
+which endeavors to make it easy to route any real-time or
+historical data from a sensor network to any point in a Max
+patch, allowing for quick realization of mapping ideas with
+a minimum of work and expertise. DoppelMarsh is a virtual
+replica of Tidmarsh created with the Unity game engine as
+part of a related project [13]. In the musical works pre-
+sented in this paper, the virtual environment is leveraged
+to render an immersive virtual exploration of the wetland
+with spatialized musical mappings.
+The goal of this framework is to allow composers to create
+works that express their own musical conception of the space
+(Tidmarsh) under its real-time conditions, driven by the
+spatial and temporal variation of the metrics measured by
+the sensor network. These works do not aim to be utilitarian
+soniﬁcations; however, convincing correspondence between
+the composer’s conception and the real conditions driving
+that conception forms another criterion for evaluating the
+framework. If the composer wants to associate a timbre
+with aridity, this timbre should be perceptible only to the
+extent that the real-time conditions are dry. Tidmarsh is an
+ideal testbed for this framework, but the tools are general
+and could be used with other sensor networks in the future.
+SensorChimes is presented in more detail in [12].
+2. MOTIV ATION AND PRIOR ART
+2.1 Presence
+When an observer enters a space, some aspects of their envi-
+ronment are obvious, but many phenomena (e.g. barometric
+pressure, climate change, soil moisture) remain mostly im-
+perceptible because we do not have appropriate biological
+sensors to detect them, they are too large or small, they
+change on timescales that are too long or short, or they are
+beyond our reach. How “present” we are in an environment
+relates not to how much we know abstractly about the en-
+vironment but to how much we feel about the environment.
+This project aims to augment our “presence” by providing
+additional information about the environment through the
+acoustic medium, expanding what we can readily intuit.
+The windchime, a prehistoric wind sensor that makes mu-
+sic, inspires this project. The windchime is an augmenta-
+tion to the acoustic environment that mechanically couples
+wind speed and direction to sound. This project reimag-
+ines, generalizes, and augments this concept in the digital
+domain with electronic sensors that measure many param-
+eters, electronic music composition, and virtual reality.
+1Max/MSP: https://cycling74.com/products/max/
+137
+In “Composing perceptual geographies”, Maryanne Ama-
+cher references the emerging “technologies of presence” that
+allowed for immersive experiences that function at a very
+basic perceptual level. In previous decades, technologies
+like ampliﬁers, loudspeakers, spatialized audio, DSP, etc.
+provided the means to author immersive sonic experiences
+leveraging presence like Amacher’s pioneering “Music For
+Sound Joined Rooms [1].” “Public Supply” and “Drive in
+Music,”two installations by another composer Max Neuhaus,
+augmented speciﬁc locations with sound to accentuate their
+perceptual characteristics, using the sound, and space itself,
+as an expanded instrument [9]. Recent developments, par-
+ticularly sound spatialization techniques and the advent of
+ubiquitous sensing devices and cheap, low-power wireless
+networks, provide an opportunity to go a step further: to
+augment our perception through immersive sound and im-
+age in a dynamic way that responds to the environment
+itself. In “3-D Sound for Virtual Reality and Multimedia,”
+Begault points out that spatialized 3D audio can contribute
+greatly to immersivity, and as a display, provide fast and
+ﬂuid attention shifting in comparison to visual displays pro-
+viding “situational awareness [2].” Lombard and Ditton de-
+ﬁne presence as “the perceptual illusion of non-mediation
+[10].” With 3D audio, new axies of presence measured by
+sensor networks can be presented with this illusion.
+2.2 Acoustic Ecology
+In a discussion of music sourced from a wetland, it would
+be remiss to ignore Acoustic Ecology. The term comes from
+composer R. Murray Schafer and has a philosophical con-
+nection to the work of John Cage. It is a philosophy that
+“suggests that we try to hear the acoustic environment as a
+musical composition and further, that we own responsibility
+for its composition [19].” In recent history, expanded tech-
+nology and recording techniques such as bioacoustics have
+created new niches for musicians and artists studying the
+natural world, and the term “Acoustic Ecology” has broad-
+ened its meaning beyond the academic school of thought
+that coined it. Works like David Dunn’s “The Sound of
+Light in Trees” and John Bullit’s “Earthsound”2 record the
+imperceptible and make it audible “achieving a deeper un-
+derstanding of how sound and our sensory modality of hear-
+ing are unique organizing forces within human society, and
+our physical/ecological environment.” David Dunn con-
+trasts this new concern to the more traditional role of the
+composer in western art music, to “express” the self through
+compositional acumen [5]. In contemporary practice, both
+concerns are frequently present, and some have pointed out
+the connection between soniﬁcation and romanticism [18].
+Related to Acoustic Ecology is the art of emulating nat-
+ural soundscapes with synthetic and manipulated sounds.
+Works like Wendy Carlos’ “Sonic Seasonings” and Aposto-
+los Loufopoulos’s “Bee” are inspired by and evoke phenom-
+ena of the natural world in profound ways [3, 11]. Other
+artists, like Jana Winderen, have made music concrete with
+vivid ﬁeld recordings of the natural world [14]. While these
+works do not use real-time sensing or soniﬁcation, they set a
+high bar for composition that seeks to evoke and transform
+nature. It is hoped that this project will facilitate sensor-
+aware compositions that achieve the same resonance.
+Where this project transcends Acoustic Ecology is its
+embrace of non-audible “sensory modalities” that can only
+be understood by the human through mediation. Previous
+works that use non-audible data in the context of ecological
+consideration are numerous. Matthew Burtner’s“Iceprints”3
+2Earthsound: http://www.jtbullitt.com/earthsound/
+3Iceprints: http://matthewburtner.com/iceprints/
+uses the sound of melting glaciers and a century of data
+marking the extent of Arctic ice in a composition for piano
+and electronics. Marty Quinn’s “Climate Symphony” make
+prosaic use of soniﬁcations of climate related data on huge
+timescales including chemical analysis of ice cores, ice sheet
+movement and change, and solar intensity [15]. These works
+make use of static data sets rather than real-time sensing.
+2.3 Telepresence
+In Maryanne Amacher’s ﬁrst works, an installation series
+called “CITY-LINKS” begun in 1967, she pioneered the use
+of telepresence in art. In these works, sound from disparate
+locations were transmitted to an exhibition space in real-
+time to be experienced synchronously, inviting perception
+beyond the walls of the exhibition, and inspiring simultane-
+ous presence in those spaces [8].
+Echoing Amacher’s work, this project records the sound-
+scape of Tidmarsh in real-time with numerous microphones.
+These audio streams can be used and blended into a mu-
+sical composition with soniﬁcation elements driven by the
+environmental sensors which add extra dimensions of telep-
+resence. These audio streams were presented as part of a
+project called ListenTree which used transducers attached
+to the roots of trees to create an audio-haptic display that
+blends into the natural environment [4].
+2.4 DoppelLab
+DoppelLab is a 3D cross-reality representation of the MIT
+Media Lab populated with visual representations of sensor
+devices located throughout the lab and spatialized audio
+streams from microphones distributed throughout the lab
+[7]. DoppelLab began the process of imagining spatialized
+soniﬁcation of non-audible data in a cross-reality virtual
+environment, but stopped short of building a platform for
+composers to work with to realize music. This project is a
+logical next step, building a versatile system for exploring
+both musical composition with a new sensor deployment.
+3. BACKGROUND
+Tidmarsh is a 577 acre wetland restoration project in south-
+ern Massachusetts which is host to a large environmental
+sensor network, a part of the Living Observatory Initiative
+[13]. It was a cranberry bog until 2010 when the restoration
+of its wild ecology began. The Living Observatory Initiative
+documents ecological processes in the wetland as it under-
+goes a ten year restoration process. The scale of the Tid-
+marsh sensor deployment is large, with many sensors dis-
+tributed across a large area. It represents a testing ground
+for ideas that require this kind of rich data that will be avail-
+able everywhere in the near future, and is the focal point
+of a variety of ongoing investigations ranging from data vi-
+sualization and augmented reality, to innovative ways of
+studying environmental processes and change. Recording
+everything that is happening in a place like Tidmarsh is
+still the realm of science ﬁction, but the dense sensor net-
+work at Tidmarsh is step forward. While the wild ecology
+is restored, sensors monitor the transformation.
+The sensor network at Tidmarsh consists of dozens of bat-
+tery powered nodes designed by Responsive Environments
+RA Brian Mayton that form a low-power mesh network
+built on the IEEE 802.15.4 speciﬁcation [13]. Each device
+measures environmental parameters including temperature,
+humidity, illumination, and pressure, and is designed to be
+extensible so that other sensors of interest (such as soil mois-
+ture, wind, gas levels, etc.) can be easily added. The data
+are relayed to a base station via a wireless mesh network
+where they are uploaded to a remote server. From this
+138
+server, historical data can be browsed, and the live data
+can be streamed as they are collected.
+4. CHAINFLOW
+ChainFlow is a low-level interface for working with data
+from a sensor network in the graphical programming lan-
+guage Max/MSP. This section gives an overview of the struc-
+ture of ChainFlow and then focuses on three mapping chal-
+lenges that ChainFlow solves: normalization, mapping mul-
+tiple time scales, and spatial mapping.
+ChainFlow is library of objects implemented with the
+Max SDK, which provides a way for developers to integrate
+their own objects into Max written in C. It is built on top
+of ChainAPI, an HTTP and Websocket API developed by
+Russell et. al to provide a common interface for accessing
+data and metadata from sensor networks in the absence of
+broadly adopted standards [17]. The examples in this pa-
+per reference Tidmarsh exclusively. However, ChainAPI is
+easy to set up with any networked time-series data source,
+making these tools useful in general.
+ChainAPI and ChainFlow are organized around three ab-
+stractions: “site,” “device,” and “sensor.” Tidmarsh is a
+“site,” the battery powered boxes that transmit data are
+“devices,” and the collocated sensors in each box are “sen-
+sors.” A “metric” is something measured by the network—
+temperature, humidity, etc. In ChainFlow, a [chain.site]
+master object loads a summary of a site from ChainAPI and
+begins a websocket connection with the ChainAPI server.
+Other objects in the library are worker objects that attach
+to the master object to receive updates and access the site
+summary. These include, among others, [chain.device],
+which provides an interface to data for a chosen device, and
+[chain.metric] that provides a general interface to a cho-
+sen metric across many devices that measure it. A full de-
+scription of the ChainFlow objects and their use is beyond
+the scope of this paper. For a more detailed explanation of
+the implementation and use of ChainFlow see [12].
+4.1 Normalization
+A primary goal of this project is to facilitate composition
+which manifests the variation of the environment over time
+and through space. For a composer, normalizing and lin-
+earizing a data set to a range which is useful for modu-
+lating a parameterized musical abstraction is a key step in
+mapping. When the data set is a real-time stream, this
+normalization is an extra challenge as its behavior must be
+predicted.
+Figure 1: Semantic normalization of environmental
+parameters
+An experimental normalization interface, shown in Fig-
+ure 1, was created by adding a “semantic” mapping layer.
+This is a site-speciﬁc abstraction implemented with Chain-
+Flow. Rather than presenting the composer with the raw
+or analytic environmental parameters (temperature in de-
+grees, illuminance in lux, temperature deviation, etc.), the
+composer is presented with “semantic” parameters, each on
+a 1 to 128 scale. While this abstraction is speciﬁc to the
+sensor network at Tidmarsh, it could be easily adapted to
+another context.
+For a metric like temperature, most people have an in-
+tuitive sense of what the raw data means. However, for
+measurements like illuminance and humidity, these seman-
+tic parameters can be reasoned about more intuitively than
+the raw data. For this iteration, the semantic parame-
+ters and the equations of raw parameters that deﬁne them
+were authored. Future work could experiment with generat-
+ing these semantic parameters through principle component
+analysis or by using the historical data record.
+The second normalization problem is how to systemati-
+cally relate the measurement at speciﬁc a device to the site
+as a whole—how to characterize the spatial variation of the
+metric. This problem is solved by providing easy access to
+the “deviation” of a speciﬁc device from the real-time site
+average, normalized by the standard of deviation. These de-
+viation measurements are incorporated into the “semantic”
+mapping layer.
+4.2 Mapping on Multiple Timescales
+The sensors at Tidmarsh document changes that occur on
+many timescales: daily cycles, weather patterns, seasonal
+change, climate change, etc. Real-time data can drive music
+determined by the status of the environment. However, to
+render music that manifests the temporal variation of the
+environment on timescales too long for a listener to observe
+in real-time, data gleaned from the historical record must
+be woven into the composition. ChainFlow oﬀers several
+features for working with these diﬀerent time scales.
+4.2.1 Sequences of Historical Data
+Figure 2: The[chain.itertable] abstraction stores,
+displays, and iterates through an historical data se-
+quence. Shown here: normalized temperature over
+twenty-four hours
+An interface to request historical data sequences is im-
+plemented by the [chain.device] object. In experiment-
+ing with using real-time and historical data simultaneously,
+we developed an abstraction to format requests for histori-
+cal data with messages like: last 4hour, next 3hour 2sec,
+and from now -1day to now. This makes it easy to, as a
+simple example, request the last hour of temperature data
+to use as a melodic contour for a synth which is then run
+through a DSP eﬀect modulated by the real-time temper-
+ature or normalized deviation of the temperature from the
+site mean, simultaneously presenting the real-time and the
+recent past.
+If a large historical time span is requested, this can be
+139
+an enormous number of data points, so the behavior can
+be modiﬁed to return only one point per chosen interval.
+Data in ChainAPI are not necessarily sampled periodically,
+and each have a potentially arbitrary (though monotoni-
+cally increasing) timestamp. The [chain.data] abstrac-
+tion also provides an interface for resampling a data se-
+quence on a speciﬁed ﬁxed interval via linear interpolation,
+and the [chain.itertable] pictured in Figure 2 provides
+a means of visualizing and iterating through this resampled
+sequence. [chain.data] can also normalize a data sequence
+to fall within 0 and 1 to simplify mapping where the gesture
+of the contour but not the absolute value is salient.
+4.2.2 Real-time and Pseudo-real-time
+Each [chain.site] instance has a clock which can either
+run in “real-time” following the system clock, or in “pseudo-
+real-time” speciﬁed by a chosen rate in historical seconds
+per second and a starting point in the past. This design
+means that choosing to run a composition in real-time or as
+if from a point in the past is a simple option at the high-
+est level, requiring no re-patching. To use multiple clocks
+simultaneously, multiple instances of [chain.site] can be
+instantiated.
+4.3 Mapping with Spatial Variation
+The spatial variation of a sensor network can be rendered
+in sound by immersive virtual exploration of the space with
+spatialized musical mappings. A musical composition that
+follows this pattern is thus parameterized by the exploring
+observer’s position. ChainFlow provides several features for
+handling this parameterization by presenting data relevant
+in the neighborhood of the observer.
+The [chain.zone] object is designed to statically manage
+the list of devices that are within a circular “zone,” speci-
+ﬁed by center point and radius. If the zone moves such
+that a device crosses the boundary into the zone, that de-
+vice is added to the list and the object outputs added [de-
+vice_name]. If the device leaves the boundary, the device is
+removed from the list and the object outputs removed [de-
+vice_name]. Hysteresis prevents oscillation between adding
+and removing a device when it is very close to the boundary.
+In particular, this object is used in the implementation of
+the virtual environment described in Section 5.
+The [chain.metric] object provides a more general in-
+terface for a speciﬁed metric which provides access to its
+value and measures on its spatial variation across all de-
+vices that measure it. For example, this object can be used
+to determine the mean temperature in a radius of ten meters
+around a selected point or to perform a bilinear interpola-
+tion to estimate the temperature between sensor devices at
+the observers exact location.
+5. VIRTUAL ENVIRONMENT
+SensorChimes integrates several existing tools and systems
+and a novel mapping interface to experiment with musical
+mapping for the network of environmental sensor nodes de-
+ployed at Tidmarsh. Some of these components are speciﬁc
+to this site such as the deployment of sensor nodes them-
+selves, while other components could be reused for other
+sites or applications. The “product” of this integration is an
+application that runs on a client machine that renders both
+a graphical and sonic display.
+At a high level, SensorChimes follows a client-server ar-
+chitecture. Figure 3 gives an overview of the entire system.
+The “server” is Tidmarsh, the sensors deployed there, and
+the ChainAPI server, which provides access to sensor mea-
+surements. The “clients” are DoppelMarsh and Max/MSP
+through ChainFlow.
+Figure 3: Within Tidmarsh, sensor nodes commu-
+nicate low-level messages to a base station con-
+nected to the internet which relays to a server at
+the lab. These messages are parsed and posted to
+the ChainAPI server over HTTP.
+5.1 DoppelMarsh
+Figure 4: Virtual Tidmarsh
+DoppelMarsh is a “cross-reality sensor data browser con-
+structed using the Unity 4 game engine to experiment with
+presence and multimodal sensory experiences” created by
+Responsive Environments RAs Gershon Dublon and Brian
+Mayton [13]. It presents a virtual rendering of the marsh
+with real-time sensor readings visualized as ﬂoating num-
+bers above the sensor nodes pictured in Figure 4. In the
+future, graphical elements that more subtly blend in to the
+scene will visualize sensor readings. The user controls the
+position of the camera using controls common to ﬁrst-person
+video games. This virtual position and direction are sent
+to Max/MSP over OSC 5 so that audio generation that is
+contingent on the player position is synchronized with the
+graphical display. Previous versions of DoppelMarsh have
+integrated both the live audio streams and a hard-coded
+soniﬁcation of the temperature and humidity composed by
+Dublon and Russell.
+4Unity: https://unity3d.com/5
+5Open Sound Control: http://opensoundcontrol.org/
+140
+5.2 Immersive Sound in Max/MSP
+A system was created to render an immersive sonic envi-
+ronment with each sensor device at Tidmarsh generating
+an audio voice. A diﬀerent musical audio signal is gen-
+erated for each sensor device based on the environmental
+conditions local to that device. These signals are delivered
+to the listener simultaneously, each spatialized to sound as
+if emanating from the device. The listener moves around
+the virtual space and explores the diﬀerent signals and the
+underlying environment.
+In Max, the environment patch is broken down into three
+parts: device voice, spatializer, and polyphony handler.
+The device voice is the composition in some sense. Each de-
+vice will contribute a voice to a chorus of nearby devices, the
+device voice patch determines this voice. A[chain.device]
+object is used to access real-time data for the speciﬁed de-
+vice. A few strategies for the musical mapping that makes
+these devices sound are explored in the case studies that fol-
+low. The spatializer processes the device voice for spatial-
+ization using the HOA library for Max/MSP from CICM 6
+to encode the signal of a device voice patch on the spherical
+harmonics based on the displacement of the device from the
+listener. The polyphony handler uses a combination of the
+[chain.zone] object and Max/MSP’s built in [poly~] ob-
+ject to instantiate a number of unassigned spatializers and
+assign and reassign them to nearby devices as the listener’s
+position moves around.
+5.3 Deployment
+Initial demonstrations were deployed as an installation with
+a dedicated computer, display, and sound system that re-
+mote visitors were invited to use. With a keystroke, the
+user could switch between diﬀerent real-time musical con-
+ceptions of the marsh. However, to reach a broad audience,
+a web deployment was devised.
+For the ﬁrst installation, the computer ran both the Max/MSP
+and DoppelMarsh clients simultaneously. The user sat in
+front of the display wearing headphones and used the key-
+board to navigate through the virtual world. As the user
+moved around the virtual space, the Max/MSP client used
+binaural spatialization to make a convincing immersive sonic
+environment consistent with the graphical experience.
+A proposed installation that has not yet been put into
+practice would make use of a fairly large space and a large
+number of omnidirectional speakers. These speakers would
+be arranged in the space following the arrangement of sensor
+devices at Tidmarsh. The DoppelMarsh client would not
+be used, and spatial exploration would instead occur in the
+real space ﬁlled with speakers. A computer running the
+Max/MSP client would route a signal to each speaker for
+each mapped node at Tidmarsh.
+This project is deployed on the web as a downloadable
+application. The two clients (DoppelMarsh and Max/MSP)
+are bundled together as a client application with a wrapping
+application written in Objective-C for Mac OS X.
+In the future it may be possible to deploy SensorChimes
+onsite at Tidmarsh for visitors to enjoy. This project would
+build on a vision for auditory augmented reality presented
+by Russell et. al. at the 7th Augmented Human Interna-
+tional Conference [16].
+6. COMPOSITION CASE STUDIES
+Three compositions have been created with this framework.
+Each uses a diﬀerent mapping strategy and is the com-
+poser’s unique conception of Tidmarsh. This section de-
+scribes each work and then draws some conclusions. The
+6HOA: http://www.mshparisnord.fr/hoalibrary/en/
+case studies and related material can be accessed at
+http://resenv.media.mit.edu/sensorchimes/.
+6.1 “The Bog Blues” – Parametric Mixing
+This piece is constructed from looping improvised acoustic
+passages performed on cello, guitar, bass, and drum. The
+layers of sound emulate the many layers of narrative that
+unfold in a complex ecosystem like Tidmarsh. Many dis-
+tinct tracks for each instrument were recorded with consis-
+tent meter and harmonic rhythm but composed to produce
+a range of moods and perceived energy levels when layered
+on top of each other.
+Each device in the virtual environment adds a voice, which
+mixes these tracks with weights parameterized by the sen-
+sor readings of that device. Each track is assigned a max-
+one axis-aligned multivariate Gaussian distribution in a ﬁve-
+dimensional parameter space consisting of temperature, il-
+luminance, deviation temperature, deviation illuminance,
+and deviation humidity. The mix of tracks for a given point
+in this ﬁve-dimensional space is the linear combination of
+the tracks, each weighted by the evaluation of its respec-
+tive Gaussian distribution at the relevant point. An in-
+terface called Dynamix was designed to help visualize this
+ﬁve-dimensional space and the distributions to help author
+this mapping.
+6.2 Evan Ziporyn – Effects Chain Mapping
+Evan Ziporyn, an accomplished composer and clarinetist,
+generated looping tracks of clarinet textures inspired by the
+birds and frogs of the marsh. The idea behind the piece is
+to layer and process these textures through various eﬀects
+to create a large parameterized space of sounds. An “in-
+strument” abstraction that produces this texture exposes a
+set of adjustable parameters to which are mapped the se-
+mantic parameters as described in Section 4.1. Following
+Ziporyn’s interest in improvisation, we intend to add an
+interface along the lines of Harmonix’s “The AXE,” which
+allows the user to improvise an arpeggiated melody on top
+of the texture in a harmonic and timbre space adjusted by
+real-time sensing.7
+6.3 Ricky Graham – Multiple Timescales
+Ricky Graham, a guitarist and computer musician, was in-
+terested in working with data from Tidmarsh’s history and
+developed an interface that allows a listener/improviser to
+select data ranges to iterate through driving his own granu-
+lar synthesis patch. This interaction encourages exploration
+of how data sets can drive timbral and temporal changes in
+electronic music. Using this interface, a piece was created
+based on the contour which barometric pressure, humidity,
+and illuminance take over the course of a day on the full-
+moon. This piece was presented at the Fall 2015 Media Lab
+Member’s Event and appeared as a research presentation at
+SEAMUS 2016 [6]. The second version of this piece is pre-
+sented within the virtual environment. Each device drives
+it’s own granular synthesis patch with real-time data, as well
+as ranges of recent historical data on multiple timescales.
+6.4 Discussion
+The experience of exploring the ﬁrst two case studies demon-
+strate the potential for parametric music as a rough audi-
+tory display. Both pieces admit perceptual correspondence
+between the real conditions and the sound, and exceptional
+environmental conditions are interpreted as exceptional ver-
+sions of the sound. In both pieces, the mapping exhibits
+smooth transitions between regions of the parameter space
+7The AXE: http://www.harmonixmusic.com/past-games/
+141
+so similar conditions always produce similar music, and
+these changes are reﬂected immediately so the mapping
+is responsive. For The Bog Blues, the Dynamix interface
+makes it easy to see that the speciﬁed mapping will be ac-
+tive and interesting across the regime of the parameter space
+in which the environment is likely to fall. In demonstrating
+the piece in the 3D virtual environment, after a few min-
+utes, one user noted that they found themselves navigating
+through the world looking for a particularly humid region by
+ear despite the visual representation of the humidity data.
+The second piece produces an ambiance ﬁtting to the
+marsh both during the day when it sounds bright and fast
+and at night when it sounds slow and dark. Variation in
+the semantic parameters is obvious to the listener, and af-
+ter a little exploration, the sound is enough to estimate the
+conditions with ease. The mapping was carefully authored
+with much experimentation, a process made easy by the
+SensorChimes framework.
+The third piece takes an entirely diﬀerent approach, fo-
+cusing on using snippets of historical data to drive long mu-
+sical structures rather than instantaneous parameter modu-
+lation. This piece was less successful as an auditory display,
+but was received well by listeners as an eﬀective aesthetic
+reﬂection of the overlapping and shifting contours of envi-
+ronmental conditions.
+7. CONCLUSIONS
+In the contemporary world, the rate at which we collect and
+generate data and information vastly outpaces our ability
+to process and interpret it. Spaces are increasingly instru-
+mented with sensors, but the insights that we might gain
+from these data remain mostly untapped. The technologies
+that mediate our access to digital information give us only
+small glimpses into this world of dense data. We need pow-
+erful new paradigms to render these data interpretable. On
+the path to these new paradigms, these data present them-
+selves as a canvas for the contemporary artist. We cannot
+yet walk through a marsh and internalize everything we can
+measure with sensors about the world around us as easily as
+we can feel the warm rays of sun on our skin and the moist
+soil beneath our feet. However, music that speaks to these
+experiences, which reacts to these data, is a step toward a
+world where data is interpreted incidentally.
+The potential for music creation along the lines of the
+pieces presented here is large and mostly unexplored. It is
+hoped that ChainFlow will be adopted by or inspire more
+composers interested in the vision of this project who will
+take it in their own unique directions.
+One direction this work could take in the near future is
+to break out of the conﬁnes of the virtual world and make a
+showing onsite at Tidmarsh: a real auditory augmentation.
+Spatialization that uses head tracking has the potential to
+make this a reality.
+ChainFlow is a good ﬁrst draft of a versatile interface for
+sensor networks in Max/MSP; however, some things could
+be improved. Most signiﬁcantly, ChainFlow is only useful
+within Max/MSP. A similar tool could be built for Pure
+Data which would open up a new realm of portability be-
+cause of the open-source nature of PureData and the libpd C
+library, which makes it possible to build Pure Data patches
+into other native code projects. 8 Additionally, the limits of
+ChainFlow have not been tested and signiﬁcant optimiza-
+tion may be required to handle substantially larger deploy-
+ments.
+8. ACKNOWLEDGMENTS
+8Pure Data: https://puredata.info
+We acknowledge the help and support of members of the
+Responsive Environments Group at the MIT Media Lab,
+particularly Spencer Russell, Gershon Dublon, and Brian
+Mayton, as well as composers Ricky Graham and Evan Zi-
+poryn.
+9. REFERENCES
+[1] M. Amacher. Composing perceptual geographies.
+Course/Workshop Introduction/Description, 2006.
+[2] D. R. Begault et al. 3-D sound for virtual reality and
+multimedia, volume 955. Citeseer, 1994.
+[3] W. Carlos. Sonic seasonings (libreto del cd), 1998.
+[4] G. Dublon and E. Portocarrerro. Listentree:
+Audio-haptic display in the natural environment.
+2014.
+[5] D. Dunn. Acoustic ecology and the experimental
+music tradition. American Music Center, New Music
+Box, 2008.
+[6] R. Graham. Sonifying tidmarsh living observatory.
+Society of Electro-Acoustic Music in the United
+States, 2016.
+[7] N. Joliat, B. Mayton, and J. A. Paradiso. Spatialized
+anonymous audio for browsing sensor networks via
+virtual worlds. 2013.
+[8] P. Kaiser. The encircling self: In memory of maryanne
+amacher. PAJ: A Journal of Performance and Art,
+36(1):10–34, 2014.
+[9] B. LaBelle. Background Noise: Perspectives on Sound
+art, chapter Ch. 10. Bloomsbury Publishing USA,
+second edition edition, 2015.
+[10] M. Lombard and T. Ditton. At the heart of it all:
+The concept of presence. Journal of
+Computer-Mediated Communication, 3(2):0–0, 1997.
+[11] A. Loufopoulos. Bee, 2010.
+[12] E. F. Lynch. Sensorchimes: Musical mapping for
+sensor networks toward augmented acoustic
+ecosystems. Master’s thesis, Massachusetts Institute
+of Technology, 2016.
+[13] B. Mayton, G. Dublon, S. Russel, D. D. Haddad, and
+J. Paradiso. Tidmarsh living observatory.
+http://tidmarsh.media.mit.edu/.
+[14] A. Pezanoski-Browne. The tragic art of eco-sound.
+Leonardo Music Journal, 25:9–13, 2015.
+[15] M. Quinn. Research set to music: The climate
+symphony and other soniﬁcations of ice core, radar,
+dna, seismic and solar wind data. 2001.
+[16] S. Russell, G. Dublon, and J. A. Paradiso. HearThere:
+Networked sensory prosthetics through auditory
+augmented reality. In Proceedings of the 7th
+Augmented Human International Conference. ACM,
+2016.
+[17] S. Russell and J. A. Paradiso. Hypermedia apis for
+sensor data: a pragmatic approach to the web of
+things. In Proceedings of the 11th International
+Conference on Mobile and Ubiquitous Systems:
+Computing, Networking and Services, pages 30–39.
+ICST, 2014.
+[18] V. Straebel. The soniﬁcation metaphor in
+instrumental music and soniﬁcationˆ a˘A´Zs romantic
+implications. In Proceedings of the 16th international
+conference on auditory display, Washington, 2010.
+[19] K. Wrightson. An introduction to acoustic ecology.
+Soundscape: The journal of acoustic ecology,
+1(1):10–13, 2000.
+142

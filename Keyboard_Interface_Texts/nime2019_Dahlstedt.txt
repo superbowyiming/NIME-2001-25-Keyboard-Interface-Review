@@ -1,0 +1,720 @@
+Taming and Tickling the Beast - Multi-touch Keyboard as
+Interface for a Physically Modeled Interconnected
+Resonating Super-Harp
+Palle Dahlstedt
+Dept. of Computer Science and Engineering
+Chalmers Univ. of Techn. / Univ. of Gothenburg
+palle@chalmers.se
+ABSTRACT
+Libration Perturbed is a performance and an improvisation
+instrument, originally composed and designed for a multi-
+speaker dome. The performer controls a bank of 64 virtual
+inter-connected resonating strings, with individual and di-
+rect control of tuning and resonance characteristics through
+a multitouch-enhanced klavier interface (TouchKeys). It is
+a hybrid acoustic-electronic instrument, as all string vibra-
+tions originate from physical vibrations in the klavier and
+its casing, captured through contact microphones. In ad-
+dition, there are gestural strings, called ropes, excited by
+performed musical gestures. All strings and ropes are con-
+nected, and inter-resonate together as a ”super-harp”, in-
+ternally and through the performance space. With strong
+resonance, strings may go into chaotic motion or emergent
+quasi-periodic patterns, but custom adaptive leveling mech-
+anisms keep loudness under the musician’s control at all
+times. The hybrid digital/acoustic approach and the en-
+hanced keyboard provide for an expressive and very physi-
+cal interaction, and a strong multi-channel immersive expe-
+rience. The paper describes the aesthetic choices behind the
+design of the system, as well as the technical implementa-
+tion, and – primarily – the interaction design, as it emerges
+from mapping, sound design, physical modeling and inte-
+gration of the acoustic, the gestural, and the virtual. The
+work is evaluated based on the experiences from a series of
+performances.
+Author Keywords
+augmented keyboard, physical modeling, feedback
+CCS Concepts
+•Human-centered computing → Gestural input;
+•Applied computing →Performing arts; Sound and
+music computing;
+1. INTRODUCTION
+In this paper, I present an unusual instrument and a work,
+called Libration Perturbed. It consists of a large number of
+virtual interconnected strings, the properties of which are
+controlled from a multi-touch keyboard interface, McPher-
+son’s TouchKeys [8]. All audio signals in the instrument
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’19, June 3-6, 2019, Federal University of Rio Grande do Sul,
+Porto Alegre, Brazil.
+emanate from vibrations in the actual physical keyboard
+interface, and its wood and steel casing, and the sound gen-
+eration is completely based on feedback. The particular
+design of this work, enforced some novel thinking around
+mapping from an interface to a large number of strings, re-
+quiring a very large number of parameters to be controlled
+in parallel. Also, the feedback nature of the instrument re-
+quired the development of several mechanisms to work with
+feedback under controlled circumstances.
+What was learned from this process, including the design
+process of the instrument, the implementation, and emerg-
+ing playing techniques, is shared in this paper.
+Videos of two performances can be found here:
+ZKM Cube: https://youtu.be/KxDD ouvSHM
+VirginiaTech Cube: https://youtu.be/GMy7AUvXmo4
+2. RELATED WORK
+Keyboard instruments have existed for hundreds of years,
+and they have evolved through diﬀerent forms over time.
+There has also been a lot of experimentation with the forms
+of it, for example microtonal keyboards, quarter tone pi-
+anos, etc. In the synthesizer world, people have experi-
+mented a lot with what can be done with the normal key-
+board, sometimes complemented with extra input such as
+monophonic or polyphonic pressure. Some have also tran-
+scended it into new interfaces, while keeping the linear left-
+to-right distribution, with examples such as the Haaken
+Continuum [5], Madrona SoundPlane,1 the Linnstrument,2
+and many others. There has also been an increasing interest
+for keyboards with location sensing, such as the McMillen
+QuNexus3 and the ROLI Seaboard product series 4. While
+good for expressive synth control, none of these two are re-
+ally designed for musicians with keyboard technique. They
+oﬀer more degrees of freedom than usual, but default map-
+pings are very conventional, and it is hard to play like a
+pianist on them, i.e., to play many notes simultaneously
+and rapidly, with retained control.
+With respect to synthesis, I am not aware of anything
+similar to the Libration project in keyboard form. A some-
+what similar approach to ours, about feedback as a con-
+structive sound source can be found in two recent feedback
+cello projects [4, 11], except with real strings, not virtual.
+2.1 Physical modeling
+This project relies heavily on the idea of waveguide synthe-
+sis [9], where the travel of audio inside of a physical model
+(e.g., a string or a pipe) is modeled using one or more delay
+1https://madronalabs.com/soundplane
+2http://www.rogerlinndesign.com/linnstrument.html
+3https://www.keithmcmillen.com/products/qunexus/
+4https://roli.com/
+47
+lines, together with processing of the sound at the crucial
+points where it bounces oﬀ a solid object, such as the bridge
+of a guitar. Commuted synthesis [10, 6] is the idea that
+in a waveguide physical model, computation can be saved
+by preprocessing the excitation pulse instead of using ex-
+pensive multi-band ﬁltering on the output to emulate the
+output resonator, such as the body of a guitar or a violin.
+Mathematically it does not matter in which order you do it,
+hence the name. Then using acoustic excitation of virtual
+strings, commuted synthesis is already a part of the con-
+cept because the exciting vibrations from the outside bring
+the timbral proﬁle of the physical object with them into the
+physical model.
+3. CONCEPT
+Every project starts with some constraints, given or self-
+imposed, or simply because of what is available. It depends
+on what infrastructures and technologies and tools that are
+available to you, which skills you have, and what are your
+current foci. In this section I will elaborate on the design
+process, because only describing the result is principally less
+interesting. For a forum like NIME, it is equally interesting
+how we arrive at our designs.
+This project started with an opportunity to do a perfor-
+mance in the 46-speaker dome at ZKM, in connection to a
+keynote. Time was short, but it was an opportunity too
+good to miss. I decided to create an immersive instrument
+with spatiality built in, based on the experiences from a pre-
+vious instrument project using the TouchKeys sensors [8].
+These are multitouch sensors applied to the each key of a
+normal klavier. They do not hinder any of traditional key-
+board playing, but allow for tremendous new possibilities
+[1]. They are designed in an open-ended fashion, without
+any standard mappings. The raw data provides touch coor-
+dinates and contact area of up to three simultaneous ﬁngers
+per key, which can be used in any possible way.
+In previous projects, I had developed a working infras-
+tructure around TouchKeys, and most importantly, devel-
+oped mappings and playing techniques that really allowed
+for augmented keyboard playing. In one project, Living
+Strings [3], I apply a hybrid acoustic-electronic approach to
+synthesis, using physical models excited with acoustic vi-
+brations. In this instrument, the overall feel is to interact
+with a physical, acoustic object.
+Keeping that hybrid approach, a completely new virtual
+sounding structure was created, or rather a huge acoustic
+virtual harp sculpture with which I can interact during a
+performance, and hence shape the music both directly as
+a gesture-based musician-performer, but also by controlling
+higher-level parameters of the audio beast, hence being able
+to alter between gesture-based musicianship and sculpting
+the sound of a large resonating system.
+3.1 Design decisions for the sound engine
+Before I started, a number of decisions, aesthetic and techni-
+cal, were taken. The instrument should be a huge resonating
+harp, with a large number of interconnected strings, based
+on the idea of resonance. Resonance and feedback have been
+core concepts in my musicianship for a number of years, be-
+cause of the complexity it gives rise to, the organic sounding
+results, because I have developed a number of techniques,
+strategies to tame it.
+All strings should be on, all of the time. As composers,
+we often think in terms of events. As a synthesist, I pre-
+fer to interact with continuous systems, and modulate its
+parameters. Gestural input is continuous, as is motion and
+movement. Acoustic instruments are also not really based
+on events. In a piano the strings are always doing their
+thing, but you modulate them with dampers, and you in-
+ject bursts of energy through the hammers. But the energy
+is injected into a string that may be already vibrating. It
+is the same with a drum. You inject energy into an already
+vibrating membrane. Each injection is diﬀerent.
+With all strings active all of the time, you can still have a
+lot of control by regulating parameters such as: pitch, injec-
+tion of vibrations into the string, amount of injection from
+neighbor strings, target amplitude level, and the bridge
+ﬁlter, which controls the frequency-dependent energy loss
+when the sound wave in the string bounces on the bridge
+and goes back into the string again. With the ﬁlter high,
+the string rings brightly for a long time. With the ﬁlter is
+low, it sounds muted (and the pitch goes down). The ﬁlter
+acts as a damper. Usually, more energy is lost in the higher
+register, so even a simple low-pass ﬁlter in a delay feedback
+loop creates a believable string model (the famous Karplus
+Strong model [7]). The ﬁlter level is also a key component
+of taming runaway resonances.
+3.2 Structure
+The structure of the harp is partly determined by the given
+hardware constraints (in relation to the aesthetic idea).
+Sometimes this is a good thing, because it speeds up the
+decision process, and induces a logic to the work.
+The decision to use the Nord Modular G2 DSP platform
+for the implementation of the work comes with quite a few
+constraints regarding computational load (like every com-
+puter), signal ﬂow (because of the limited number of buses
+between processors and limited number of inputs and out-
+puts), and voice structure. It was decided early on that I
+would need 4 Nord G2s to be able to produce 16 discrete
+output channels, as each machine has 4 outputs. Each (ex-
+panded) machine has 8 processors, which are dynamically
+distributed depending on computational load, but are most
+eﬀectively used in pairs. There is a mechanism for poly-
+phonic patching, meaning the creation of many instances
+of the same patch, but it is only useful for a system with
+dynamic voice allocation, and this harp needs all strings to
+be on all of the time. So a ﬁxed DSP structure was more
+feasible.
+With a decent complexity of each string, one processor
+can do four strings, with the second processor doing post-
+processing, panning and other duties. That leaves us with 4
+strings x 4 processor pairs x 4 machines = 64 strings, which
+is a good number, because it is cognitively manageable, is
+of the same order of magnitude as the numbers of keys on a
+keyboard, and it can (and has to) be divided into subgroups
+of 4 per processor pair, and 16 per machine.
+For the Living Strings project, I developed a quite realis-
+tic waveguide string model that could also emulate prepared
+strings, i.e., strings stopped with objects of varying hard-
+ness. There the focus was on very expressive interaction
+with a smaller number of strings. In the current project, the
+focus is on the immersive mass eﬀect of being surrounded
+by a large number of sounding strings, so each string model
+does not need to be as advanced.
+The simplest physical model string model is the Karplus-
+Strong, a delay line with a low-pass ﬁlter emulating the
+energy loss when the audio wave traveling along the string
+bounces on the bridge. With gestural control over the core
+parameters, such as frequency, damping, low-pass ﬁlter, and
+some added non-linearity (i.e. an adjustable wave folder in-
+serted into the feedback loop), it can produce quite complex
+behavior.
+A standard Karplus-Strong string is started with the
+buﬀer ﬁlled with noise, and by varying the noise timbral
+character, diﬀerent timbres can be achieved (cf. com-
+48
+mutable synthesis, mentioned previously). Still, such string
+models are isolated from the environment, and are per-
+ceived as quite “clinical”, or dead. If the excitation instead
+is done by acoustic vibrations in the klavier interface, which
+by necessity are diﬀerent each time, the string comes alive
+in a completely diﬀerent way. In addition to this, since the
+fundamental concept is resonance, I want the strings to be
+excited by their neighbor strings, and from the total sound
+of the harp.
+The number of strings (64) ﬁts within the number of keys
+on one of my TouchKeys keyboards (73), so one key per
+string is a reasonable interaction paradigm. In addition to
+string pitch, control of its dynamics will be of utmost im-
+portance, because there will potentially be a lot of energy
+ﬂoating into the string from acoustic vibrations and neigh-
+bor strings.
+The two opposing forces are the incoming sounds from a
+variety of sources – which of course is needed for any res-
+onance to happen, and the the damping of the bridge low-
+pass ﬁlter. If the ﬁlter is too low, there will be decay, and if
+the ﬁlter is too high, the level will explode. It is technically
+impossible to keep the string’s energy on a constant level
+without adaptive solutions, similar to how a regular com-
+pressor works – dampen the string only if it is too loud. A
+level mechanism of some kind is needed to tame the beast.
+The strings should be connected in a long chain, or circle,
+so that vibrations to one string will resonate for quite a
+while, depending on current settings. This resonance will
+also spread spatially around the room, thanks to the spatial
+distribution of the speakers.
+Finally, there needs to be a mechanism for inducing higher
+frequency content into the string while it is ringing. In an
+electronic feedback loop, any non-linearity (such as distor-
+tion) will introduce higher frequency content of some kind.
+I have previously experimented with diﬀerent kinds of wave-
+shapers in feedback circuits, and a similar mechanism can
+be used in this instrument.
+Strings can be of any size, and so can physical models
+of them. I wanted some kind of pulsating movement in
+the harp, and for conceptual consistency, they can be im-
+plemented as strings that operate on a gestural timescale of
+1Hz or lower. I call them ropes. If ropes are excited by what
+is played (on the regular strings), and can in turn be played
+by managing their resonance in relation to their neighbor
+ropes, and feedback just like the audible strings, they can
+provide an interesting source of both texture and gesture.
+The ropes need to modulate something to be heard, since
+they operate in the sub-audio range. There are several
+alternatives. They can modulate the damping ﬁlter, but
+that would have a somewhat delayed eﬀect. More eﬀec-
+tive would be to modulate either the level of nonlinearity
+(because it quickly induces audible high-frequency content
+into the string, like when you hold your nail against a gui-
+tar string), or the amount of injection from a continuous
+source, because then it would appear really like a resonance
+of something.
+4. IMPLEMENTATION
+Based on the concept design from the previous section, I
+proceeded to prototype and test a number of potential solu-
+tions for each needed building block: simple string models,
+more complex string models, leveling mechanism, diﬀerent
+damping ﬁlters, nonlinear waveshaping, a rope model and
+various mechanisms for rope-string interaction. It turned
+out that most of the drafted concept worked, but a large
+number of speciﬁcs had to ﬁgured out by an iterated design
+process.
+Figure 1: A simpliﬁed signal ﬂow diagram of the
+string model, showing a single string out of the 64.
+The ropes have a very similar structure, but oper-
+ates at a gestural time scale.
+After trying out several more complex string models, the
+basic Karplus-Strong ended up the most practical and us-
+able choice, with a simple, adjustable low-pass ﬁlter on
+the bridge. With the extensions of external excitation and
+the potential of nonlinear waveshaping in the loop, this
+simple model becomes very powerful. Some of the other
+tested string models included twin strings slightly detuned,
+or tuned in integer ratios, etc., and while some sounded
+quite interesting, they were computationally too expensive.
+The most challenging part was to design a robust adap-
+tive leveler, that was fast without overreacting, and which
+did not consume much computation power. After trying
+many diﬀerent candidate solutions, I arrived at a very sim-
+ple solution:
+At = 1 −k(Ptarget −Pt)
+Pt = αs2
+t + (1 −α)Pt−1
+where At is the gain ampliﬁcation factor within the string
+feedback loop, Ptargetis the target sound power, and k is
+the adaptive strength coeﬃcient. Current sound power Pt
+is calculated as an exponentially smoothed square of the
+audio sample stream. It is a bidirectional leveler, allow-
+ing for absolute level control and inﬁnite sustain (which of
+course is impossible with real strings). If disabled when
+Pt < Ptarget,it becomes a one-directional leveler, i.e., up-
+wards limiting, but allowing for decay.
+Once the leveler was in place, diﬀerent resonance mecha-
+nisms were tested. Basically, a suitable topology for string
+resonance coupling was needed. Diﬀerent topologies gave
+very diﬀerent results. The simplest solution turned out to
+be both interesting and controllable: a chain of strings, each
+injecting into the next, with the option to close the chain
+into a circle. With adjustable injection strength from the
+neighbor string, the behavior of a group of strings can range
+from shimmering resonances over locking in a quasi-periodic
+coupled patterns to downright deterministic chaos.
+The chosen and now implemented string model is, thanks
+to the adaptive leveler, able to balance between a number
+of simultaneous opposing forces (see Fig. 1):
+•energy injection from nearby strings,
+49
+•energy injection from the outside,
+•high frequency content generation from the non-linear
+folding (”nail buzz”), and
+•damping/removing of energy with the bridge ﬁlter.
+4.1 Ropes
+The gestural strings, the ropes, were implemented as slowly
+clocked delay lines, with a ﬁlter in the feedback loop, which
+is basically identical to the audio strings, just with lower fre-
+quency and resolution. There is one rope per string group,
+consisting of four strings.
+The mechanism for macro-resonance was designed and
+implemented as follows:
+We know how to create continuous resonances between
+strings, thanks to the leveler which keeps the sound energy
+from exploding. But how can one create a resonant texture
+on a macro time-scale, that contains a granularity and inner
+detail? This is much harder than a resonant string, maybe
+simply because a texture contains so much more informa-
+tion. I have previously made experiments with banks of
+resonators at non-rational frequency ratios to capture reso-
+nances at all frequencies – but it was not possible to make
+them broad enough, spectrum-wise, and they were compu-
+tationally expensive.
+A pragmatic solution was to separate long-term (ca 1 sec-
+ond) audio content and gestural content. Audio is gathered
+continuously by an adaptive auto-looper, with a looping
+time of maximum one second. It collects the sound from
+its string group, automatically adjusting the mix between
+previous material and incoming material so that is always
+contains a evenly layered mix of recent activity.
+Gestural content is gathered in the actual rope model,
+which has the volume contour of incoming sound (external
+and from its own group) as input, and works just like the
+strings, with adjustable damping.
+When modulating the output volume of the adaptive
+looper with the output of the rope, we get a result which
+can be described as a kind of textural resonance. This
+sound is injected into the next string group. The looper
+usually contains harmonically rich material from the
+current string group. When this is transformed into a
+gesture by rope modulation and sent to the next string
+group, the eﬀect is as if these strings were played again
+and resonated in the next group of strings, resulting in a
+ghostly eﬀect of somebody playing inside the instrument,
+potentially propagating through the string groups, and
+causing resonance in the next rope.
+4.2 Interaction design and mapping
+Here I will go through the interactions that are possible
+with the Libration instrument, through its interface con-
+sisting of a TouchKeys-equipped Nord Stage 2EX Compact
+keyboard, two piezo contact microphones attached to the
+top and bottom steel surfaces or the keyboard casing, and
+a number of knobs assigned to MIDI controllers.
+4.2.1 The main interaction model
+Each key surface represents one string, with 64 out of 73
+keys used. Through pressing a key and/or touching its sur-
+face in various ways and in diﬀerent positions, the parame-
+ters of that speciﬁc string can be controlled, such as pitch
+and damping. External audio is injected into a string when
+its key is pressed. The constant amount of sound injected
+from the neighbor string is controlled with a global knob.
+All strings are active at all times. A string may still
+be quiet if its damper ﬁlter is set low, or if it has not yet
+received any excitation.
+Figure 2: A simpliﬁed signal ﬂow diagram of a string
+group of four strings and one rope, showing a single
+group out of a total of 16. Each box labeled String
+contains all of Fig.1.
+A key-down gate signal opens the injection to the cor-
+responding string, and keeps it open as long as the key is
+held. This lets the sound from the piezos into the string,
+and makes it vibrate. The very ”thunk” vibration from the
+pressing of the key can be enough to excite the string. Or
+the key can be held while you scratch the metal with your
+nail, or scream into the sheet metal casing. When the key
+is released, the string continues to resonate, and may decay
+or sustain depending on the current damping for that string
+and the global leveling settings and target level.
+A sustain pedal opens all strings to external input at once.
+This is a quite strong eﬀect, because the whole room starts
+to resonate, and there is potential for room feedback.
+4.2.2 Control of each string
+String pitch is decided by depth-wise ﬁnger touch position.
+The further in on the string you touch, the higher the pitch.
+This can be controlled while playing, with high precision,
+and allows for complex pitch gestures. When the ﬁnger
+is lifted, the pitch stays at its last value. Touching a key
+without pressing it has no eﬀect – it is very diﬃcult not
+to touch a large number of keys when playing with normal
+piano technique, as keyboardists (to a varying degree) use
+the sense of touch to navigate the keyboard.
+String damping is modulated by touch area (large area
+lowers the ﬁlter), global modulation wheel, and aftertouch
+pressure (more pressure lowers the ﬁlter). The metaphor
+here is that pressing on a string or placing the cushion of
+your ﬁnger on it will dampen it.
+Two ﬁngers at the same key raises the amount of wave-
+folding, drastically increasing the harshness of resonances.
+A control pedal sets global target amplitude level for all
+strings. The leveling mode (bi-directional or upwards only)
+is selected with a knob.
+4.2.3 Global parameters
+Some global parameters do not need gestural control, and
+are assigned to regular knobs. The following global param-
+eters are available:
+Leveler target mode: decay or steady level.
+Panning rotation speed
+Feedback amount, how much to inject from neighbor
+string.
+Inter string distance delay time, up to 500ms.
+Rope modulation level
+50
+Global rope length control , the speed and maximum
+gesture time of the rope.
+Rope damping , how fast the rope gestures decay (or
+build up).
+4.3 Taming the beast
+During a number of recent project, a number of techniques
+and strategies for controlling feedback have been developed.
+Thanks to these, the organic qualities of feedback systems
+(which approach those of physical models, because the two
+classes of systems overlap) can be kept, without ending up
+with howling sounds nor broken eardrums. Here is a list of
+these strategies:
+Make sure that no node in the feedback system sends au-
+dio to itself. Always have something in between, preferably
+something that induce a delay to the signal.
+Take control over the resonances (their quality, through
+ﬁlters etc.) and when they are allowed to pass. Never just
+let them sound all the time - always have access to a mecha-
+nism to break or modulate the feedback chain. Direct play-
+ing on feedback connection strengths with some interface is
+a surprisingly expressive interaction model.
+Take control over the feedback path, and use long loops.
+Longer delays increases build-up time.
+Avoid total connectivity.
+Avoid reinforcement, i.e., positive feedback. Find ways
+to modulate so that high levels/durations will lower the
+levels/durations. Then you can achieve a stable system.
+Use selective level- and duration-controlled feedback.
+For example, reasonably soft levels can increase resonances
+(feedback), while loud levels do not. Reasonably sparse
+signals may trigger resonances (feedback) while continuous
+signals do not. This can be implemented as an A-shaped
+feedback response curve – only middle levels result in
+feedback.
+Play the feedback system: Take gestural control of res-
+onance and feedback features, of injection of gestural ma-
+terial, and of speciﬁc parameters (string length, feedback
+level, etc.).
+For an unstable feedback system where essential parame-
+ters are under gestural control, you can apply navigational
+strategies such as: probe and react, ﬁnd and rest, explore
+and contemplate (what you have before you lose it). Or
+ponder and vary, discover and exploit, or possibly even: go
+to the limit and jump ship (these ideas are further developed
+in [2]).
+All you need is careful listening, mechanisms for reverse
+movement and direction change in parameter space. With
+this approach, you can even perform on the levels of a fully
+connected feedback matrix.
+In the Libration instrument, a number of these mecha-
+nisms are applied. For example, the direct string feedback
+passes through 64 strings before it gets back to where it
+started. Between all those strings there are delays, so the
+time for build-up can be controlled. There is adaptive con-
+trol of string volume, and global controls for lowering damp-
+ing ﬁlters and global target levels at any moment. Even if
+the whole room starts to resonate through the pick-ups into
+the strings and out to the speakers again, with the pedal
+down, it doesn’t explode.
+4.4 Spatialization
+This piece was composed for the ZKM surround sound dome
+in Karlsruhe, Germany, with 46 speakers. Because of the
+hardware constraints, I provided 16 channels, which were
+distributed around the dome in an upwards spiraling pat-
+tern, with 8 channels in the lower ring, 4 in the middle, 3 in
+the top ring, and 1 channel in zenith. However, individual
+strings are panned in between output channels, so that a
+higher spatial resolution is achieved. There are 16 strings
+per four 4 channels, distributed evenly, and there is a pos-
+sibility of automated rotational panning, with control over
+direction and movement.
+The piece has also been performed in the multi-speaker
+cube of Virginia Tech (at NIME18), with a similar spatial
+distribution of the audio channels.
+The spiraling distribution of channels was chosen for sev-
+eral reasons. The set of 64 strings are connected in a long
+chain. This means that if a loud sound is injected in one
+string, one can hear it propagate to other strings, which
+now becomes a movement, not a series of jumps. I wanted
+to preserve the basic structure of a long chain, and chose to
+represent it as a spiral. Also, keeping it as a linear struc-
+ture makes it easier to mentally map the keyboard to the
+spatial distribution, as the strings are distributed along the
+keyboard. The upper part of the keyboard corresponds to
+speakers high up in the ceiling. In addition, it is easy to
+produce a sparse spatial distribution by playing on strings
+far apart on the keyboard.
+To provide for further spatial animation, I implemented
+a rotational panning algorithm, with control over direction
+and speed. It rotates the 16 strings of each machine linearly
+along the four output of the same machine. There is no way
+to do a proper linear motion across all 16 channels due to
+the distributed hardware, but the eﬀect is nearly indistin-
+guishable from a complete rotation; a kind of barber-pole
+movement.
+4.5 Infrastructure
+Due to the extent and multiplicity of the synthesis model,
+and the distributed hardware, the infrastructure of the work
+is rather complex.
+First, the interface setup: The TouchKeys sensors are
+connected to the computer through USB, and its accompa-
+nying (open sourced) software generate messages using the
+OSC protocol. I use the raw data OSC frames, as the built-
+in mapping options are not suﬃcient for what was needed.
+The OSC data, together with the MIDI data from the key-
+board and knobs, are sent to a custom mapping program
+implemented in OSCII-bot, 5 a free programming language
+for OSC and MIDI management. The mapping code keeps
+track of which key is down, pairs OSC data about keyboard
+touch with the right MIDI data, stores latched values for
+key surface coordinates, routes messages to the right part
+of the distributed synthesis engine, and a lot more. The
+output is a steady stream of MIDI messages, which is sent
+onto the four Nord G2 through a 4-port MIDI interface, on
+four channels each, one for each string group.
+The four Nord G2 have four audio inputs each, and four
+outputs. All G2 receive input in one channel as a mixed
+and preprocessed signal from the two piezo microphones
+attached to the steel casing of the performance keyboard.
+Each G2 send out the output of its 16 strings, panned
+linearly over the four output channels. Output no.4 of each
+Nord G2 is split and sent onto the next machine, to keep
+the chain of string connections unbroken. The last one is
+(optionally) connected back into the ﬁrst. If it is, then the
+64 strings form a circular conﬁguration. If not, they are a
+long chain with a beginning and an end. The behavior is
+quite diﬀerent between the two conﬁgurations.
+Before a performance, I do a feedback test in the room to
+ﬁnd the strongest room resonances, which are then reduced
+using a parametric equalizer to avoid strong feedback peaks.
+The instrument can handle the levels, but it is not nice
+5https://cockos.com/oscii-bot/
+51
+when a few frequencies stand out all the time. Also, some
+undesirable resonances happen in the steel casing of the
+performance keyboard, and are similarly reduced.
+5. PLAYING TECHNIQUES
+With any new instrument, during testing, rehearsals and
+performances, recurring playing techniques emerge. By
+looking at these, one can draw some conclusions about how
+the instrument works, and especially about what are the
+important aspects of the current speciﬁc implementation
+of the more general idea. This is part of my method,
+and sometimes the results are quite unexpected. Minute
+implementation details may end up being treated as core
+features in concerts, and vice versa. Also, a list of common
+playing techniques and “devices” is very useful when
+developing the next instrument, or the next generation of
+the current instrument.
+5.1 Observed playing techniques in Libration
+Below I will list a few playing techniques that I have ob-
+served during my playing, and give some explanation when
+needed:
+Hold key and inject sounds - this is the basic technique, as
+the system was designed. Holding a key means it is open for
+injection of excitation sounds, so any noise into the piezos
+will make the string sing.
+Hold chord and inject sounds - when holding several keys,
+you have to remember that this is no ordinary keyboard.
+Pitch simply is not mapped to key, but instead mapped
+to the keyboard depth-wise position. The eﬀect is similar
+as the previous technique, except that you simultaneously
+inject the same noises into all held strings.
+Press down the sustain pedal and hit the whole machine
+on the end-cheeks, or stomp on the ﬂoor. This is a very
+powerful technique, because it opens up the whole harp for
+acoustic input, which then becomes quite reinforced because
+of the multiplicity of the signal. Also, any remaining room
+resonances can cause speciﬁc strings to scream. But as soon
+as you lift the pedal, the mayhem stops. Or, depending on
+the damping settings, etc., the only thing that happens may
+be that there suddenly is a strange sonic atmosphere around
+the room.
+Hold a few string in high register and play very clear
+resonant soft treble sounds
+Hold a few keys and make pregnant rhythm. This triggers
+the rope gestures, and with the right settings (low rope
+damping, high rope modulation out), these rhythms may
+keep playing on for quite a while.
+With long or medium-long inter-string delay, play short
+sounds. These then propagate through resonances in suc-
+cessive strings, which are distributed around the room.
+Raise the global feedback level. In the middle the strong
+drone, use pressure and key touch area to modulate down
+the damping ﬁlter (mute the drone), and suddenly play a
+single sound or a few keys - then the drone comes back when
+I release
+Tapping with low string damping ﬁlter. With the damp-
+ing set very low, tapping strings (or rather, tapping the
+metal casing when holding a key) has a very acoustic sound,
+like rubber bands.
+Ritardando of gesture tempo. Record gestures and enable
+the ropes. Once they are all playing, slowly lower the rope
+speed. The gestures keep playing.
+Hold a number of strings and scratch the heating vents no
+the back of my Nord Stage keyboard - was it maybe secretly
+intended as a guiro?
+In the middle of a drone, raise the damping ﬁlter of one
+string at a time, then remove again. These strings will be
+clear as glowing points in a gray mass.
+In the middle of a drone, gradually change the pitch of
+all strings, a few at a time, from high to low or opposite.
+5.2 Performance
+Libration Perturbed is an instrument/work designed for im-
+provisation, and the performances have been quite diﬀerent.
+Because of the high degree of nonlinearity, it is hard to pre-
+dict what will happen. On the other hand, there are tools
+for dealing with whatever will happen, through the detailed
+mapping. One will not be stuck.
+Generally, I start by feeling in the room, and exposing the
+sound sources in the dome by playing rather pointillistically.
+Gradually I explore the stronger feedback settings, getting
+to stronger self-oscillating drones, and alternating between
+them and precise gestures on one or a few strings. I usually
+save the ropes for the second half, where they work like a
+kind of accompaniment, which I have to “reﬁll” once in a
+while. Also, the rotational panning is saved for the very
+end.
+6. CONCLUSION
+I have presented a beast of a feedback instrument, played
+by being tickled by acoustic sounds and tamed through a
+well-working mapping and internal adaptive leveling mech-
+anisms. I dare tickle it, and it can be tamed.
+7. REFERENCES
+[1] Dahlstedt. Expert commentary: Turning the piano
+keyboard inside out. In A.R. Jensenius, M.J. Lyons
+(Eds.): A NIME Reader: Fifteen Years of New
+Interfaces for Musical Expression, pages 430–432.
+Springer, 2017.
+[2] P. Dahlstedt. Circle squared and circle keys -
+performing on and with an unstable live algorithm for
+the disklavier. In NIME14, pages 114–117, London,
+United Kingdom, 2014.
+[3] P. Dahlstedt. Physical interactions with digital
+strings-a hybrid approach to a digital keyboard
+instrument. In NIME17, pages 115–120, 2017.
+[4] A. Eldridge and C. Kiefer. Self-resonating feedback
+cello: Interfacing gestural and generative processes in
+improvised performance. In NIME17, pages 25–29,
+Copenhagen, Denmark, 2017. Aalborg University
+Copenhagen.
+[5] L. Haken, E. Tellman, and P. Wolfe. An indiscrete
+music keyboard. Computer Music Journal,
+22:1:31–48, 1998.
+[6] M. Karjalainen, V. V ¨alim¨aki, and Z. J´ anosy. Towards
+high-quality sound synthesis of the guitar and string
+instruments. In ICMulfarC93, pages 56–56, 1993.
+[7] K. Karplus and A. Strong. Digital synthesis of
+plucked-string and drum timbres. Computer Music
+Journal, 7(2):43–55, 1983.
+[8] A. McPherson. Touchkeys: Capacitive multi-touch
+sensing on a physical keyboard. In NIME12, Ann
+Arbor, MI, USA, 2012.
+[9] J. O. Smith. Physical modeling using digital
+waveguides. Computer music journal, 16(4):74–91,
+1992.
+[10] J. O. Smith. Eﬃcient synthesis of stringed musical
+instruments. In ICMC. ICMA, 1993.
+[11] H. ´Ulfarsson. The halldorophone: The ongoing
+innovation of a cello-like drone instrument. In
+NIME18, pages 269–274, 2018.
+52

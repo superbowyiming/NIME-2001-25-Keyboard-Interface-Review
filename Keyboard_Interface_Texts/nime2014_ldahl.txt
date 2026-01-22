@@ -1,0 +1,715 @@
+Triggering Sounds From Discrete Air Gestures: What
+Movement Feature Has the Best Timing?
+Luke Dahl
+Center for Computer Research in Music and Acoustics
+Department of Music, Stanford University
+Stanford, CA
+lukedahl@ccrma.stanford.edu
+ABSTRACT
+Motion sensing technologies enable musical interfaces where
+a performer moves their body “in the air” without manip-
+ulating or contacting a physical object. These interfaces
+work well when the movement and sound are smooth and
+continuous, but it has proven diﬃcult to design a system
+which triggers discrete sounds with precision that allows
+for complex rhythmic performance.
+We conducted a study where participants perform “air-
+drumming” gestures in time to rhythmic sounds. These
+movements are recorded, and the timing of various move-
+ment features with respect to the onset of audio events is
+analyzed. A novel algorithm for detecting sudden changes
+in direction is used to ﬁnd the end of the strike gesture.
+We ﬁnd that these occur on average after the audio onset
+and that this timing varies with the tempo of the move-
+ment. Sharp peaks in magnitude acceleration occur before
+the audio onset and do not vary with tempo. These re-
+sults suggest that detecting peaks in acceleration will lead
+to more naturally responsive air gesture instruments.
+Keywords
+musical gesture, air-gestures, air-drumming, virtual drums,
+motion capture
+1. INTRODUCTION
+1.1 Air-controlled Instruments
+We typically think of a musical instrument as an artifact
+under manipulation by a human for the purposes of mak-
+ing musical sound. In most acoustic instruments the energy
+for producing sound is provided by human movement in di-
+rect contact with the instrument: striking a drum, bowing
+or plucking a string, blowing air through a ﬂute. In in-
+struments where the acoustic energy is not provided by the
+player, such as a pipe organ or the majority of electronic
+and digital instruments, control of the instrument relies on
+manipulation of a key, slider, rotary knob, etc.
+With the advent of electronic sensing it became possible
+to control an instrument with gestures“in the air.”Early ex-
+amples include the Theremin, which is controlled by empty-
+hand movements in space, and the Radio Baton [8] and
+Buchla Lightening, which sense the movement of hand-held
+batons.
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’14,June 30 – July 03, 2014, Goldsmiths, University of London, UK.
+Copyright remains with the author(s).
+The recent proliferation of aﬀordable motion sensing tech-
+nologies (e.g. the Microsoft Kinect) has led to a surge in
+“air-controlled” new musical interfaces where a performer
+moves their body without manipulating or contacting a
+physical object. These interfaces seem to work well when
+the movement and control of sound are smooth and contin-
+uous. However, in our experience and observations it has
+proven diﬃcult to heuristically design a system which will
+trigger discrete sounds with a precision that would allow for
+a complex rhythmic performance. In such systems the rela-
+tionship between a gesture and the timing of the resulting
+sound often feels wrong to the performer.
+1.2 Air-Gestures
+We deﬁneair-gestures as purposeful movements a performer
+makes with their body in free space in order to control a
+sound-generating instrument that is designed to have an im-
+mediate response.Discrete air-gesturesare meant to trigger
+a sonic event at a precise time, and are contrasted withcon-
+tinuous air gesturesin which some movement quality (e.g.
+the height of the hand) is continuously mapped to some
+sonic variable (e.g. a ﬁlter cutoﬀ frequency.)
+In popular usage air-drumming refers to miming the ges-
+tures of a percussionist in time to another musician’s (usu-
+ally prerecorded) performance. For the sake of this research
+we expand this to include gestures in which a performer
+mimics the striking of an imaginary surface in order to trig-
+ger a sound with a sudden attack. Air-drumming is not the
+only type of discrete air-gesture. For example, jerky move-
+ments, such as in the dance style known as “popping and
+locking” might also be used to trigger sounds.
+1.3 Motivation and overview
+The goal of this research is to improve the design of air-
+controlled instruments so that discrete air-gestures can be
+reliably triggered with timing that feels natural to the per-
+former. To this end, we conducted a study of air-drumming,
+in which participants gesture in time to simple rhythmic
+sounds.
+We record participants’ movements in a motion capture
+system, and analyze this data to address the following ques-
+tion: What aspect of the air-drummer’s movement corre-
+sponds to the sound? In other words, we assume that when
+a person makes a discrete air-gesture, they do something
+with their body to create an internal sense of a discrete
+event, and that they intend this event to correspond to the
+sonic event of a drum sound. We want to know what this
+“something” is, and to characterize its timing with respect
+to the sonic event.
+We examine two candidate movement events: a hit is
+the moment where the hand suddenly changes direction at
+the end of a strike gesture, andacceleration peaks, which
+occur before the hit as the hand decelerates. We analyze
+Proceedings of the International Conference on New Interfaces for Musical Expression
+201
+the timing of these events with respect to the onset time of
+their corresponding audio events.
+Our air-drummers mime in time to a musical performance,
+but we assume that the correspondence between gesture and
+sound would be the same if they were triggering the sounds
+themselves. Thus we expect the results of our analysis to
+reliably describe sound-generating discrete air-gestures and
+be useful in improving the timing of air-instruments. In or-
+der to test this assumption we compared movements in time
+to prerecorded sounds with movements in time to percussive
+sounds made vocally by the participants themselves.
+1.4 Related Work
+1.4.1 Discrete air-gesture performance systems
+The Radio Baton [8] senses the spatial location of two hand-
+held wands. To trigger discrete sound onsets it uses a spatial
+height threshold which corresponds to the height at which
+the baton contacts the surface of the sensor, giving the user
+tactile feedback. So we say that while the Radio Baton
+senses continuous air-gestures, the discrete events which it
+enables are not air-gestures.
+A number of systems which trigger percussion sounds
+from air-gestures have been implemented as part of real-
+time performance systems. Havel and Cathrine [4] track
+sensors on the ends of drum sticks and use a velocity thresh-
+old to trigger sounds. They also note that peak velocity
+amplitude is correlated to the time between strikes.
+Kanke et al. [6] use data from acceleration and gyro sen-
+sors in drum sticks to diﬀerentiate between striking a real
+percussion instrument and an air-instrument. Strikes are
+registered when the acceleration exceeds a threshold.
+1.4.2 Studies of discrete air-gestures
+A few studies of discrete air-gestures have been conducted.
+Patola et al. [7] studied participants striking a virtual drum
+surface in time to a metronome click, and compared the use
+of a physical stick held in the hand with a virtual stick.
+Drum sounds were triggered when the tip of the stick ﬁrst
+intersected a virtual horizontal drum surface at a speciﬁc
+location. Amongst their ﬁndings was that drum hits lagged
+behind metronome clicks by 20 ms, which they attribute to
+the “perceptual attack time” of the clap sound they were
+using.
+Collicutt et al. [1] compared drumming on a real drum,
+on an electronic drum pad, with the Radio Baton, and with
+the Buchla Lightening II. In all cases they track the height
+of the hand (even though their participants held sticks),
+and use vertical minima to determine when strikes occurred.
+However, they note that this did not work for a subject
+whose strikes corresponded to smaller minima before the
+actual minimum. (We also ﬁnd in our study that strikes do
+not always correspond to minima.) They found that using
+the Lightening had the second best timing variability, and
+attribute this to the diﬀerent way in which users control
+their movements when there is no tactile event.
+1.4.3 Studies of real drum gestures
+S. Dahl [3] made motion capture recordings of drummers
+playing a simple rhythm on a real snare drum, and found
+that subjects raised the stick higher in preparation for ac-
+cented strikes and that preparatory height correlated with
+higher peak velocity. For their analysis they detect hits
+as points which satisfy two criteria: the local minima of
+stick tip height must pass below a threshold, and the dif-
+ference between two subsequent changes in vertical velocity
+(roughly equivalent to the 3rd derivative of position, also
+known as “jerk”) must surpass a threshold.
+ 	S FS SS SF F FF
+repeat 4x
+Figure 1: The stimulus rhythm. Slow notes are
+labeled ‘S’ and fast notes ‘F’
+1.4.4 Sensorimotor synchronization
+Air-drumming in time to music is a form of synchronizing
+movements to sound. Research into sensorimotor synchro-
+nization goes back decades [9], and one of the primary ﬁnd-
+ings is that when tapping in time to an audible beat (usually
+a metronome click), most people tap before the beat. This
+“negative mean asynchrony” is often a few tens of millisec-
+onds, but may be as great as 100 ms. This is relevant to
+our work because we assume that, much like the subjects in
+tapping experiments, our air-drummers are synchronizing
+some physically embodied sensation to the beat.
+As far as we know, the research we described in this paper
+is the ﬁrst detailed empirical analysis of drumming gestures
+in time to percussive sounds.
+2. STUDYING AIR-DRUMMING GESTURES
+2.1 Experiment
+The goal of our study is to understand what people do when
+they perform air-drumming gestures in time to rhythmic
+sounds, and how their movements correspond to the sounds.
+The ultimate aim is to use these results to design better
+discrete air-gesture-controlled instruments.
+2.1.1 The tasks
+We recorded the movements of people making air-drumming
+gestures in time with a simple rhythm described below. Par-
+ticipants performed two tasks. Task 1 is to gesture in time
+with a recording of the rhythm. They were asked to gesture
+as if striking a drumsomewhere in front of them with a
+closed empty right hand, and to act as if they are perform-
+ing the sounds they hear. Since we are interested in gestures
+someone might make while performing an air-instrument in
+free space, we did not provide further speciﬁcation as to the
+location or style of the strike.
+Task 2 is to vocalize the rhythm while gesturing as if they
+are performing on a drum somewhere in front of them. They
+create the rhythm themselves by saying the syllable “da”
+or “ta” for each drum hit. These tasks are very diﬀerent:
+the ﬁrst is to synchronize one’s movement to an external
+sound, and the second is to simultaneously make sounds and
+gestures which coincide. Neither of these are the task we are
+interested in, i.e. playing sounds with discrete air-gestures.
+By comparing the performance of these two tasks we hope
+to understand whether one is a better proxy (section 2.3.1.)
+The stimulus rhythm is shown in ﬁgure 1. We are inter-
+ested in whether people’s gestures are diﬀerent when per-
+formed at diﬀerent speeds, and so the rhythm is designed
+to have an equal number of ‘slow’ notes (quarter notes with
+rests in between), and ‘fast’ notes (quarter notes with no
+rests.) We compare these two cases in section 2.3.2.
+For task 1 the rhythm was played by the sound of a syn-
+thesized tom drum at a tempo of 100 beats per minute
+(where a beat is one quarter note.) For task 2 participants
+heard a 4-beat metronome count at 100 bpm, after which
+they performed and vocalized the rhythm without audio
+accompaniment.
+For each trial participants perform the rhythm four times
+Proceedings of the International Conference on New Interfaces for Musical Expression
+202
+Figure 2: A participant with markers and motion
+capture cameras
+in succession without stopping. Two trials are recorded for
+each task, resulting in a total of 8 repetitions of the rhythm
+for each task.
+A third task was recorded in which participants performed
+a similar rhythm which has notes of two dynamic levels (ac-
+cented and unaccented.) The analysis and comparison of
+these cases will be described in a future publication.
+2.1.2 Equipment
+Participants were outﬁtted with fourteen reﬂective mark-
+ers on their right arm and upper torso (ﬁgure 2), and their
+movements were recorded at 200 frames per second by a Mo-
+tion Analysis motion capture system with twelve cameras
+mounted around the participant.
+Participants could read the rhythm on a music stand
+1 meter to their front right. For task 1 the rhythm was
+played over a Behringer MS40 studio monitor placed 1 me-
+ter to the front left. For task 2, a metronome count-oﬀ was
+played over the studio monitor, and participants’ vocaliza-
+tions were recorded by an AKG C414 microphone placed
+1 meter in front of them. All sounds were recorded into
+the motion capture system at 20kHz via an analog input.
+Stimulus and metronome sounds were played from Able-
+ton Live and initiated at the beginning of each trial by the
+experimenter.
+2.1.3 Participants
+We recruited ten participants with the requirement that
+they have some experience playing a musical instrument
+and that they be able to read music. The participants were
+ﬁve females and ﬁve males, ranging in age from 22 to 57
+years, with a median age of 23.5 years. All were right-
+handed. They reported between 13 and 48 years of musical
+experience, with a median of 16 years. Four participants
+had formal dance training, and these reported receiving 3
+to 7 years of training. Before recording data it was veriﬁed
+that each participant could read the simple rhythms and
+perform the desired tasks.
+The procedure was approved by the internal review board
+for human subjects research at Stanford University.
+2.2 Analysis
+2.2.1 Detecting audio onsets
+The ﬁrst stage of analysis is to determine the onset times of
+the audio events (the drum or vocal sounds) for each trial.
+These onset times will act as a reference against which we
+compare the timing of the movement features.
+To detect audio onsets we pass the squared audio signal
+in parallel through two DC-normalized one-pole low-pass
+ﬁlters. These are used to estimate two energy envelopes
+of the audio where one is “fast”, with a time constant of
+0.5 ms, and the other is “slow”, with a time constant of
+10 ms. When the ratio of the fast estimate over the slow
+estimate exceeds a threshold, we register a potential onset.
+Similar techniques have been used to detect the ﬁrst arrival
+time of echoes in geophysical prospecting [2], and have been
+adapted for detecting audio onsets [5]. We remove potential
+onsets for which the slow estimate is very low (these are
+false events in the background noise), and those which occur
+within 200 ms of an earlier onset (in order to keep only the
+ﬁrst moment of attack.)
+2.2.2 Detecting hits
+The ﬁrst movement feature we examine is the end of the
+striking gesture, which we refer to as ahit. In a real drum
+strike the hit would correspond to the moment when the
+drum stick hits the head of the instrument, imparts energy
+into the instrument thus initiating the sound, and rebounds
+in the opposite direction from which it came.
+For a striking gesture in free space, where no physical con-
+tact is made, where is the end of the strike? As Collicutt et
+al. discovered [1], and as we found when inspecting our own
+data, the hit does not necessarily correspond to the moment
+when the minimum height is reached. Furthermore, we do
+not restrict our participants’ movements to any particular
+plane or direction (they are instructed to act as if they are
+striking an invisible drum “somewhere in front of them”).
+Thus we deﬁne a hit asthe moment at the end of a striking
+gesture where the hand suddenly changes direction.
+To that end we designed a sudden-direction-change detec-
+tor. The design takes inspiration from the onset detector
+described in section 2.2.1, which compares slow and fast es-
+timates of audio energy. Our direction-change detector uses
+a slow and fast estimate of the hand’s 3D velocity vector.
+The intuition is that during a sudden change of direction,
+the slow estimate will lag behind the quickly reacting fast
+estimate, and the angle between these two estimate vectors
+will be large. Upon inspecting our data we found that the
+moment we believed was the hit most reliably corresponded
+to a positive peak in the rate of change of this angle.
+Here is a detailed description of our sudden-direction-
+change detector:
+1. From the motion capture data extract the position
+data for the hand (using the marker on the back of
+the hand at the base of the third ﬁnger.) This is rep-
+resented as three coordinates (x, y, and z) over time,
+where x is the direction the participant is facing, and
+z is upward.
+2. Smooth the position data in each dimension by ap-
+proximating each point as a weighted least-squares
+quadratic ﬁt of the point and its seven neighbors on
+either side.1
+3. Calculate the 3D velocity vector of the hand, vhand,
+as the ﬁrst diﬀerence of the smoothed hand position.
+1Thanks to Jonathan Abel for suggesting this technique.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+203
+14.6 14.7 14.8 14.9 15 15.1 15.2 15.30
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+seconds
+normalized magnitude
+ 
+ 
+theta slope
+magnitude velocity
+position z
+position x
+audio onset
+hit
+Figure 3: Detecting the hit for a strike gesture
+4. Create two smoothed versions of the velocity vector
+by passing it through two “leaky integrators” (i.e. DC-
+normalized one-pole lowpass ﬁlters.) One, vslow, has
+a time constant of 100 ms, and the other, vfast has
+a time constant of 5 ms. These are implemented as
+recursive ﬁlters on the 3D velocity vector according to
+the following diﬀerence equations:
+vfast [n] = (1 −afast )vhand[n] + afast vfast [n−1]
+vslow[n] = (1 −aslow)vhand[n] + aslowvslow[n−1]
+where aslow and afast , are the pole locations corre-
+sponding to the slow and fast time constants.
+5. At each time point n calculate the angle θ between
+vslow and vfast :
+θ[n] = cos−1
+( ⟨vslow[n],vfast [n]⟩
+∥vslow[n]∥·∥vfast [n]∥
+)
+6. Calculate θslope as the ﬁrst diﬀerence of θ.
+7. Find all peaks of θslope which exceed a threshold. We
+consider the times of these peaks as the moment when
+a movement changed direction and we store them as
+candidate hit times.
+We then want to ﬁnd the change of direction associated
+with each strike gesture. That is we want those direction
+changes which occur after a fast movement and near to an
+audio onset. To ﬁnd the hit for each audio onset we apply
+the following algorithm:
+1. Since a hit occurs after a fast movement of the hand,
+we ﬁnd all peaks of the magnitude hand velocity,∥vhand∥,
+which exceed a certain threshold.
+2. For each of these peaks we ﬁnd the next candidate hit
+time (i.e. a large peak in θslope as described above.)
+3. To prevent choosing changes of directions that occur
+after a preparatory upwards movement, we remove
+hits for which the distance between the hand and the
+shoulder is less than a threshold.
+4. For each audio onset we ﬁnd the hit candidate which
+is closest in time, and deﬁne this as the hit time.
+Does this method ﬁnd the correct moment where a hit
+occurs? There is no way to know for sure because the “hit”
+7 7.1 7.2 7.3 7.4 7.5 7.6 7.7 7.8 7.9 80
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+seconds
+normalized magnitude
+ 
+ 
+theta slope
+magnitude velocity
+position z
+position x
+audio onset
+hit
+Figure 4: Detecting the hit for a more complex
+strike gesture.
+does not exist in any objective sense, i.e. we have no ground
+truth. Figure 3 shows the detected hit time for a slow note
+by one participant. Since the striking gesture happens pri-
+marily in the xand zdirections we plot those position com-
+ponents. We see that the hit happens at extrema in both
+these dimensions, and that the hit coincides with a distinct
+minimum in the magnitude velocity.
+However the striking gesture of another participant, shown
+in ﬁgure 4, is more complex. This participant tended to add
+a sharp hook to the end of their strike. This can be seen
+by examining the position data, and is detected as multi-
+ple direction changes (large peaks in θslope). Our algorithm
+chooses the ﬁrst such peak which corresponds to an extrema
+in the xdirection and a sudden change of slope in magnitude
+velocity.
+2.2.3 Acceleration Peaks
+While examining the data we noticed that large peaks in the
+magnitude acceleration often occur close to the audio on-
+set. For an unimpeded movement, acceleration of the hand
+is the result of a muscular force, and so we hypothesize that
+an acceleration peak may correspond to the internal move-
+ment event that air-drummers create to correspond with
+the sound. (In fact these peaks are decelerations as the
+participant sharply brakes their strike.) In order to pick
+the highest peak corresponding to each strike, we employ
+the following algorithm:
+1. Calculate the acceleration vector, a, as the ﬁrst diﬀer-
+ence of the velocity vector calculated in step 3 above.
+2. Calculate magnitude of the acceleration vector, ∥a∥.
+3. Look for times where ∥a∥ ﬁrst exceeds threshold
+AccThrhigh, and call these Tup.
+4. For each Tup ﬁnd the next point where ∥a∥passes
+below threshold AccThrlow, and call these Tdown.
+5. For each interval [Tup,Tdown] ﬁnd the time of the high-
+est peak in ∥a∥, and save this as a prospective accel-
+eration peak.
+6. For each audio onset ﬁnd the prospective acceleration
+peak that is nearest in time, and deﬁne this as the
+acceleration peak time for that onset.
+Figure 5 shows the acceleration peak for the strike gesture
+for a slow note. We can see that it occurs much closer to
+the audio onset than the corresponding hit.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+204
+9 9.1 9.2 9.3 9.4 9.5 9.6 9.7 9.80
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+seconds
+normalized magnitude
+ 
+ 
+magnitude acceleration
+position z
+position x
+audio onset
+acceleration peak
+hit
+Figure 5: Detecting the acceleration peak for a
+strike gesture.
+2.2.4 Timing Statistics
+The audio onset times, hit times, and acceleration peak
+times were calculated for each note, as described above. For
+each hit time and acceleration peak time we subtract the
+associated audio onset time to get the time oﬀset (or asyn-
+chrony) between the audio event (the onset of the sound)
+and the detected movement event (a hit or an acceleration
+peak). A negative oﬀset means the movement event pre-
+ceded the audio event, and a positive oﬀset means it came
+after. All subsequent analysis is performed on these oﬀsets.
+Since there were two trials for each task, we aggregate
+the data from each trial for each participant, and then split
+the data into the slow note and fast note conditions. For
+each participant this leads to a total of 40 events for each
+condition (5 events per 4-bar rhythm for each condition×
+4 repetitions of the rhythm ×2 trials per task.)
+In order to reject bad data due to detector errors or par-
+ticipant mistakes, we remove events whose oﬀset is greater
+than half the time between notes (600 ms for slow notes, 300
+ms for fast notes.) We then reject as outliers events which
+lie more than two standard deviations from the mean for
+each condition for each participant. This led to the rejec-
+tion of 21 slow hits, 21 fast hits, 18 slow acceleration peaks,
+and 23 acceleration peaks (out of 400 total for each case.)
+For the following results we want to know whether var-
+ious conditions diﬀer in the greater population. We com-
+pute the mean (or standard deviation) of each participant’s
+oﬀset times for the conditions we wish to compare. To in-
+fer whether the two conditions diﬀer in the population, we
+conduct a two-sided paired-sample T-test of the ten partic-
+ipants’ means (or standard deviations) for the two condi-
+tions.
+For example, to compare whether for task 1 the standard
+deviation of hit times is diﬀerent between slow notes and
+fast notes, we ﬁrst ﬁnd the standard deviation of each par-
+ticipant’s slow hits for task 1. Then we ﬁnd the standard
+deviations of each participant’s fast hits for task 1. We now
+have 10 sample standard deviations for each condition, and
+on these we conduct a T-test with 9 degrees of freedom.
+2.3 Results
+2.3.1 Which task is better?
+The ﬁrst question we want to answer is whether there is any
+important diﬀerence between the two tasks the participants
+performed. Task 1 was to gesture in time to drum sounds,
+17.5 18 18.5 19 19.5 20 20.5 21 21.50
+0.2
+0.4
+0.6
+0.8
+1
+seconds
+normalized magnitude
+ 
+ 
+position z
+position x
+audio onset
+Figure 6: Position data for 2 slow notes and 3 fast
+notes.
+and task 2 was to vocalize drum sounds while gesturing
+along with them.
+We compared both the means and standard deviations of
+task 1 and task 2 across all conditions (the four combina-
+tions of slow notes, fast notes, hits and acceleration peaks.)
+We found two signiﬁcant diﬀerences: for fast notes both hits
+and acceleration peaks came slightly earlier in task 1, and
+for slow notes both hits and acceleration peaks had slightly
+higher standard deviations in task 1.
+The diﬀerences were small, and the ﬁndings do not make
+a compelling case for either task being better. However task
+1 is a simpler activity, so for the remainder of this paper we
+use only the data from task 1. As a sanity check the analyses
+described below were also performed on task 2, and none of
+the results contradict those reported here.
+2.3.2 Are slow and fast notes different?
+For most of our participants the gestures for slow notes had
+pauses or bounces between them, while the gestures for fast
+notes were simpler and more sinusoidal (see ﬁgure 6.)
+For the sake of reliably triggering discrete air-gestures,
+we care whether the oﬀset times for hits and acceleration
+peaks are diﬀerent for slow and fast notes. If they are,
+then an instrument which triggers sounds from discrete air-
+gestures needs to somehow take into account the tempo and
+rhythmic level of the intended notes.
+We break this question into four separate tests:
+(a) For hits, do slow and fast notes have diﬀerent mean
+oﬀsets? Yes, slow hits are much later than fast hits
+(T(9) = 4.5366,p = 0.0014.)
+(b) For hits, do slow and fast notes have diﬀerent standard
+deviations? No.
+(c) Do slow and fast notes have diﬀerent mean oﬀsets for
+acceleration peaks? No, the diﬀerence between fast and
+slow hits does not exist for acceleration peaks.
+(d) Do slow and fast notes have diﬀerent standard devia-
+tions of the oﬀset for acceleration peaks? Yes, but only
+slightly (T(9) = 2.5592,p = 0.0307.)
+Table 1 shows the mean oﬀsets across all participants for
+all four cases. In summary, slow hits will on average oc-
+cur after the audio onset, while hits detected for fast notes
+will fall much closer to the audio onset. For acceleration
+peaks, even though no signiﬁcant diﬀerence was detected,
+the means for fast notes do precede the means for slow notes.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+205
+Table 1: Mean oﬀsets across all participants
+Fast Notes Slow Notes
+Hits -3 ms 44 ms
+Acceleration Peaks -32.9 ms -13.9 ms
+2.3.3 How are hits and acceleration peaks different?
+Next we want to know how the oﬀsets for hits and acceler-
+ation peaks diﬀer:
+(a) Do hits and acceleration peaks have diﬀerent mean oﬀ-
+sets for slow notes? Yes ( T(9) = 4.8440,p = 0.0009.)
+(b) Do hits and acceleration peaks have diﬀerent mean oﬀ-
+sets for fast notes? Yes ( T(9) = 4.5294,p = 0.0014.)
+(c) Do hits and acceleration peaks have diﬀerent oﬀset stan-
+dard deviations for slow notes? Yes, but only slightly
+(T(9) = 3.2287,p = 0.0103.)
+(d) Do hits and acceleration peaks have diﬀerent oﬀset stan-
+dard deviations for fast notes? Yes, but only slightly
+(T(9) = 2.4022,p = 0.0398.)
+It’s no surprise that hits and acceleration peaks have sig-
+niﬁcantly diﬀerent mean oﬀsets. Acceleration peaks, as
+we’ve deﬁned them, should always occur before their as-
+sociated hit.
+A better question is, by how much? For slow notes we ﬁnd
+that acceleration peaks precede hits by between 31 and 85
+ms (this is the 95% conﬁdence interval for the paired-sample
+T-test.) For fast notes acceleration peaks precede hits by
+between 15 and 45 ms. That is, the diﬀerence between hits
+and acceleration peaks is smaller for fast notes.
+3. DISCUSSION
+3.1 Hits vs. acceleration peaks
+If you wanted to design a system to trigger sounds with air-
+drumming gestures that has a timing that feels natural to
+the user, which movement feature would you use?
+It is interesting that when comparing standard deviations,
+either between hits and acceleration peaks (section 2.3.3,
+tests b and c), or between slow and fast notes (section 2.3.2,
+tests b and d), the few signiﬁcant diﬀerences found were
+small. This suggests that either feature would have similar
+noise or jitter.
+For a real-time system, acceleration peaks are better be-
+cause they occur on average before the time of the audio
+event (see table 1), and don’t vary as much with note speed
+(section 2.3.2, tests a and c.)
+The hit and acceleration peak detection algorithms (sec-
+tions 2.2.3 and 2.2.2) are not designed for real-time use.
+Both use thresholds which are calibrated to the range of
+the related variable over the length of a recorded trial. And
+the algorithm for choosing peaks relies on future knowledge.
+Thus for real-time applications these algorithms would need
+to be revised to work using only previous information.
+3.2 Other applications of these results
+The research described here, and future similar research into
+coordination between music and movement features, may
+have application to other musical interactions. For example
+hyper-instruments (traditional instruments that have been
+augmented with various sensors whose data is used to con-
+trol computer based sound-processing) may be designed to
+more precisely trigger discrete audio events from gestures
+made with the instrument.
+Similarly, systems which control musical processes from
+the movements of dancers may also be made to have bet-
+ter timing with respect to the dancer’s internally perceived
+sense of discrete movement events.
+3.3 Future Work
+There are a number of ways this work can be developed and
+extended. We have not yet analyzed the individual diﬀer-
+ences between participants, and we would like to understand
+how dynamic level aﬀects air-drumming gestures.
+We currently compare notes at two rhythmic levels. To
+better understand how tempo or rhythmic level aﬀects the
+timing of movement features with respect to the desired
+sound, we would need to run further studies with multiple
+tempos and more complex rhythms.
+We expect that further analysis of our movement data
+may reveal other movement features which more reliably
+indicate the correct time of the player’s intended sounds.
+Lastly, it may be useful to study other non-striking dis-
+crete air-gestures, such as triggering a sound by bringing
+some part of one’s body to a sudden halt, which is diﬀer-
+ent than the drumming gestures studied here which usually
+have a rebound.
+4. ACKNOWLEDGMENTS
+Thanks to Professor Takako Fujioka for use of the Stanford
+NeuroMusic Lab and for invaluable advice.
+5. REFERENCES
+[1] M. Collicutt, C. Casciato, and M. M. Wanderley. From
+real to virtual: A comparison of input devices for
+percussion tasks. In Proceedings of NIME, pages 4–6,
+2009.
+[2] F. Coppens. First arrival picking on common-oﬀset
+trace collections for automatic estimation of static
+corrections. Geophysical Prospecting, 33(8):1212–1231,
+1985.
+[3] S. Dahl. Playing the accent-comparing striking velocity
+and timing in an ostinato rhythm performed by four
+drummers.Acta Acustica united with Acustica,
+90(4):762–776, 2004.
+[4] C. Havel and M. Desainte-Catherine. Modeling an air
+percussion for composition and performance. In
+Proceedings of the 2004 conference on New interfaces
+for musical expression, pages 31–34. National
+University of Singapore, 2004.
+[5] J. Herrera and H. S. Kim. Ping-pong: Using
+smartphones to measure distances and relative
+positions.Proceedings of Meetings on Acoustics,
+20(1):–, 2014.
+[6] H. Kanke, Y. Takegawa, T. Terada, and
+M. Tsukamoto. Airstic drum: a drumstick for
+integration of real and virtual drums. InAdvances in
+Computer Entertainment, pages 57–69. Springer, 2012.
+[7] T. M ¨aki-Patola. User interface comparison for virtual
+drums. In Proceedings of the 2005 conference on New
+interfaces for musical expression, pages 144–147.
+National University of Singapore, 2005.
+[8] M. V. Mathews. Three dimensional baton and gesture
+sensor, Dec. 25 1990. US Patent 4,980,519.
+[9] B. H. Repp. Sensorimotor synchronization: A review of
+the tapping literature. Psychonomic Bulletin &
+Review, 12(6):969–992, 2005.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+206

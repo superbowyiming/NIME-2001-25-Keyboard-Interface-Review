@@ -1,0 +1,398 @@
+Optical Measurement of Acoustic Drum Strike Locations
+Janis Sokolovskis
+Centre for Digital Music, School of EECS
+Queen Mary University of London
+Mile End Road, London, E1 4NS, UK
+janis.sokolovskis@qmul.ac.uk
+Andrew P . McPherson
+Centre for Digital Music, School of EECS
+Queen Mary University of London
+Mile End Road, London, E1 4NS, UK
+a.mcpherson@qmul.ac.uk
+ABSTRACT
+This paper presents a method for locating the position of
+a strike on an acoustic drumhead. Near-ﬁeld optical sen-
+sors were installed underneath the drumhead of a commer-
+cially available snare drum. By implementing a time dif-
+ference of arrival (TDOA) algorithm, accuracy within 2cm
+was achieved in approximating the location of strikes. This
+method could be used for drum performance analysis, tim-
+bre analysis and can form a basis for an augmented drum
+performance system.
+Keywords
+augmented drum, position sensing, optical sensors, TDOA,
+gesture capture
+1. INTRODUCTION
+Position measurement of impacts on an acoustic drum has
+applications both for performance analysis and for extended
+percussion instrument performance, but few performance-
+ready solutions exist. Several commercial electronic drum
+pads oﬀer forms of position measurement, but these lack
+the same tactile response and richness of sound provided
+by a good acoustic drum. Measurements directly on an
+acoustic instrument require careful design in order to avoid
+disrupting the player’s performance. Practical issues such
+as transport and setup time should also be considered.
+This paper describes a method for capturing the loca-
+tion of strikes on an acoustic snare drum. The system is
+easy to transport and non-intrusive to the player since it
+is hidden inside the drum frame, beneath the head. Six
+near-ﬁeld optical sensors are installed inside the drum to
+capture the displacement of the skin (Figure 1). The lo-
+cation of the hit is approximated using time diﬀerence of
+arrival (TDOA) [18], a technique commonly used in radar
+and other ﬁelds which has also been applied to interactive
+systems [13]. The current system maintains the acoustic
+properties of the drum while recording position information
+in real time.
+2. RELATED WORK
+2.1 Position Sensing Percussive Systems
+Tindale et al. [16] give a very descriptive list of percussive
+gesture capture tools and techniques. Some of the more
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’14,June 30 – July 03, 2014, Goldsmiths, University of London, UK.
+Copyright remains with the author(s).
+Figure 1: Hardware design for the system. Top: drum
+without the skin. Bottom: inside the drum, looking up
+toward the head
+prominent systems make use of piezo transducers and force
+sensing resistors (FSR). The location of strikes was approx-
+imated with the use of several vibration sensors that are
+closely positioned underneath a rubber drum pad. Sim-
+mons SDX [15], Roland Handsonic 1, and DrumKat 2 make
+use of the FSRs since when placed closely together, they
+are less susceptible to crosstalk than piezo sensors. Roland
+V-Drums approximated radial distance from the centre of
+the cymbal pad by measuring the period of the ﬁrst half-
+wave of output signal received by the sensor [1]. In [17],
+Tindale et al. used audio analysis to classify drum strikes
+1http://www.roland.co.uk
+2http://www.alternatemode.com
+Proceedings of the International Conference on New Interfaces for Musical Expression
+70
+according to timbre. With the use of machine learning they
+could classify the radial position of a drum strike based on
+its spectral features.
+There are only a handful of systems that attempt to solve
+the issue of capturing position of a drum strike. An aug-
+mented djembe drum [10] made use of computer vision. By
+installing a webcam underneath the skin of the drum the
+system was able to interpret shadow displacement into 3D
+position of the hand. The shortfall of systems using shadows
+is the requirement of adequate lighting to be present dur-
+ing the performance. Similarly Gray et al. [5] augmented a
+snare drum to allow the performer to trigger audio and video
+samples. To reinforce information obtained by the camera,
+the system also featured piezo transducer attached to the
+drum skin and ﬂex sensors embedded into the brushes.
+Paradiso et al. [13] proposed a glass surface that could ap-
+proximate the location and distinguish diﬀerent gestures by
+their acoustic features, knocks, metal taps and ﬁst bashes.
+This was achieved by capturing their acoustical features
+with the use of piezo transducers. Lopes et al. [9] created
+a multi-touch surface which builds on the same principle
+but with contact microphones instead and used Laser Light
+Plane for multi-touch. The system’s goal was to explore the
+possibilities of integrating touch and sound to expand input
+language of surface interaction. Using the same method
+with addition of FSRs, McCloskey et al. [11] created a per-
+cussive performance surface. Ishii et al. [6] used an array of
+microphones underneath a ping pong table to approximate
+the location of ball impacts.
+2.2 Optical Sensors in Musical Instruments
+Roland D-Beam is one of the commercial products that cap-
+tures performance gestures using infrared (IR) technology.
+The system can detect the distance between the hand and
+the sensor. The distance can be mapped to parameters on
+the performance device. Buchla Lightning makes use of IR
+technology to capture 2D position of two drumsticks that
+are waved in the air. Buchla Thunder also used IR sensors
+to measure distance between the ﬁnger and the performance
+pads.
+Although there are a small number of percussive instru-
+ments that use optical sensing for capturing musical ges-
+tures there are no systems that use optical sensing for cap-
+turing the position of a drum strike.
+Authors in [14] demonstrated the usefulness of near-ﬁeld
+optical sensors in musical performance gesture capture. The
+sensors were installed on a bow of a violin to capture bow
+position. The paper addressed the issue of capturing some
+of the performance gestures of a violin player without lim-
+iting the performance with the size of the system and its
+aﬀect on the performance. Leroy et al. [7] devised a violin
+pickup using near-ﬁeld IR sensors to capture the vibrations
+of each string. The system yielded good results and could
+track the pitch of vibrating strings. McPherson [12] used IR
+sensor for capturing continuous key motion on piano. The
+system featured MIDI out capability and could extend the
+performance of an acoustic piano.
+3. METHOD
+Six QRE1113 optical reﬂectance sensors (also used in [14])
+are placed radially around the head of an acoustic snare
+drum. The IR LED of each sensor illuminates the under-
+side of the head, and the intensity of the reﬂected light is
+converted to a voltage by a phototransistor circuit (Fig-
+ure 2). The signal from each phototransistor is sampled at
+96kHz by an audio interface.
+3.1 Hardware
+LED Photo-
+trans.
+Strike
+Vibrating drumhead
+Direction of travel
+Signal captured by the the sensor
+Voltage
+Time
+Figure 2: Wave propagation is captured with the use of
+near-ﬁeld optical sensor.
+A laser-cut wooden frame was assembled and installed in-
+side the drum. The frame was designed to hold six printed
+circuit boards (PCBs) with the QRE1113 sensors (Figure 1).
+The height adjusting design of the frame allows further ex-
+perimentation with tension of the drumhead. The schematic
+in Figure 3 is taken from [14] with an additional capaci-
+tor. IC1 acts as a transimpedance ampliﬁer, converting the
+collector current from Q1 into a voltage according to the
+relationship Vo = -Io * Rl. C1 blocks the DC level of IC1
+before it is sampled by the audio ADC.
+Recorded signals were analysed in Matlab and approxi-
+mation was carried out with the use of TDOA method.
+Vi
+Vb
+Io
+Vo
+−
++
+R l
+Figure 3: Schematic of near-ﬁeld optical sensors.
+3.2 TDOA
+TDOA is a common technique used in GPS tracking, radar
+systems and sound-source localisation problems [18], [8] and
+[13]. The method is based on measuring the diﬀerence of
+wave arrival time to two receivers at known locations. By
+observing Figure 4a we can denote that pairwise diﬀerence
+can be obtained using
+S1P − S2P = s∆T, (1)
+where s is the speed of signal propagating through a medium
+and ∆T is the time diﬀerence. From these measurements a
+hyperboloid can be constructed using:
+x2
+a2 − y2
+c2 − a2 = 1, (2)
+where a = s∆T/2 and c = S1S2/2. Since hyperbola pro-
+duces two loci, one locus is chosen using the sign of the
+TDOA. There are inﬁnite number of points P that satisfy
+the measurement. The unique location is obtained by read-
+ing the intersection of several hyperbolas derived from mul-
+tiple pairs of sensors. Since sensors on our system are not
+placed linearly we need to translate and rotate the hyper-
+bola.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+71
+a
+c
+P (x,y)
+(a) Hyperbola is deﬁned as the locus of all points P.
+O(x,y)
+θ
+Δx
+Δy (b) Intersection of pair of hyperbolas. The signal source is at O.
+Figure 4: TDOA algorithm geometry.
+Current implementation uses a low pass ﬁlter at 10kHz to
+decrease some of the noise. Due to the interference caused
+by ﬂuorescent lighting a notch ﬁlter at 100Hz was imple-
+mented to eliminate this source of noise. TDOA was ap-
+proximated using simple thresholding set above the noise
+level (Figure 5). The limitation of using such an approach
+is its susceptibility to false triggering which is caused by pre-
+viously decaying strike. With this in mind the time between
+strikes is set to 1 second. Such method does not consider
+low intensity strikes. The drum hits have to be hard enough
+to breach the threshold level. The speed of the wavefront
+produced by the strikes in the drum used in (1) is calculated
+using:
+s= 2πrf
+2.045, (3)
+as described by Fletcher and Rossing [4], where f is the
+frequency (in Hz) of the fundamental mode of the drum
+and r is the radius.
+For the approximation of a unique location of a drum
+strike six hyperbolas were constructed. Each hyperbola was
+produced by two neighbouring sensors. In an ideal mem-
+brane all of the hyperbolas should intersect at a unique
+location. Due to the imperfections of the drumhead and
+imprecise tensions around the edges of the skin some hy-
+perbolas did not intersect. In Figure 6 we can see that
+hyperbolas derived from S1S2 did not intersect S5S6 and
+S3S4 did not intersect S6S1. For the hyperbolas that did
+intersect the average was calculated. Non-intersecting pairs
+of hyperbolas were not included in the calculation.
+Samples at 96kHz
+Analysis Window
+Amplitude
+Figure 5: Analysis window for approximating the diﬀer-
+ences. The time is read and compared with the other sensors
+to get the TDOA.
+4. RESULTS
+Strike Approximation
+Distance in mm
+Distance in mm
+Figure 6: Intersections of all pairwise hyperbolas and ap-
+proximation of the drum strike.
+To test the system’s accuracy, the tip of a drumstick was
+painted to leave marks on the drumhead at the time of
+impact. A photo was then superimposed on the design of
+the drum and measurement of each strike was annotated.
+The error was measured using Euclidian distance between
+strikes and approximations. The middle point of the mark-
+ing left on the drumhead is considered as the ground truth.
+Two drumheads of the same brand were used with diﬀer-
+ent tensions, however there were no signiﬁcant diﬀerences
+in error approximation for the two drumheads. The average
+error for 100 drum strikes was 18mm with maximum error
+of 54mm.
+The correlation analysis for the two drumheads showed
+that the distance from the centre of the drum is positively
+correlated with the error of the approximation of the strikes
+(p< 0.01,r = 0.52). This can be seen in ﬁgure Figure 7, as
+the distance from the centre increases so does the range of
+errors. The black dashed line shows the ideal measurement.
+Equation 3 assumes that the velocity of wave-front propa-
+gating through the drumhead is uniform. This assumption
+is violated the most when the strikes occur near the rim
+since the speed of the wavefront dissipates with time. One
+possible solution to this problem is discussed in the next
+section.
+5. DISCUSSION AND FUTURE WORK
+Proceedings of the International Conference on New Interfaces for Musical Expression
+72
+0 20 40 60 80 100 1200
+20
+40
+60
+80
+100
+120
+Measured distance in mm
+Approximated distance in mm
+Measured vs Approximated
+Figure 7: Approximated and measured distance from the
+centre of the drum.
+The current implementation assumes that the speed of the
+wave propagated through the drumhead is constant, how-
+ever as shown by Fletcher and Rossing [4] the fundamental
+pitch at the time of impact can shift as much as 10% depend-
+ing on the intensity and position of the strike. The intensity
+of strikes is not considered in current implementation due
+to inherent manufacturing diﬀerences for the phototransis-
+tor. Transistors of the same brand produce diﬀerent current
+output. One of the suggestions would be to ﬁne-tune the
+pull-up resistor R2 in Figure 3 as suggested in [14]. The
+change of speed could also be approximated by taking into
+consideration bending stiﬀness and non-uniform density of
+the material of the drumhead.
+In literature the TDOA for wave-source localisation prob-
+lems are approximated using cross-correlation. In current
+implementation such method was not used because of the
+peak-ambiguities present in the raw signal which produced
+more erroneous results. Current method uses simple thresh-
+olding which as discussed before is not reliable for drum-
+strikes in a quick succession. One of the suggestions would
+be to use a more robust onset detection algorithm. There
+are many onset detection methods described in [2], however
+most of them are dealing in frequency domain which might
+not be acceptable in live performance where the latency of
+the system is crucial. One possible solution would be to
+use combination of very small FFT window and backtrack-
+ing algorithm [3]. The backtracking algorithm could look
+at the acceleration changes of the ﬁltered signal within the
+FFT onset window.
+6. APPLICATIONS
+In current state the system can be used for sample trigger-
+ing through the use of MIDI. As well as triggering samples
+the system can be used for controlling performance param-
+eters or toggling an eﬀect on or oﬀ. In the context of live
+performance the size and cost of the system could be re-
+duced by installing an embedded hardware device such as
+BeagleBone3 or a DSP chip. At the moment the main cost
+of the system is the ADC (audio interface), optical sensors
+and the electronics are inexpensive. The main advantage of
+using embedded hardware device in the future is its set-up
+time and portability.
+As discussed in the review section, Tindale et al. [17]
+classiﬁed drum strikes according to timbre. With the use of
+augmented drum proposed in current report we can investi-
+gate how do small changes in the locations of strikes aﬀect
+the frequency spectrum. By installing the system under-
+neath other percussive instruments such as timpani, further
+study into timbre analysis of other percussive instruments
+3http://beagleboard.org/
+can be conducted.
+In the context of performance analysis playing techniques
+could be studied and compared between players.
+7. CONCLUSION
+This paper has described a method of approximating the
+location of drum strikes using optical sensing and time dif-
+ference of arrival (TDOA) calculations. The present imple-
+mentation achieves mean accuracy within 2cm on a snare
+drum. The TDOA technique is suitable for real-time use,
+though improved onset detection is needed prior to use in
+most performance situations. Possible applications of posi-
+tion detection include performance analysis, timbre analysis
+and augmented percussion performance.
+8. REFERENCES
+[1] R. Aimi. Hybrid Percussion: Extending Physical
+Instruments Using Sampled Acoustics. PhD thesis,
+Massachusetts Institute of Technology, 2006.
+[2] S. Dixon. Onset detection revisited. In DAFX, 2006.
+[3] D. P. Ellis. Beat tracking by dynamic programming.
+Journal of New Music Research, 36(1):51–60, 2007.
+[4] N. H. Fletcher and T. D. Rossing. The Physics of
+Musical Instruments. Springer-Verlag: New York,
+1991.
+[5] R. Gray, S. Lindsell, R. Minster, I. Symonds, and
+K. Ng. An augmented snare drum. In ICMC, 2009.
+[6] H. Ishii, C. Wisneski, J. Orbanes, B. Chun, and
+J. Paradiso. Pingpongplus: design of an
+athletic-tangible interface for computer-supported
+cooperative play. InCHI, 1999.
+[7] N. Leroy, E. Fl´ ety, and F. Bevilacqua. Reﬂective
+optical pickup for violin. In NIME, 2006.
+[8] N. Liu, Z. Xu, and B. Sadler. Low-complexity
+hyperbolic source localization with a linear sensor
+array.Signal Processing Letters, IEEE, 15:865–868,
+2008.
+[9] P. Lopes, R. Jota, and J. A. Jorge. Augmenting touch
+interaction through acoustic sensing. In ACM, 2011.
+[10] T. M ¨aki-Patola, P. H¨am¨al¨ainen, and A. Kanerva. The
+augmented djembe drum - sculpting rhythms. In
+NIME, 2006.
+[11] J. McCloskey, D. Anderson, R. Jennings, and
+D. Medine. Multi-input sensing table: A sensor fusion
+for drumming. 2012.
+[12] A. P. McPherson. Portable measurement and
+mapping of continuous piano gesture. In NIME, 2013.
+[13] J. Paradiso, C. Leo, N. Checka, and K. Hsiao. Passive
+acoustic sensing for tracking knocks atop large
+interactive displays. In2002 IEEE International
+Conference on Sensors, 2002.
+[14] L. S. Pardue and A. P. McPherson. Near-ﬁeld optical
+reﬂective sensing for bow tracking. In NIME, 2013.
+[15] Simmons Electronics. SDX Manual, 1987.
+[16] A. R. Tindale, A. Kapur, G. Tzanetakis, P. F.
+Driessen, and W. A. Schloss. A comparison of sensor
+strategies for capturing percussive gestures. In NIME,
+2005.
+[17] A. R. Tindale, A. Kapur, G. Tzanetakis, and
+I. Fujinaga. Retrieval of percussion gestures using
+timbre classiﬁcation techniques. In ISMIR, 2004.
+[18] J. Valin, F. Michaud, J. Rouat, and D. Letourneau.
+Robust sound source localization using a microphone
+array on a mobile robot. In IROS, 2003.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+73

@@ -1,0 +1,650 @@
+From interface design to the software instrument -
+Mapping as an approach to FX-instrument building
+Alex Hofmann
+Department of Music
+Acoustics
+University of Music and
+Performing Arts Vienna
+Vienna, Austria
+hofmann-alex@mdw.ac.at
+Bernt Isak Wærstad
+Department of Music, Music
+Technology Group
+Norwegian University of
+Science and Technology
+Trondheim, Norway
+bernt.warstad@ntnu.no
+Saranya
+Balasubramanian
+Department of Music
+Acoustics
+University of Music and
+Performing Arts Vienna
+Vienna, Austria
+balasubramanian@mdw.ac.at
+Kristoffer E. Koch
+Independent Electrical
+Engineer
+Oslo, Norway
+koch@kristofferkoch.com
+ABSTRACT
+To build electronic musical instruments, a mapping between
+the real-time audio processing software and the physical
+controllers is required. Diﬀerent strategies of mapping were
+developed and discussed within the NIME community to
+improve musical expression in live performances. This pa-
+per discusses an interface focussed instrument design ap-
+proach, which starts from the physical controller and its
+functionality. From this deﬁnition, the required, underlying
+software instrument is derived. A proof of concept is imple-
+mented as a framework for eﬀect instruments. This frame-
+work comprises a library of real-time eﬀects for Csound,
+a proposition for a JSON-based mapping format, and a
+mapping-to-instrument converter that outputs Csound in-
+strument ﬁles. Advantages, limitations and possible future
+extensions are discussed.
+Author Keywords
+mapping, instrument design, Csound, real-time audio eﬀects
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing, H.5.2 [Information Interfaces and Pre-
+sentation] User Interfaces—Haptic I/O
+1. INTRODUCTION
+In contrast to sound production on acoustic instruments
+where musicians have to use ﬁnger actions e.g. on the pi-
+ano [7] or apply blowing pressure like on the clarinet [5]
+to produce a sound, electronic instruments do not require
+direct player actions for sound production. Nevertheless,
+electronic instruments, based on analogue circuits mostly
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’17,May 15-19, 2017, Aalborg University Copenhagen, Denmark.
+provide knobs and switches on a front panel to let the per-
+former adjust parameters in the circuit to modify the sound.
+For example, this is similar to the function of clarinet keys
+that can be used to modify the pitch of the instrument [9].
+When building electronic instruments with software, a
+common approach is using a Music Programming System
+(MPS) (e.g. Csound, PureData, Chuck, SuperCollider) [14].
+Most MPSs make use of the unit generator principle. Unit
+generators are modules that contain digital signal process-
+ing (DSP) functions and the MPS allows the user to quickly
+combine these by either using a graphical or a text-based
+user interface.
+For live electronics, hardware controllers are required to
+let performers physically interact with a software instru-
+ment on stage. A variety of innovative physical controllers
+can be found in the NIME Proceedings [12] e.g. full body
+tracking suits [8] or reductionist one knob interfaces [4].
+Diﬀerent methods of routing the sensed controller values
+to the arguments of a software instrument are discussed in-
+tensively in the NIME community and are referred to as
+the mapping problem [11]. During the years, diﬀerent ap-
+proaches were presented ranging from complex mapping li-
+braries (e.g. the MnM toolbox [2] for Max/Msp, the Moda-
+lity toolkit [1] for SuperCollider) to self learning tools based
+on diﬀerent methods of machine learning [6, 13].
+For the COSMO project, we designed a framework around
+the Raspberry Pi (RPi) to build Csound based instruments
+as standalone hardware devices [10]1. The hardware frame-
+work comprises a custom designed shield for the RPi to con-
+nect up to 8 analogue controller inputs, 8 on/oﬀ switches
+and 8 LEDs, as well as a stereo analogue dry/wet circuit
+with true bypass if used as an eﬀect processor. More than 20
+COSMO hardware instruments were built in three workshop
+sessions held during the last year, with participants from
+diﬀerent backgrounds (e.g. musicians, composers, artists,
+programmers, engineers). On the software side, we provide
+a pre-conﬁgured operating system for the RPi with example
+Csound eﬀect instruments (details in Section 3.1, Table 1).
+1http://cosmoproject.github.io
+133
+•Position controllers 
+(knobs, sliders, etc.) 
+•Map controllers to audio  
+efects (UDOs) 
+•Represent the mapping in 
+JSON format
+Interface 
+design 
+•Convert JSON mappings to 
+a directed graph
+•Validate the efect chain
+Design 
+validation
+•Generate a Csound 
+instrument file
+Instrument 
+generation
+Figure 1: Schematic of an interface focussed instrument design procedure. The left box (black) shows the
+required user actions for designing the instrument, the middle and right box (grey) show the underlying
+software implementation.
+Figure 2: Photos taken during the workshops, while
+participants design their layout for the front panel,
+either on paper (top left) or on the enclosure, by
+arranging the caps of knobs.
+2. MOTIV ATION AND CONCEPT
+During the workshops, all participants were encouraged to
+design the front panel of their COSMO instrument them-
+selves (see Figure 2 and 3). We observed that they placed
+each controller with a speciﬁc intent for what it should con-
+trol in the sound, even before they thought about any un-
+derlying Csound software instrument. So the design and
+layout of their controllers, to some extent, determined what
+the Csound instrument should do.
+Based on this observation, we aim to design a software
+framework which would allow users to create a software in-
+strument simply by mapping controllers to high level DSP
+building blocks. This integrates the interface design, sound
+generator design and mapping into one ﬂuid process and
+thereby liberating the users from the task of DSP program-
+ming in Csound. In that way performers have a more holis-
+tic musical perspective throughout the entire instrument
+design process.
+Figure 1 gives an overview of the three step procedure
+starting with the interface design by the user, followed by an
+automated validation process and an automated generation
+of the underlying software instrument. An approach we
+describe as interface focussed instrument design .
+Figure 3: Example of ﬁnished designs for COSMO
+boxes which originated from the project.
+3. IMPLEMENTATION
+Based on the idea that the user will specify the controls re-
+quired to shape the sound, we setup a software environment
+that a) provides an open and expandable library of Csound
+eﬀects (Section 3.1), b) uses a common ﬁle format (JSON)
+to store the controller mappings (Section 3.2), and c) pro-
+vides a translator tool from the mapping ﬁle to a Csound
+instrument (Section 3.3).
+3.1 Effects Library
+Csound contains hundreds of unit generators called ’op-
+codes’, which generate or modify sound (e.g. oscillators,
+ﬁlters, envelopes, sample players, and more). Users can
+combine opcodes for more advanced signal processing by
+writing code in Csound language. Blocks of Csound code
+can be stored as ‘user-deﬁned opcodes’ (UDOs [15]) and
+reused.
+For the COSMO workshops, the participants were not
+required to have experience in Csound programming, so a
+simpliﬁed, yet ﬂexible system for the instrument design was
+needed. Following a modular approach, we created a library
+of ready-made eﬀects and instruments in Csound. Each
+eﬀect is provided as an UDO, speciﬁcally designed for this
+project2 and stored in a separate ﬁle (see Table 1). Each
+2https://github.com/cosmoproject/cosmo-dsp
+134
+UDO ﬁle contains a header with a clear description of the
+eﬀect parameters controllable through the input arguments
+and provides default values if arguments are not speciﬁed
+by the user.
+All input values to the UDOs are expect to be linear and
+normalized between 0 and 1. Inside each UDO the con-
+trol values are scaled to the parameter requirements of the
+diﬀerent Csound opcodes used, as is common for control
+voltage in analogue modular synthesizers. This includes a
+conversion of the linear input values from a controller to
+exponential curves, if useful for the opcode parameters (e.g.
+ﬁlter cutoﬀ-frequency). All scaled parameters are printed
+to the console for visual feedback during performance (see
+UDO example code listing in Appendix A).
+3.2 Mapping Format
+The controller inputs and their functionality are stored in
+a JSON ﬁle format 3. We chose this format because it is
+a) human readable, b) supported by many programming
+languages, and c) easy to extend in the future for more
+complex mapping functionality.
+1 {"MIDI-Patch": {
+2 "CC0_CH1":
+3 {
+4 "Lowpass": "Cutoff",
+5 "RandDelay": "Feedback"
+6 },
+7 "CC1_CH1":
+8 {
+9 "RandDelay": "Dry/wet mix"
+10 },
+11 "CC2_CH1":
+12 {
+13 "Reverb": "Dry/wet mix",
+14 "RandDelay": "Range"
+15 }
+16 }
+17 }
+Figure 4: MIDI controller mappings in JSON for-
+mat for interface focussed instrument design using
+the COSMO software framework.
+The example in Figure 4 shows the use case with stan-
+dard MIDI-controller numbers (0-127) and MIDI-channels
+(1-16) abbreviated as CCx_CHx4. The patch shown in Fig-
+ure 4 maps three continuous controllers to a chain of eﬀect
+processing modules (UDOS from Table 1). The ﬁrst con-
+troller (CC0_CH1) is assigned to the ‘cutoﬀ frequency’ of a
+‘lowpass ﬁlter’ (Lowpass.csd) and at the same time to the
+amount of ‘feedback’ of a ‘delay eﬀect with randomized de-
+lay times’ (RandDelay.csd), a so called one-to-many map-
+ping [11]. The second knob (CC1_CH1) controls the mix of
+the delay signal with the input signal, a one-to-one map-
+ping. Finally, the third controller (CC2_CH1) adds ‘reverb’
+(Reverb.csd) to the signal but also modiﬁes the range of
+frequency changes of the random delay.
+The order of appearance of the UDOs in the JSON ﬁle de-
+ﬁnes the order of the eﬀects in the audio signal path. Figure
+5 shows the resulting eﬀects patch, deﬁned by the mappings
+in Figure 4. The red arrows lay out the audio signal path,
+where the blue connections show mapped controllers.
+3http://www.json.org/
+4For the COSMO-Boxes diﬀerent variable names must be
+used to read-in the control values via the Raspberry PI
+GPIO header.
+Table 1: User-Deﬁned Opcodes for Csound in the
+COSMO Eﬀects Library.
+UDOs2 Arguments
+AnalogDelay.csd Delay time
+Feedback
+Dry/wet mix
+Blur.csd Blur time
+Gain
+StereoMode
+Dry/wet mix
+Chorus.csd Feedback
+Dry/wet mix
+Distortion.csd Level
+Drive
+Tone
+Dry/wet mix
+FakeGrainer.csd Dry/wet mix
+Hack.csd Frequency
+Dry/wet mix
+Lowpass.csd Cutoﬀ frequency
+Resonance
+Distortion
+MultiDelay.csd Multi tap on/oﬀ
+Delay time
+Feedback
+Cutoﬀ
+Dry/wet mix
+PitchShifter.csd Semitones (-/+ 1 octave)
+Stereo mode
+Dry/wet mix
+RandDelay.csd Range
+Feedback
+Dry/wet mix
+Repeater.csd Range
+Repeat time
+On/oﬀ
+Reverb.csd Decay time
+Cutoﬀ frequency
+Dry/wet mix
+Reverse.csd Reverse time
+Dry/wet mix
+SimpleLooper.csd Record/Play
+Stop/start
+Speed
+Reverse
+Audio Through
+SineDelay.csd Range
+Frequency
+Feedback
+Dry/wet mix
+SolinaChorus.csd LFO1 Frequency
+LFO1 Amp
+LFO2 Frequency
+LFO2 Amp
+Stereo mode on/oﬀ
+Dry/wet mix
+Tremolo.csd Frequency
+Depth
+TriggerDelay.csd Threshold
+DelayTime Min
+DelayTime Max
+Feedback Min
+Feedback Max
+Width
+Level
+Portamento time
+Cutoﬀ frequency
+Bandwidth
+Dry/wet mix
+Volume.csd Level
+Wobble.csd Frequency
+Dry/wet mix
+135
+CC1_CH1
+RandDelay
+Reverb
+CC0_CH1
+Lowpass CC2_CH1
+Out
+In
+Figure 5: Graph structure generated from the map-
+pings given in Figure 4. The graph shows the instru-
+ment’s eﬀect chain (red) and the controller map-
+pings (blue).
+3.3 Instrument design based on mappings
+A mapping (.json) to Csound instrument (.csd) converter is
+written in the Python programming language (Version 2.7).
+The underlying procedure works in two main steps.
+First, from the user mappings input ﬁle (see Section 3.2),
+a directed graph is build using the Python NetworkX pack-
+age [16]. The default graph contains two basic nodes: In
+and Out, which are not connected in the beginning. From
+the JSON mapping ﬁle, the controllers ( CC0_CH1, CC1_CH1,
+. . . ) and the UDOs are added as nodes to this graph, la-
+belled as either ctrl-nodes or udo-nodes. Edges in the graph,
+can be audio routings between udo-nodes (‘a’) or control
+routings between ctrl-nodes and udo-nodes (‘k’, following
+the Csound variable scheme [3, p. 22]). All assignments
+between the nodes are taken from the JSON representation
+and added as edges to the graph. Edges from one udo-node
+to the next udo-node are made according to the order of
+appearance in the mapping ﬁle. The In-node is connected
+to the ﬁrst udo-node, and the last udo-node is ﬁnally con-
+nected to the Out-node (see Figure 5). Before a Csound
+Instrument ﬁle (.csd) is written, the graph is validated i.e.
+if there is an audio signal path from In to Out.
+Second, based on the graph structure, a Csound instru-
+ment ﬁle (.csd) is compiled which calls the UDOs from the
+Eﬀects Library (Section 3.1) and assigns hardware device
+data streams to the UDO input parameters. Depending on
+whether it is a MIDI-Patch or a COSMO-Patch, the cor-
+responding lines of Csound code, to read-in the hardware
+(ctrl7 for MIDI, chnget for COSMO) and store the values
+in control variables, are generated. In the case of a MIDI-
+controller all input values are normalized to be between 0–1
+to be compatible with the UDO Library.
+For each udo-node in the audio signal path, a line of
+Csound code is generated using the information given in
+the UDO ﬁle header. Earlier generated control variables
+or default values are assigned to the UDO input parame-
+ters corresponding to the structure of the graph. Finally, a
+Csound instrument deﬁnition is written into a .csd ﬁle, con-
+taining a header with Csound settings and the generated
+lines of Csound code (see Appendix B).
+4. DISCUSSION AND FUTURE WORK
+In this paper we propose an approach to instrument de-
+sign from a performer’s perspective and provide a proof-
+of-concept software framework that uses this principle to
+build a musical eﬀect instrument. In contrast to traditional
+instrument-to-controller mapping, this approach starts at
+the functionality of the interface and deﬁnes the required
+underlying instrument. This shifts the focus from ‘building
+a software instrument and afterwards mapping controllers
+to its parameters’ to ‘designing an interface which deﬁnes
+and creates the required software instrument’. Interface
+focussed instrument design therefore primarily focusses on
+the human-computer interaction of a software instrument.
+The strong link between the interface and the underlying
+software may also result in an interface which reﬂects the
+signal path. Although here, an example implementation is
+provided for the COSMO-Project [10] in combination with
+a library of Csound eﬀects, this approach is not restricted
+to any speciﬁc hardware or software.
+In the mapping literature [11] three basic types of instru-
+ment-controller mappings are discussed, respectively one-
+to-one, one-to-many and many-to-one. The current imple-
+mentation only supports one-to-one and one-to-many map-
+pings. Mappings of multiple controllers to the same UDO
+argument many-to-one would require adding controller-merge
+nodes to the graph. In the graph-to-csound code compi-
+lation, these nodes would have to result in extra lines of
+Csound code in the instrument deﬁnition, a possibility to
+explore further.
+In the current implementation the main assignments are
+in the JSON ﬁle but some mapping details (parameter ranges,
+mapping curves) are handled inside the UDOs written in
+Csound language. Providing the UDOs this way, on one
+hand, it is supposed to make it easier for novice users to
+quickly setup their instrument. On the other hand this
+has limitations concerning the ability to ﬁne-tune the in-
+strument for optimal expressive control without knowing
+Csound programming. However, all code is open-source and
+more advanced users are encouraged to modify the existing
+UDOs or to design their own UDOs using customized map-
+ping curves and parameter ranges.
+However, especially in the case of one-to-many mappings
+it can be useful to quickly deﬁne control ranges already in
+the JSON-mapping format, a feature foreseen to be added
+in the future. The possible gain of ﬂexibility can be cru-
+cial especially in situations where a performer wants to ﬁne
+tweak the instrument in a rehearsal or in a soundcheck right
+before a concert.
+A great eﬀort towards such ﬂexibility is provided by the
+Modality-toolkit [1] for Supercollider (SC). Their main mo-
+tivation was an easier mapping of control data streams to
+SC-instrument inputs (SynthDef arguments). Modality sup-
+ports many commercial controllers with diﬀerent data for-
+mats (MIDI, HID, OSC), and even on-the-ﬂy mapping and
+re-mapping of controllers to the SynthDefs is possible dur-
+ing performance. However, the Modality-toolkit is funda-
+mentally diﬀerent from our approach in terms of that a
+Modality-mapping does not deﬁne the instrument logic in-
+side the SynthDef. In our case a re-mapping of the physical
+controls would result in a diﬀerent instrument or at least in
+a diﬀerent signal path inside the instrument, whereas in Mo-
+dality only the position of the physical control is changed.
+Training of movement patterns is essential for performing
+musicians to archive a virtuosic playing level [17]. Chang-
+ing a mapping on-the-ﬂy means that the same instrument
+needs to be played with diﬀerent body movements from now
+on. Imagine a concert pianist having to remember that the
+pedals changed their function or more drastically that the
+136
+order of tones produced by the keys has changed during the
+piece.
+The strong binding between the interface and the software
+instrument, as we propose in this paper, might on one hand
+have advantages like an emphasis on the interface in the de-
+sign process, and a link between the interface and the instru-
+ment signal path. On the other hand, this might also bring
+limitations in terms of less ﬂexibility to create complex sig-
+nal paths or complex mappings, diﬀerent aspects that need
+to be explored further. As this concept was developed after
+the experience from the COSMO workshops mentioned in
+the introduction, a detailed study with users coming from
+diﬀerent backgrounds (e.g electronic musicians, traditional
+musicians, programmers, non-programmers) is foreseen to
+better understand the applicability of this approach. There-
+for a graphical-user-interface, with editor functionality for
+the JSON mapping ﬁles is going to be implemented.
+With the current proof-of-concept implementation we aim
+to simplify the process of building a COSMO eﬀect instru-
+ment in Csound by focusing only on deﬁning controller map-
+pings to input parameters of given UDOs. Designing instru-
+ments from the perspective of the performer’s interface may
+open up new ways of thinking about software instrument
+design.
+5. ACKNOWLEDGEMENTS
+We are thankful to the anonymous reviewers for their valu-
+able comments on the manuscript. This research was sup-
+ported by the Arts Council Norway. The authors made
+extensive use of free software under GNU/ Linux.
+6. REFERENCES
+[1] M. Baalman, T. Bovermann, A. de Campo, and
+M. Negr˜ ao. Modality. InProceedings of the
+ICMC/SMC, pages 1069–1076, Athens, Greece, 2014.
+[2] F. Bevilacqua, R. M ¨uller, and N. Schnell. Mnm: a
+max/msp mapping toolbox. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 85–88, Vancouver, BC,
+Canada, 2005.
+[3] R. C. Boulanger. The Csound book: perspectives in
+software synthesis, sound design, signal processing,
+and programming. MIT press, 2000.
+[4] J. Bowers, J. Richards, T. Shaw, J. Frieze, B. Freeth,
+S. Topley, N. Spowage, S. Jones, A. Patel, and L. Rui.
+One knob to rule them all: Reductionist interfaces for
+expansionist research. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, volume 16, pages 433–438,
+Brisbane, Australia, 2016. Queensland
+Conservatorium Griﬃth University.
+[5] V. Chatziioannou and A. Hofmann. Physics-based
+analysis of articulatory player actions in single-reed
+woodwind instruments. Acta Acustica united with
+Acustica, 101(2):292–299, 2015.
+[6] A. Cont, T. Coduys, and C. Henry. Real-time gesture
+mapping in pd environment using neural networks. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression , pages 39–42,
+Hamamatsu, Japan, 2004.
+[7] W. Goebl, R. Bresin, and I. Fujinaga. Perception of
+touch quality in piano tones. The Journal of the
+Acoustical Society of America, 136(5):2839–2850,
+2014.
+[8] S. Goto and R. Powell. Netbody - ”augmented body
+and virtual body ii” with the system, bodysuit,
+powered suit and second life - its introduction of an
+application of the system. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 48–49, Pittsburgh, PA,
+United States, 2009.
+[9] A. Hofmann and W. Goebl. Finger forces in clarinet
+playing. Frontiers in Psychology, 7:1140, 2016.
+[10] A. Hofmann, B. Waerstad, and K. Koch. Csound
+instruments on stage. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, volume 16, pages 291–294,
+Brisbane, Australia, 2016. Queensland
+Conservatorium Griﬃth University.
+[11] A. Hunt and M. M. Wanderley. Mapping performer
+parameters to synthesis engines. Organised sound,
+7(02):97–108, 2002.
+[12] A. R. Jensenius and M. J. Lyons. Trends at
+nime—reﬂections on editing a nime reader. In
+Proceedings of the International Conference on New
+Interfaces for Musical Expression , volume 16 of
+2220-4806, pages 439–443, Brisbane, Australia, 2016.
+Queensland Conservatorium Griﬃth University.
+[13] C. Kiefer. Musical instrument mapping design with
+echo state networks. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 293–298, London, United
+Kingdom, 2014. Goldsmiths, University of London.
+[14] V. Lazzarini. The development of computer music
+programming systems. Journal of New Music
+Research, 42(1):97–110, 2013.
+[15] V. Lazzarini, S. Yi, J. ﬃtch, J. Heintz,
+Ø. Brandtsegg, and I. McCurdy. User-Deﬁned
+Opcodes, pages 139–151. Springer International
+Publishing, Cham, 2016.
+[16] D. A. Schult and P. Swart. Exploring network
+structure, dynamics, and function using networkx. In
+Proceedings of the 7th Python in Science Conferences
+(SciPy 2008), volume 2008, pages 11–16, 2008.
+[17] R. J. Zatorre, J. L. Chen, and V. B. Penhune. When
+the brain plays music: auditory–motor interactions in
+music perception and production. Nature Reviews
+Neuroscience, 8(7):547–558, 2007.
+APPENDIX
+A. EFFECTS LIBRARY EXAMPLE
+To provide details of the underlying Eﬀects library, an ex-
+cerpt of Csound Code from the (Lowpass.csd) UDO con-
+taining a lowpass ﬁlter with an additional distortion eﬀect is
+shown in this Section. Lines 1–15 of the Csound code below
+give a description of the UDO in a user friendly style. The
+”Arguments” and ”Defaults” deﬁnitions are also relevant for
+the JSON-to-Csound converter, as they provide the order
+of input arguments and default values required when gen-
+erating the Csound instrument deﬁnition (see Section 3.3).
+Lines 18–41 in the code listing contain the deﬁnition of
+the user deﬁned opcode for the lowpass ﬁlter. The linear in-
+put controller values are converted to an exponential curve
+(L. 21) for the cutoﬀ frequency and scaled to a meaning-
+ful parameter range (L. 22, from 30 Hz to 12 kHz), before
+printed to the console (L. 23–24). The controller values are
+smoothed (L. 25) to avoid parameter jumps, that might be
+caused by the resolution of the controller (e.g. 128 steps
+for MIDI controllers). Similar processing steps done for all
+input parameters.
+Finally, the Csound opcode for a resonant low pass ﬁlter
+(lpf18) is called for of the two each stereo channels (L. 37–
+137
+38) and the processed input parameters are assigned.
+1 /*********************************************
+2
+3 Lowpass.csd
+4
+5 Arguments: Cutoff frequency, Resonance,
+6 Distortion
+7 Defaults: 0.8, 0.3, 0
+8
+9 Cutoff frequency: 30Hz - 12000Hz
+10 Resonance: 0 - 0.9
+11 Distortion: 0 - 0.9
+12
+13 Description:
+14 A resonant lowpass filter with distortion
+15
+16 ;***********************************************
+17
+18 opcode Lowpass, aa, aakkk
+19 ainL, ainR, kfco, kres, kdist xin
+20
+21 kfco expcurve kfco, 30
+22 kfco scale kfco, 12000, 30
+23 Srev sprintfk "LPF Cutoff: %f", kfco
+24 puts Srev, kfco
+25 kfco port kfco, 0.1
+26
+27 kres scale kres, 0.9, 0
+28 Srev sprintfk "LPF Reso: %f", kres
+29 puts Srev, kres
+30 kres port kres, 0.01
+31
+32 kdist scale kdist, 0.9, 0
+33 Srev sprintfk "LPF Dist: %f", kdist
+34 puts Srev, kdist
+35 kdist port kdist, 0.01
+36
+37 aoutL lpf18 ainL, kfco, kres, kdist
+38 aoutR lpf18 ainR, kfco, kres, kdist
+39
+40 xout aoutL, aoutR
+41 endop
+B. GENERATED CSOUND INSTRUMENT
+In this Appendix Section the Csound instrument deﬁnition
+generated from the graph structure shown in Figure 5 is
+presented. In the code listing below, lines 8–10 import
+the required UDO ﬁles from the Eﬀects Library. Then,
+an instrument deﬁnition is written (L. 12–27). First, two
+channels of audio data input stream are stored in the audio
+variables named aL and aR (L 13). Then, the 7-bit MIDI
+controller values are read-in and assigned to control vari-
+ables (L. 16–18). In the lines 20–23 the earlier imported
+UDOs are called in the order of their appearance in the
+audio signal graph. Audio variables, control variables or
+default values are assigned to the UDO’s input parameters,
+based on the descriptions given in the UDO ﬁle. Finally
+the processed audio signals are routed to the sound device
+output (L. 25).
+1 <CsInstruments>
+2
+3 sr = 44100
+4 ksmps = 64
+5 0dbfs = 1
+6 nchnls = 2
+7
+8 #include "../DSP-Library/Effects/Lowpass.csd"
+9 #include "../DSP-Library/Effects/RandDelay.csd"
+10 #include "../DSP-Library/Effects/Reverb.csd"
+11
+12 instr 1
+13
+14 aL, aR ins
+15
+16 gkCC2_CH1 ctrl7 1, 2, 0, 1
+17 gkCC0_CH1 ctrl7 1, 0, 0, 1
+18 gkCC1_CH1 ctrl7 1, 1, 0, 1
+19
+20 aL, aR Lowpass aL, aR, gkCC0_CH1, 0.3, 0.0
+21 aL, aR RandDelay aL, aR, gkCC2_CH1, gkCC0_CH1,
+22 gkCC1_CH1
+23 aL, aR Reverb aL, aR, 0.85, 0.5, gkCC2_CH1
+24
+25 outs aL, aR
+26
+27 endin
+28
+29 </CsInstruments>
+138

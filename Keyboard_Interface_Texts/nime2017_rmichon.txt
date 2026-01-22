@@ -1,0 +1,557 @@
+Passively Augmenting Mobile Devices Towards Hybrid
+Musical Instrument Design
+Romain Michon, Julius O. Smith, Matthew Wright,
+Chris Chafe, John Granzow, Ge Wang
+Center for Computer Research in Music and Acoustics (CCRMA), Stanford University
+Stanford, CA 94305-8180, USA
+{rmichon,jos,matt,cc,granzow,ge}@ccrma.stanford.edu
+ABSTRACT
+Mobile devices constitute a generic platform to make stan-
+dalone musical instruments for live performance. However,
+they were not designed for such use and have multiple lim-
+itations when compared to other types of instruments.
+We introduce a framework to quickly design and proto-
+type passive mobile device augmentations to leverage exist-
+ing features of the device for the end goal of mobile musical
+instruments.
+An extended list of examples is provided and the results
+of a workshop, organized partly to evaluate our framework,
+are provided.
+Author Keywords
+Mobile music technology and performance paradigms, Mul-
+timodal expressive interfaces, Novel musical instruments
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing, D.2.2 [Software Engineering] Design Tools
+and Techniques, J.5 [Arts and Humanities] Music.
+1. INTRODUCTION
+Mobile devices (smart-phones, tablets, etc.) have been used
+as musical instruments for the past ten years both in the
+industry (e.g., GarageBand1 for iPad, Smule’s apps, 2 mo-
+Forte’s GeoShred,3 etc.) and in the academic community [5,
+14, 13, 6, 4, 2, 15]. As stand alone devices they present a
+promising platform for the creation of versatile instruments
+for live music performance. Within a single entity, sounds
+can be generated and controlled, diﬀerentiating them from
+most Digital Musical Instruments (DMIs), and allowing the
+creation of instruments much closer to “traditional” acous-
+tic instruments in this respect. This resemblance is pushed
+even further with mobile phone orchestras such as MoPhO4
+[16], where each performer uses a mobile phone as a inde-
+pendent musical instrument.
+1http://www.apple.com/ios/garageband – All the
+URLs in this paper were veriﬁed on 04/07/17.
+2https://www.smule.com
+3http://www.moforte.com/geoshredapp
+4http://mopho.stanford.edu
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’17,May 15-19, 2017, Aalborg University Copenhagen, Denmark.
+Despite all these qualities, mobile devices were never de-
+signed to be used as musical instruments and lack some
+crucial elements to compete with their acoustic counter-
+parts. In a previous publication [10], we introduced the
+concept of “augmented mobile-device” and we presented the
+BladeAxe: a hybrid instrument partly based on acous-
+tic elements and an iPad. The iPad was used both as a
+controller, and to implement virtual physical-model-based
+elements of the instrument. The BladeAxe was the last
+iteration of a series of mobile-device-based instruments that
+we developed during the past four years.
+In this article, we try to generalize the concept of “aug-
+mented mobile device” and we provide a framework to fa-
+cilitate the design of this kind of instrument. We focus on
+“passive augmentations” leveraging existing components of
+hand-held mobile devices in a very lightweight, non-invasive
+way (as opposed to “active augmentation” requiring the use
+of electronic components).
+We’ll introduceMobile3D, an OpenScad5 library to help
+design mobile device augmentations using DIY (Do It Your-
+self ) digital fabrication techniques such as 3D printing and
+laser cutting. We’ll give an exhaustive overview of the tax-
+onomy of the various types of passive augmentations that
+can be implemented on mobile devices through a series of
+examples and we’ll demonstrate how they leverage exist-
+ing components on the device. Finally, we’ll evaluate our
+framework and propose future directions for this type of
+research.
+The software implementation of the instruments presented
+in this study will not be discussed. Most of them were made
+using the SmartKeyboard App Generator.6
+2. MOBILE 3D
+Mobile3D is an OpenScad library facilitating the design
+of mobile device augmentations. OpenScad is an open-
+source Computer Assisted Design (CAD) software using a
+high level functional programming language to specify the
+shape of any object. It supports fully parametric parts,
+permitting users to rapidly adapt geometries to the variety
+of devices available on the market.
+Mobile3D is organized in diﬀerent ﬁles that are all based
+on a single library containing generic standard elements
+(basics.scad) ranging from simple useful shapes to more
+advanced augmentations such as the ones presented in the
+following sections. A series of device-speciﬁc ﬁles adapt the
+elements of basics.scad and are also available for the
+iPhone 5, 6, and 6 Plus and for the iPod Touch. For ex-
+ample, a generic horn usable as a passive ampliﬁer for the
+built-in speaker of a mobile device can be simply created
+5http://www.openscad.org
+6https://ccrma.stanford.edu/~rmichon/
+smartKeyboard
+19
+with the following call in OpenScad:
+include <basics.scad>
+SmallPassiveAmp();
+The corresponding 3D object can be seen in Figure 1.
+Figure 1: CAD model of a generic passive ampliﬁer
+for the built-in speakers of a mobile device.
+To generate the same object speciﬁcally for the iPhone 5,
+the following code can be written:
+include <iPhone5.scad>
+iPhone5_SmallPassiveAmp();
+Finally, the shape of an object can be easily modiﬁed
+either by providing parameters as arguments to the corre-
+sponding function, or by overriding them globally before the
+function is called. If this approach is chosen, all the parts
+called in the OpenScad code will be updated, which can be
+very convenient in some cases. For example, the radius (ex-
+pressed in millimeters here) ofiPhone5_SmallPassiveAmp()
+can be modiﬁed locally by writing:
+include <iPhone5.scad>
+iPhone5_SmallPassiveAmp(hornRadius=40);
+or globally by writing:
+include <iPhone5.scad>
+iPhone5_SmallPassiveAmp_HornRadius = 40;
+iPhone5_SmallPassiveAmp();
+Mobile3D is based on two fundamental elements that
+can be used to quickly attach any prosthetic to the device:
+the top and bottom holders (see Figure 2). They were de-
+signed to be 3D printed using elastomeric material such as
+NinjaFlex R⃝7 in order to easily install and remove the de-
+vice without damaging it. They also help reducing printing
+duration, which is often a major issue during prototyping.
+These two holders glued to a laser-cut plastic plate form
+a sturdy case (as shown in Figure 2), whereas completely
+printing this part would take much more time.
+7https://ninjatek.com
+Bottom Holder Top Holder
+Mobile Device
+Plastic Plate
+Figure 2: CAD model of a simple iPhone 5 case
+made from 3D -printed holders and a laser-cut plas-
+tic plate.
+A wide range of elements can be easily added to the basic
+mobile phone case presented in Figure 2 by using adhesives.
+Some of them will be presented in greater details in the
+following sections and are part of Mobile3D.
+Figure 3 presents an example of an iPhone 5 augmented
+with a passive ampliﬁer similar to the one presented above.
+The bottom holder and the horn were printed separately
+and glued together, but they could also have been printed
+as one piece. In this example, the bottom and top holders
+were printed with PLA, 8 which is a hard plastic, and they
+were mounted on the plate using Velcro R⃝. This is an
+alternative solution to usingNinjaFlex R⃝that can be useful
+when augmenting the mobile device with large appendixes
+requiring a stronger support.
+Passive Amplifier
+Velcro
+iPhone 5
+Figure 3: iPhone 5 augmented with a horn used as
+passive ampliﬁer on its built-in speaker (instrument
+by Erin Meadows).
+The passive ampliﬁer presented in Figure 3 was
+made by overriding the default parameters of the
+iPhone5_SmallPassiveAmp() function:
+include <lib/iPhone5.scad>
+iPhone5_SmallPassiveAmp_HornLength = 40;
+iPhone5_SmallPassiveAmp_HornRadius = 40;
+iPhone5_SmallPassiveAmp_HornDeformationFactor
+= 0.7;
+iPhone5_SmallPassiveAmp();
+8PolyLactic Acid.
+20
+An exhaustive list of all the elements available in Mo-
+bile3D can be found on the project webpage. 9
+3. LEVERAGING BUILT-IN SENSORS AND
+ELEMENTS
+Mobile devices host a wide range of built-in sensors and el-
+ements that can be used to control sound synthesizers [2,
+6]. While the variety of available sensors and elements dif-
+fers from one device to another, most smart-phones have
+at least a touch screen, a loudspeaker, a microphone, and
+some type of motion sensor (accelerometer, gyroscope, etc.).
+In this section, we’ll focus on these four elements and we’ll
+demonstrate how they can be “augmented” for speciﬁc mu-
+sical applications.
+3.1 Microphone
+While the built-in microphone of a mobile device can simply
+serve as a source for any kind of sound process (e.g., audio
+eﬀect, physical model, etc.), it can also be used as a versa-
+tile, high rate sensor. [12] In this section, we demonstrate
+how it can be augmented for diﬀerent kinds of uses.
+3.1.1 Amplitude-Detection-Based Augmentations
+One of the ﬁrst concrete uses of the built-in microphone of
+a mobile device to control some sound synthesis process was
+done with Smule’s Ocarina 10 [15]. There, the microphone
+serves as a blow sensor by measuring the gain of the signal
+created when blowing on it to control the gain of an ocarina
+sound synthesizer.
+Mobile3D contains an object that can be used to lever-
+age this principle when placed in front of the microphone
+(see Figure 4). It essentially allows the performer to blow
+into a mouthpiece mounted on the device. The air-ﬂow is
+directed through a small aperture inside the pipe, creating a
+sound that can be recorded by the microphone and analyzed
+in the app using standard amplitude tracking techniques.
+The air-ﬂow is then sent outside of the pipe, preventing it
+from ever being in direct contact with the microphone.
+The acquired signal is much cleaner than when the per-
+former blows directly onto the mic, allowing to generate
+precise control data. Additionally, condensation never ac-
+cumulates on the mic which can help extend the duration
+of its life, etc.
+Mic mouthpiece (where the performer can blow)
+Mobile Device
+Figure 4: Mouthpiece for mobile device built-in
+mic.
+9https://ccrma.stanford.edu/~rmichon/
+mobile3D
+10https://www.smule.com/ocarina/original
+3.1.2 Frequency-Detection-Based Augmentations
+The built-in microphone of mobile devices has already been
+used as a data acquisition system to implement various
+kinds of sensors using frequency analysis techniques [7].
+Mobile3D contains an object using similar principles that
+can be used to control some of the parameters of a synthe-
+sizer running on a mobile device. It is based on a conical
+tube (see Figure 5) where dozens of small tines of diﬀerent
+length and diameter are placed inside it. These tines get
+thicker towards the end of the tube and their length varies
+linearly around it. When the performer blows inside the
+tube, the resulting airﬂow hits the nails, creating sounds
+with varying harmonic content. By directing the airﬂow
+towards diﬀerent locations inside the tube, the performer
+can generate various kind of sounds that can be recognized
+in the app using frequency analysis techniques. The inten-
+sity and the position of the airﬂow around the tube can be
+measured by keeping track of the spectral centroid of the
+generated sound, and used to control synthesis parameters.
+The same approach can be used with an inﬁnite number
+of augmentations with diﬀerent shapes. While our basic
+spectral-centroid-based analysis technique only allows us to
+extract two continuous parameters from the generated sig-
+nal, it should be possible to get more of them using more
+advanced techniques such as those used with MOGEES11 [1].
+Nails of different lengths and
+diameters change the harmonic
+content of the sound
+generated by the air flow
+going inside the tube
+Figure 5: Frequency-based blow sensor for mobile
+device built-in microphone.
+3.2 Speaker
+Even though their quality and power has signiﬁcantly in-
+creased during the last decade, mobile device built-in speak-
+ers are generally only good for speech, not music. This is
+mostly due to their small size and the lack of a proper res-
+onance chamber to boost bass, resulting in a very curvy
+frequency response and a lack of power.
+There exists a wide range of passive ampliﬁers on the mar-
+ket to boost the sound generated by the built-in speakers
+of mobile devices, also attempting to ﬂatten their frequency
+response. These passive ampliﬁers can be seen as resonators
+driven by the speaker. In this section, we present various
+kinds of resonators that can be connected to the built-in
+speaker of mobile devices to amplify and/or modify their
+sound.
+3.2.1 Passive Ampliﬁers and Resonators
+Mobile3D contains multiple passive ampliﬁers of various
+kinds that can be used to boost the loudness of the built-
+in speaker of mobile devices (e.g., see Figure 3). Some of
+11http://www.mogees.co.uk
+21
+them were designed to maximize their eﬀect on the gen-
+erated sound [3]. Their shape can vary greatly and will
+usually be determined by the type of the instrument. For
+example, if the instrument requires the performer to make
+fast movements, a small passive ampliﬁer will be preferred
+to a large one, etc. Similarly, the orientation of the out-
+put of the ampliﬁer will often be determined by the way
+the performer holds the instrument, etc. These are design
+decisions that are left up to the instrument designer.
+3D printed musical instrument resonators (e.g., guitar
+body, etc.) can be seen as a special case of passive am-
+pliﬁers. Mobile3D contains a few examples of such res-
+onators that can be driven by the device’s built-in speak-
+ers. While they don’t oﬀer any signiﬁcant advantage over
+“standard” passive ampliﬁers like the one presented in the
+previous paragraph, they are aesthetically interesting and
+perfectly translate the idea of “hybrid lutherie” developed
+in [10] and that we emphasize in this study.
+3.2.2 Dynamic Resonators
+Another way to use the signal generated by the built-in
+speakers of mobile devices is to modify it using dynamic res-
+onators. For example, in the instrument presented in Fig-
+ure 6, the performer’s hand can ﬁlter the generated sound to
+create a wah eﬀect. This can be very expressive, especially
+if the signal has a dense spectral content. This instrument is
+featured in the teaser video [11] of the workshop presented
+in §5.
+Figure 6: Hand resonator for mobile device built-in
+speaker.
+Similarly, the sound generated by the built-in speaker is
+sent to the mouth of the performer in the instrument pre-
+sented in Figure 7. The sound is therefore both modulated
+acoustically and through the embedded synthesis and touch-
+screen. The same result can obviously be achieved by di-
+rectly applying the mouth of the performer to the speaker,
+but the augmentation presented in Figure 7 increases the ef-
+fect of the oral cavity on the sound through a passive wave
+guide.
+3.3 Motion Sensors
+Most mobile devices have at least one kind of built-in mo-
+tion sensor (e.g., accelerometer, gyroscope, etc.). They are
+perfect to continuously control the parameters of sound syn-
+thesizer and have been used as such since the beginning of
+“mobile music” [2].
+Augmentations can be made to mobile devices to direct
+and optimize the use of this type of sensor. This kind of
+augmentation can be classiﬁed in two main categories:
+•augmentations to create speciﬁc kinds of movements
+(spin, swing, shake, etc.),
+Waveguide driving the
+output of the built-in
+speaker to the mouth
+of the performer
+Figure 7: Mouth resonator for mobile device built-
+in speaker.
+•augmentations related to how the device is held.
+Figure 8 presents a “sound toy” where a mobile device
+can be spun like a top. This creates a slight “Leslie ef-
+fect”, increased by the passive ampliﬁer. Additionally, the
+accelerometer and gyroscope data are used to control the
+synthesizer running on the device. This instrument is fea-
+tured in the teaser video [11] of the workshop presented in
+§5.
+Mobile device
+Passive amplifier optimizing
+the Leslie effect
+Hemisphere to 
+spin the device
+Figure 8: Mobile-device-based top creating a
+“Leslie” eﬀect when spun.
+Another example of motion-sensor-based augmentation is
+presented in Figure 13 and described with more details in
+§5. It features a smart-phone mounted on a bike wheel [8]
+where, once again, the gyroscope and accelerometer data are
+used to control the parameters of a synthesizer running on
+the device. Similarly, a “rolling smart-phone” is presented
+in Figure 12 and described in §5. Mobile3D contains a
+series of templates and functions to make this kind of aug-
+mentation.
+Augmentations leveraging built-in sensors related to how
+the device is held are presented in more detail in §4.
+3.4 Other Sensors
+Most mobile devices host built-in sensors that exceed the
+ones presented in the previous sections and are not sup-
+ported yet in Mobile3D. For example, built-in cameras can
+be used as very versatile sensors, [12] and a wide range of
+passive augmentations could be applied to them to “cus-
+tomize” their use for musical ends (see §6). We plan to
+support more sensors in Mobile3D in the future.
+22
+4. HOLDING MOBILE DEVICES
+Mobile devices were designed to be held in a speciﬁc way,
+mostly so that they can be used conveniently both as a
+phone and to use the touch-screen. Passive augmentations
+can be designed to hold mobile devices in diﬀerent ways to
+help carry out speciﬁc musical gestures, better leveraging
+the potential of the touch-screen and of built-in sensors.
+More generally, this type of augmentation is targeted
+towards making mobile-device-based musical instruments
+more engaging and easier to play.
+In this section, we give a brief overview of the diﬀerent
+types of augmentations that can be made with Mobile3D
+to hold mobile devices in diﬀerent ways.
+4.1 Wind Instrument Paradigm
+One of the ﬁrst attempts to hold a smart-phone as a wind
+instrument was Smule’s Ocarina [15], where the screen in-
+terface was designed to be similar to a traditional ocarina.
+The idea of holding a smart-phone as such is quite appealing
+since all ﬁngers (beside the thumbs) of both hands perfectly
+ﬁt on the screen (thumbs can be placed on the other side of
+the device to hold it). However, this position is impractical
+since at least one ﬁnger has to be on the screen in order
+to hold the device securely. The simple augmentation pre-
+sented in Figure 9 solves this problem by adding “handles”
+on both sides of the device so that it can be held using the
+palm of the two hands, leaving all ﬁngers (including the
+thumbs) free to carry out any action. Several functions and
+templates are available in Mobile3D to design these types
+of augmentations.
+Laser cut handles
+Figure 9: Smart-phone augmented to be held as a
+wind instrument.
+4.2 Holding the Device With One Hand
+Mobile3D contains several functions and templates to hold
+mobile devices with one hand, leaving at least four ﬁngers
+available to perform on the touch-screen. This way to hold
+the device opens up a wide range of options to fully take
+advantage of the built-in motion sensors and easily execute
+free movements. Additionally, the performer can decide to
+use two devices in this case (one for each hand).
+The instrument presented in Figure 10 uses one of Mo-
+bile3D’s ring holders to hold the device with only the thumb.
+Similarly, Figure 11 features an instrument held in one hand
+using a laser-cut plastic handle mounted on the device.
+4.3 Other Holding Options
+There are obviously many other options to hold mobile-
+devices to carry out speciﬁc musical gestures. For example,
+one might hold the device in one hand and perform it with
+the other, etc. In any case, we believe that Mobile3D
+provides enough options to cover the design needs for most
+Thumb ring
+Figure 10: Thumb-held mobile-device-based musi-
+cal instrument (by Erin Meadows).
+Laser cut handle
+Figure 11: Single-hand-held musical instrument
+based using a laser-cut plastic handle.
+musical instruments.
+5. MORE EXAMPLES AND EV ALUATION
+To evaluate Mobile3D and the framework presented in
+this paper, we organized a one-week workshop last sum-
+mer at Stanford’s Center for Computer Research in Music
+and Acoustics(CCRMA) called The Composed Instrument
+Workshop: Intersections of 3D Printing and Digital Audio
+for Mobile Platforms [8, 9]. We taught the seven partici-
+pants how to make basic musical smart-phone apps using
+our SmartKeyboard App Generatorand how to use
+Mobile3D to design mobile device augmentations. They
+were free to make any musical instrument or sound toy for
+their ﬁnal project [9]. Some examples of these instruments
+are presented in Figures 3, 12 and 13.
+In only one week, participants mastered all these tech-
+niques and designed and implemented very original instru-
+ment ideas. This helped us debug and improve Mobile3D
+with new objects and features.
+6. FUTURE DIRECTIONS
+In this paper, we only talked about the physical part of
+musical instruments based on augmented mobile devices.
+As we explained previously, we believe that mobile-devices
+oﬀer a great opportunity to make DMIs with a strong co-
+herence between the virtual (screen interface, synthesizer,
+etc.) and the physical (hardware augmentations, physical
+elements playing role in the sound generation process, etc.)
+part of the instrument. Additionally, through various kinds
+of augmentations combined with intelligent interfaces, they
+can help performers to transfer a part of their skills to play
+them.
+Just like Mobile3D, the SmartKeyboard App Gen-
+erator was designed to help musical instrument designers
+23
+Embedded passive amplifier
+Wheels
+Figure 12: Rolling mobile phone with phasing eﬀect
+(instrument by Revital Hollander).
+Figure 13: Mobile device mounted on a bike wheel
+(instrument by Patricia Robinson).
+to solve these problems as a whole. We plan to conduct a
+study treating these aspects.
+We only talked about passive augmentations here, and we
+should obviously not be limited to them. Indeed, modern
+micro-controller boards such as the Arduino12 or Teensy13
+can easily be used to acquire sensor data and transmit it to
+mobile devices. Thus, we plan to further our investigation
+to see what kind of active augmentations can be added to
+mobile devices to turn them into musical instruments.
+7. CONCLUSIONS
+Mobile devices constitute an appealing platform to design
+digital musical instruments for live performance, bridging
+the often broken link between interface, musical gesture and
+sound synthesis (which is quite recurring in this family of
+instruments).
+The deﬁcits of mobile devices can be easily mitigated by
+augmenting them with various kinds of prosthetics lever-
+aging some of their built-in components and sensors. This
+opens the path to a new approach to “digital lutherie” to
+make completely standalone “hybrid” instruments, centered
+on mobile devices, where some of their components belong
+to the virtual world, and others to the physical world.
+Lots of work remains to be done to provide a comprehen-
+sive solution to help design this type of instruments. We
+believe that Mobile3D is the ﬁrst brick in wall that will
+keep growing.
+8. REFERENCES
+[1] F. Bevilacqua, N. Schnell, N. Rasamimanana,
+B. Zamborlin, and F. Gu´ edy.Musical Robots and
+12https://www.arduino.cc
+13https://www.pjrc.com/teensy
+Interactive Multimodal Systems, chapter Online
+Gesture Analysis and Control of Audio Processing,
+pages 127 – 142. Springer Berlin Heidelberg, 2011.
+[2] G. Essl and M. Rohs. Interactivity for mobile
+music-making. Organised Sound, 14(2):197–207, 2009.
+[3] N. H. Fletcher and T. D. Rossing. The Physics of
+Musical Instruments, 2nd Edition. Springer Verlag,
+1998.
+[4] L. Gaye, L. E. Holmquist, F. Behrendt, and
+A. Tanaka. Mobile music technology: Report on an
+emerging community. In Proceedings of the
+International Conference on New Interfaces for
+Musical Expression (NIME-06), Paris, France, June
+2006.
+[5] G. Geiger. PDa: Real time signal processing and
+sound generation on handheld devices. In Proceedings
+of the International Computer Music Conference
+(ICMC-03), Singapore, 2003.
+[6] G. Geiger. Using the touch screen as a controller for
+portable computer music instruments. In Proceedings
+of the 2006 International Conference on New
+Interfaces for Musical Expression (NIME-06), Paris,
+France, 2006.
+[7] G. Laput, E. Brockmeyer, S. Hudson, and
+C. Harrison. Acoustruments: Passive,
+acoustically-driven, interactive controls for handheld
+devices. In Proceedings of the Conference for
+Human-Computer Interaction (CHI), Seoul, Republic
+of Korea, April 2015.
+[8] R. Michon and J. Granzow. CCRMA composed
+instrument workshop 2016 - ﬁnal projects. YouTube
+Video, July 2016. URL: https:
+//www.youtube.com/watch?v=YOWMh66Etck.
+[9] R. Michon and J. Granzow. The composed instrument
+workshop 2016: Intersections of 3D printing and
+digital audio for mobile platforms. Web-Page, July
+2016. URL: https://ccrma.stanford.edu/
+~rmichon/composedInstrumentWorkshop/.
+[10] R. Michon, J. O. Smith, M. Wright, and C. Chafe.
+Augmenting the iPad: the BladeAxe. In Proceedings
+of the International Conference on New Interfaces for
+Musical Expression, Brisbane, Australia, July 2016.
+[11] R. Michon and G. Wang. Teaser - CCRMA summer
+workshop - intersections of 3D printing and mobile
+audio. YouTube Video, March 2016. URL: https:
+//www.youtube.com/watch?v=dGBDrmvG4Yk.
+[12] A. Misra, G. Essl, and M. Rohs. Microphone as sensor
+in mobile phone performance. In Proceedings of the
+New Interfaces for Musical Expression conference
+(NIME08), Genova, Italy, 2008.
+[13] G. Schiemer and M. Havryliv. Pocket Gamelan:
+tuneable trajectories for ﬂying sources in Mandala 3
+and Mandala 4. In Proceedings of the 6th
+International Conference on New Interfaces for
+Musical Expression (NIME06), Paris, France, 2006.
+[14] A. Tanaka. Mobile music making. In Proceedings of
+the 2004 conference on New interfaces for musical
+expression (NIME04), National University of
+Singapore, 2004.
+[15] G. Wang. Ocarina: Designing the iPhone’s Magic
+Flute. Computer Music Journal, 38(2):8–21, Summer
+2014.
+[16] G. Wang, G. Essl, and H. Penttinen. Do mobile
+phones dream of electric orchestra? In Proceedings of
+the International Computer Music Conference
+(ICMC-08), Belfast, Northern Ireland, 2008.
+24

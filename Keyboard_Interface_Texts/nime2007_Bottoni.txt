@@ -1,0 +1,180 @@
+Use of a dual-core DSP in a low-cost, touch-screen based
+musical instrument
+Paolo Bottoni, Riccardo Caporali, Daniele Capuano, Stefano Faralli, Anna Labella,
+Mario Pierro
+Universit`a di Roma La Sapienza Dipartimento di Informatica
+Via Salaria, 113, 00198 – Rome, Italy
+(bottoni,faralli,labella, pierro)@di.uniroma1.it - http://hci.uniroma1.it/multimedialab
+ABSTRACT
+This paper reports our experiments on using a dual-core
+DSP processor in the construction of a user-programmable
+musical instrument and controller called theTouchBox.
+Keywords
+dual-core, DSP, touch-screen, synthesizer, controller
+1. INTRODUCTION AND BACKGROUND
+Inspired by state-of-the-art controllers such as theLemur
+[6], the TouchBox project was our proposal for theAtmel
+DSP Programming Contest 2005[1], where it won the ﬁrst
+prize. Our aim was to merge a conﬁgurable sound syn-
+thesis engine with a conﬁgurable interface, in a compact
+and portable device using commercial low-cost components.
+There are many examples of programmable hardware-soft-
+ware synthesizers (e.g. Native InstrumentsReaktor [9] and
+Clavia Nord Modular [4]). Touch-screen interfaces have re-
+ceived increased popularity in the last years, being produced
+commercially (as in theLemur [6] and the KorgOasys work-
+station [8]) and being subject of academic research (as in the
+Large Multitouch Display [5] or ReactTable [7]). Neverthe-
+less, to the best of our knowledge, a compact, programmable
+touch-screen-based synthesizer has not yet appeared on the
+market.
+2. DUAL-CORE DSP FEATURES
+The Atmel DIOPSIS740 is a high performance dual-core
+processing platform aimed at audio, communication and
+beam-forming applications [2]. It includes two distinct CPU
+cores in a single chip: anARM7TDMI RISC microcontroller
+and amAgic VLIW DSP. The ARM7 core is the master, able
+to control mAgic execution; it also provides a great number
+of on-chip peripherals such as USART ports and AD/DA
+converters communication channels. The most prominent
+mAgic DSP core feature is its specially crafted dual regis-
+ter ﬁle: registers are coupled so that complex or vectorial
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME07, New York, USA
+Copyright 2007 Copyright remains with the author(s).
+Figure 1: Playing the TouchBox prototype.
+operations can be performed in a single cycle (single cycle
+complex multiply or multiply and add). In our application
+we have exploited the peculiar DIOPSIS740 processor’s ar-
+chitecture so that the user interface and peripherals are han-
+dled by the ARM core, while all the audio-rate calculations
+are performed by the mAgic DSP core.
+3. TOUCHBOX FEATURES
+The TouchBox has been built using standard low-cost
+components available on the market. Lacking the multi-
+touch capabilities featured in more sophisticated controllers,
+the TouchBox employs a 15-inch single-touch screen, a group
+of 4 user-programmable hardware buttons, 4 stereo audio
+in/out connectors, and MIDI in/out ports (Fig. 1). The
+hardware buttons and two LEDs are housed in a custom
+aluminium case attached to the screen. The instrument
+is designed so that there is no predeﬁned orientation: it
+can be used in a horizontal, vertical or left-handed fash-
+ion. The hardware keys can be used as shift-buttons, ei-
+ther in conjunction with pressure location on the screen, or
+independently (Fig. 2). This is achieved because the cor-
+responding modules can be connected both to audio gen-
+erators and to interface widgets, being thus exploited to
+show/hide the widgets and modify their behavior, as well
+as to trigger audio events. As an example, it is possible
+to switch between several sets of on-screen control modules
+by connecting the hardware buttons to a dedicated module
+“visibility switch” input. The hardware buttons abstraction
+modules can output diﬀerent values according to the state
+of the hardware switch: every module can act as a “toggle”
+or as a “hold” switch. By combining hardware keys with
+software on-screen controls, it is possible to obtain several
+“pages” of controls as well as superimposed layers, in which
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+394
+Figure 2: Diﬀerent UI orientations.
+a single touch screen press can activate multiple on-screen
+controls. The currently implemented interface modules are
+standard widgets such as sliders, buttons and a piano key-
+board, while the available audio modules implement sub-
+tractive synthesis-oriented elements such oscillators, enve-
+lope generators and ﬁlters. The current version of the OS
+operates with a latency of 32 samples.
+4. OS AND EDITOR
+The embedded operating system (TouchBoxOS) handles
+the user interface and peripherals using the ARM7 core,
+while the mAgic core performs audio rate processing. The
+two processes are synchronized using software semaphores,
+and share a common memory area where shared buﬀers
+are stored. Data transferred between the two processes is
+up/downsampled to audio/control rate. The TouchBox is
+programmed by connecting predeﬁned software modules in
+a visual, Java-based editor (Fig. 3). The available mod-
+ules implement either interface components, audio genera-
+tors/processors or abstractions of physical hardware such as
+audio and MIDI in/out channels and the hardware buttons.
+Interface components correspond to widgets in the touch-
+screen interface, which can be placed in the editor by means
+of a dedicated interface preview window. The connections
+between modules transport 40-bit ﬂoating point audio data:
+the conversions between control and audio sample rates are
+performed transparently to the user. The editor generates
+two distinct programs for the two cores, which are compiled
+and uploaded into the TouchBox memory. The ﬁrst program
+is actually a custom language script for the TouchBoxOS
+specifying which user interface modules are used, their on-
+screen positions and connections; the DSP core program is
+instead fully generated by the editor in mAgic assembler.
+Once compiled and uploaded, the module connection scheme
+is not modiﬁable: this allows the compiler to optimize the
+DSP code speciﬁcally for each TouchBox program during
+the generation phase. It is easy to add new, custom DSP
+modules to the TouchBox editor, by extending a common
+Java base class and specifying their mAgic ASM source. In-
+terface modules are written in C and are integrated into each
+TouchBoxOS build, so that their graphics elements can be
+preloaded in the video RAM at boot time.
+5. THE PROTOTYPE
+We have built a working prototype of the TouchBox, using
+an Atmel JTST test board [3] to provide a set of basic func-
+tions (48Khz, 20-bit AD/DA converters, serial port commu-
+nications, memory). We have developed custom boards for
+Figure 3: The Java-based editor.
+the hardware buttons and MIDI connectors. Since a video
+card which meets our requirements cannot be connected di-
+rectly to the JTST, we have also developed a video card em-
+ulator which runs on a personal computer and accepts basic
+video drawing commands from the serial port. The emula-
+tor also transmits control data from the touch screen to the
+JTST. The total oﬀ-the-shelf cost of the hardware used to
+build the prototype is under 1000 Euros (the graphics card
+emulator can run also on low-end PCs since it merely acts as
+a medium between the serial port and the PCs hardware).
+Also, by playing the prototype we have found that the 15-
+inch screen can actually be reduced to a 12-inch screen
+without sacriﬁcing playability, which can help reducing the
+hardware costs further. One of the demonstration scenarios
+shows the TouchBox implementing simultaneously an audio
+eﬀect processor, two touchscreen-driven monophonic synthe-
+sizers, plus a MIDI/touchscreen-driven polyphonic one. The
+touchscreen-displayable parts of the various sections inter-
+faces can be dynamically switched and/or superimposed on
+the screen using the hardware keys.
+6. FUTURE WORK AND CONCLUSIONS
+The use of a dual-core DSP/microcontroller combination
+simpliﬁes the development process of a project such as the
+TouchBox: the ﬁrst working prototype was developed by
+a team of 3 people in 4 months. We plan to build a new,
+self-contained version of the prototype featuring a dedicated
+graphics card, thus eliminating the emulated video subsys-
+tem. This should allow us to experiment with more innova-
+tive control widgets requiring higher framerates and faster
+feedback times.
+7. ACKNOWLEDGMENTS
+The TouchBox prototype was developed for theAtmel DSP
+Design Contest 2005. The contest has been promoted by Atmel
+Roma (http://www.atmelroma.it).
+8. REFERENCES
+[1] Atmel. http://www.atmelroma.com.
+[2] Atmel. DIOPSIS740 Reference Manual, 2005.
+[3] Atmel. JTST AT572D740-DK1 User Manual, 2005.
+[4] Clavia. http://www.clavia.com.
+[5] P. Davidson and J. Han. Synthesis and control on large scale
+multi-touch sensing displays. InNIME, pages 216–219, 2006.
+[6] JazzMutant. http://www.jazzmutant.com.
+[7] S. Jord` a and M. Alonso. Mary had a little scoretable* or the
+reactable* goes melodic. InNIME, pages 208–211, 2006.
+[8] Korg. http://www.korg.com.
+[9] NativeInstruments. http://www.nativeinstruments.com.
+Proceedings of the 2007 Conference on New Interfaces for Musical Expression (NIME07), New York, NY, USA
+395

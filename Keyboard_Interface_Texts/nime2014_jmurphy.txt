@@ -1,0 +1,490 @@
+Robot: Tune Yourself! Automatic Tuning in Musical
+Robotics
+Jim Murphy2
+[2] Victoria University of
+Wellington
+School of ECS, NZSM
+Wellington, New Zealand
+jim.w.murphy@gmail.com
+Paul Mathews2
+[2] Victoria University of
+Wellington
+School of ECS, NZSM
+Wellington, New Zealand
+pfcmathews@gmail.com
+Ajay Kapur1,2
+[1] California Institute of the
+Arts
+24700 McBean Parkway
+Valencia, California
+ajay@karmetik.com
+Dale A. Carnegie3
+[3] Victoria University of Wellington
+School of ECS
+Wellington, New Zealand
+dale.carnegie@ecs.vuw.ac.nz
+ABSTRACT
+This paper presents a method for a self-tuning procedure for
+musical robots capable of continuous pitch-shifting. Such a
+technique is useful for robots consisting of many strings: the
+ability to self-tune allows for long-term installation with-
+out human intervention as well as on-the-ﬂy tuning scheme
+changes. The presented method consists of comparing a de-
+tuned string’s pitch at runtime to a pre-compiled table of
+string responses at varying tensions. The behavior of the
+current detuned string is interpolated from the two nearest
+pre-characterized neighbors, and the desired virtual fret po-
+sitions are added to the interpolated model. This method
+allows for rapid tuning at runtime, requiring only a single
+string actuation to determine the pitch.
+Keywords
+Musical Robotics, Mechatronics, Tuning, Automation
+1. INTRODUCTION
+Musical robots allow human performers and composers to
+explore physical music-making with the use of new instru-
+ments that aﬀord the composers with a degree of precision
+and accuracy that is unusual for non-synthetic instruments.
+As physical objects, though, these instruments require ad-
+justments prior to use. Indeed, without specialized calibra-
+tion routines, the instruments often require time-consuming
+human intervention in order to behave as expected in a per-
+formance or installation context. Automated closed-loop
+calibration for musical robotics oﬀers a solution: a musi-
+cal robot capable of adjusting its future output based upon
+an analysis of its current and past outputs can be quickly
+prepared for performance and remain reliable in long-term
+installation scenarios.
+The work presented in this paper focuses upon self-tuning
+for robotic guitars and bass guitars. Robotic stringed in-
+struments are an active sub-discipline of musical robotics (a
+more thorough history of which can be found in [4] and [7]);
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’14,June 30 – July 3, 2014, Goldsmiths, University of London.
+Copyright remains with the author(s).
+in order to fully exploit their potential for repeatability and
+precision, closed-loop self-tuning systems can be employed,
+allowing for automated tuning and on-the-ﬂy musical tun-
+ing scheme changes. Such automated tuning systems allow
+for both long-term installation with minimal human inter-
+vention and for rapid calibration prior to performances.
+This work was motivated by the aforementioned problem
+of human intervention in an otherwise automated system.
+It was undertaken with three main beliefs about the func-
+tionality of a successful robotic self-tuning system: ﬁrst,
+the automated tuning approach should work for any robotic
+chordophone capable of continuous variation of pitch; the
+tuning system should not be restricted to a single type of
+actuation, pitch shifting, or transduction approach. Sec-
+ondly, the automatic tuning procedure should be designed
+such that it requires relatively little time to complete: a sys-
+tem capable of tuning a string with the data received by a
+single pick or pluck is preferred. Finally, a good self-tuning
+system should be able to not only tune the string’s tonic
+pitch but to automatically assign virtual “fret” locations to
+various positions along the string; these frets could then be
+reassigned on the ﬂy.
+2. AUTOMATIC TUNING: RELATED WORK
+The idea of a self-tuning chordophone has interested re-
+searchers and inventers for decades. While early examples
+focused upon piano tuning schemes [3], the contemporary
+examples discussed below are applied predominantly to gui-
+tars. The majority of the existent techniques have been de-
+veloped to augment a human-played instrument, freeing a
+human player from the need to tune his or her instrument.
+2.1 Fretted Instrument Self-Tuning
+There exist several self-tuning systems developed for human-
+played and robotic fretted guitars. The patent literature
+features diﬀerent methods developed to aid human players
+in tuning instruments. The technique most closely match-
+ing the approach described in this paper is employed on
+guitars built by AxCent Tuning Systems [12] and Transper-
+formance LLC [9]. These systems adjust the strings’ ten-
+sion by tightening or loosening it with the aid of an array
+of small motors. As described in [12], the strings’ charac-
+teristics are stored in a calibration table, allowing for rapid
+comparisons between a string’s current performance and its
+desired tuned behavior. Notably, this approach is limited to
+a single string thickness: string gauge changes require exten-
+Proceedings of the International Conference on New Interfaces for Musical Expression
+565
+sive oﬄine mechanical and electronic recalibration. Similar
+to this approach is that used by the commercial human-
+played Gibson Robot Guitar1.
+While the aforementioned systems are commercial and
+designed to augment human-played instruments, the Lo-
+gos Foundation musical robotic collective (described in [5]
+and [10]) has shared the design for a fretted mechatronic
+chordophone tuning system designed for musical robotics
+applications. The Logos Foundation’s approach appears to
+be similar to the proprietary approach used on the Gibson
+Robot Guitar2.
+Finally, sound artist Trimpin employs a self-tuning setup
+on his long-term sculpture If VI Was IX [2]. This sys-
+tem uses a modiﬁed commercial guitar tuner whose output
+controls a DC servomotor, and is described in more detail
+in [1].If VI Was IXrepresents an ideal usage scenario for
+self-tuning guitars: as a long-term installation mounted in a
+diﬃcult-to-access manner, the self-tuning capabilities of the
+guitars results in greatly simpliﬁed long-term maintenance.
+2.2 Fretless Instrument Self-Tuning
+There exist fewer examples of self-tuning systems for fret-
+less instruments. A notable example is Zhen J. Wang and
+Cesar Ortega-Sanchez’s Electronic Assisting Violin Tuner
+[13], which augments a traditional violin with a motorized
+tailpiece for string tensioning and a piezo-based pickup sys-
+tem.
+Self-tuning fretless instruments allow for a further degree
+of ﬂexibility over fretted systems: after tuning, arbitrary
+notes can be played along the string’s length. For human-
+played systems, this requires the player to possess the mu-
+sical skill to play without the aid of frets. For mechatronic
+systems the lack of frets increases the instrument’s ﬂexibility
+by allowing for the use of “virtual fret” lookup tables, which
+allow for a very wide variety of tuning schemes and into-
+nation styles to be employed. These “virtual fret” lookup
+tables are simply arrays of motor setpoints, instructing the
+pitch shifter to move to a particular position.
+2.3 Tension-based and Pitch-based Tuning
+Strings are typically tuned based either upon a reading of
+the string’s tension or it’s vibratory frequency. To tune
+a string based upon the string’s tension, a transducer is
+mounted to the string. The transducer’s output corresponds
+to the string’s current tension. Coupled with a knowledge
+of the string’s gauge, length, and material, the approximate
+tune of the string can be determined. An example of such
+a tension-based approach can be found in [6].
+A more popular technique (used in the AxCent systems,
+as well as [11] and [13]) is to extract string frequency infor-
+mation from the output of the instrument’s pickup. This
+approach is used in the work presented in this paper. An
+advantage of this approach over tension-based systems is
+that it typically requires no retroﬁtting of the instrument.
+3. TECHNIQUE OVERVIEW
+The technique presented in this paper has been developed
+for musical robots capable of relatively ﬁne control over
+string length or tension. This section presents an overview
+of the technique, while the next section focuses upon the
+implementation of this method on a robotic chordophone.
+This self-tuning approach consists of two parts: a string
+characterization stage and a string detune correction stage.
+The string characterization stage is performed oﬄine and
+results in the population of the string’s response to a range
+1http://www.gibson.com/robotguitar
+2See logosfoundation.org/instrum gwr/synchrochord
+of pitch shift events. The online detune correction stage
+compares the open string’s frequency with the pre-recorded
+characterization tables, allowing the string’s deviation from
+the ideal to be corrected.
+3.1 String Characterization
+Fretter Position
+String Frequency
+Figure 1: An illustration of the string characteriza-
+tion curves: each dark dotted line represents a dif-
+ferently detuned fundemental frequency and its re-
+sultant response to diﬀerent fretter positions. The
+light dot-dash line represents an interpolated de-
+tune correction curve.
+The self-tuning approach described in this paper aims
+not only to set the string to the correct fundamental fre-
+quency but also to allow the robot’s pitch shifting mecha-
+nism to repeatably travel to any attainable frequency along
+the string’s length. To determine the relationship between
+the robot’s pitch shifter (fretter) position and the string’s
+vibratory frequency, the string’s response to various fretter
+positions must be characterized.
+To characterize the string’s response to various fretter
+positions, the fretter is instructed to move to a number of
+points along the string. At each point, the string is actu-
+ated and the resultant frequency is measured. The process
+is repeated incrementally along the string, with each value
+(and the corresponding position value sent to the fretter)
+stored in a table. After the string has been characterized at
+one open string frequency, the string is retuned and the pro-
+cess repeated (as illustrated in Figure 1). By repeating the
+string characterization procedure at numerous open string
+frequencies, an overall view of the string’s response can be
+formed.
+3.2 Detune Correction
+Once the string has been characterized at a variety of dif-
+ferent fundamental frequencies, the string’s behavior at a
+frequency between two of the characterized frequencies can
+be inferred by interpolating between the upper and lower
+neighboring response curves.
+This is performed ﬁrst by actuating the string and mea-
+suring the string’s frequency. The string’s current funda-
+mental frequency is then compared with the previously-
+performed string characterization tables. The behavior of
+the fretter in relation to the string at the current frequency
+can then be determined along the whole string length by in-
+terpolating between each of the two nearest characterization
+tables (as represented by the dot-dash line in Figure 1).
+After the robot’s fretter actuator position in relation to
+diﬀerent string frequencies is known, the virtual “frets” can
+be placed along the string length by populating another ta-
+ble with the fretter positions that correspond to the desired
+Proceedings of the International Conference on New Interfaces for Musical Expression
+566
+x
+x
+x
+1
+2
+3
+Fretter Position
+Figure 2: An illustration of the string tuning and
+fret assignment process. In 1, the x represents the
+measured frequency of the detuned string in rela-
+tion to the precompiled string characterization ta-
+bles. In 2, the detuned string’s behavior is interpo-
+lated from the characterization tables. Finally, in
+3, the virtual frets (represented by circles along the
+plot) are assigned.
+frequencies, a process illustrated in Figure 2.
+4. IMPLEMENTATION
+The self-tuning procedure described in this paper is imple-
+mented on Swivel 2, a six-stringed robotic slide guitar [8].
+Each of the six Swivel 2 modules conduct pitch-shift events
+by rotating a servo-mounted fretter arm along the string. To
+change the fundamental frequency of the string, the “home”
+position of the fretter arm is changed.
+4.1 Characterizing Swivel
+To characterize the six strings of Swivel 2, a series of MIDI
+pitchbend commands are sent to each string. The pitchbend
+command instructs the fretter arm to rotate to a desired
+angle, after which the fretter arm clamps against the string
+and string is picked. The string’s vibrations are transduced
+by the magnetic pickup on each Swivel 2 module; the pitch
+is extracted from this signal. If the pitch lies within an
+expected range, it and its accompanying MIDI pitchbend
+value are stored in the string’s characterization table. After
+the string has been characterized at a particular fundamen-
+tal frequency, the string is retuned and the process repeated.
+4.2 Self-Tuning and Fret Assignment
+Move fretter clear of string
+Pick string
+Perform pitch extraction 
+Compare string pitch to 
+characterization tables
+Interpolate from tables to 
+characterize current string
+Populate fret location table, 
+enter running mode
+MIDI 
+NoteOn 
+from DAW 
+(or other 
+MIDI 
+device)
+Convert MIDI to appropriate 
+MIDI pitchbend value
+ MIDI out to 
+robot
+Figure 3: The Self-Tuning Procedure.
+Once the robot’s strings are characterized, a custom-built
+Table 1: Characterization Fundamental Pitches
+Swivel Unit Freq. 1 (Hz) Freq. 2 (Hz) Freq. 3 (Hz)
+1 70.2 80.6 90.6
+2 96.4 106 116
+3 130 140 150
+4 175 187 200
+5 226 246 267
+6 306 326 349
+application is used to self-tune the strings. The application,
+dubbed SwivelAutotune, was built with the Juce C++ li-
+brary. The application behaves in a manner illustrated in
+Figure 3.
+SwivelAutotune instructs the robot to move the fretter
+clear of the string and, after a small delay, to pick the string.
+The string’s pitch is determined by an FFT-based pitch ex-
+tractor built into SwivelAutotune (implemented using the
+FFTW library). After determining the pitch, SwivelAuto-
+tune compares the pitch to the pre-populated string char-
+acterization tables (which are stored as XML-format data
+ﬁles). After the detuned string’s behavior is interpolated
+from the characterization tables, the MIDI pitchbend val-
+ues corresponding to the desired fret frequencies are deter-
+mined, and a “fret location” table is populated. At this
+stage, the string has been tuned and its “virtual fret” inter-
+vals set. The user can then instruct the software to enter
+its running mode, where MIDI messages from the DAW are
+routed through SwivelAutotune.
+5. RESULTS AND EV ALUATION
+To evaluate the performance of the automated tuning scheme,
+the full procedure was tested on Swivel 2. The string was
+characterized and subsequently detuned. The detuned strings
+were then retuned using the SwivelAutoTune application.
+5.1 Characterization
+The string characterizer was run on the six Swivel 2 string
+modules, taking 25 measurements along each string. The 25
+measurements were predicted to produce an output curve
+of acceptable resolution, lying within the lower resolution of
+the servomotors; on a robot with higher actuator resolution,
+more string measurements may be taken. The character-
+izer’s output was recorded and used to populate the string
+characterization lookup tables used in the automated tun-
+ing application. To obtain the measurements used in the
+characterization, each string was tuned to three diﬀerent
+pitches. These pitches, shown in Table 1, were expected to
+be similar enough to allow for reliable linear interpolation
+between each adjacent tuning.
+5.2 Self-tuning
+Two assumptions were made in characterizing Swivel 2’s
+string: that 25 measurements along each string are suﬃcient
+to produce a smooth-sounding characterization curve and
+that characterizing the string at three diﬀerent pitches is
+enough to allow for smooth interpolation between them.
+To evaluate these assumptions, the SwivelAutoTune ap-
+plication was run with such data sets. After tuning the
+string, the robot modules were instructed to play 12-tone
+equal temperament chromatic scales; the output frequency
+was then measured and compared to a desired frequency.
+Figure 4 illustrates the results of the test on Swivel 2’s A
+and B strings. The test consists of an instruction to move
+the fretter from a home position clear of the string to a po-
+sition corresponding to SwivelAutoTune’s interpolated D3
+position. The string is then picked and its frequency mea-
+Proceedings of the International Conference on New Interfaces for Musical Expression
+567
+125
+145
+165
+185
+205
+225
+245
+265
+285
+305
+D3 D#3 E3 F3 F#3 G3 G#3 A3 A#3 B3 C4 C#4 D4
+Target Note
+Swivel 2 A String Self-Tune Test Swivel 2 B String Self-Tune Test
+Target Note
+220
+270
+320
+370
+420
+470
+520
+Figure 4: Recorded string pitches compared to
+target frequences on Swivel’s B string (left) and
+A string (right). The dark points represent tar-
+get pitches; the light points represent the average
+recorded output.
+sured. The fretter is then instructed to move to and pick the
+next highest chromatic note along the string. This process
+is repeated three times; the average results are shown, with
+the results’ standard deviation represented by the plot’s er-
+ror bars. To demonstrate the scheme’s eﬀectiveness, arbi-
+trary pitches were chosen on two of Swivel’s strings and the
+results were logged.
+The results of the tests show that the automatic tuning
+scheme produces a result that lies quite close to the desired
+pitches. On the A string, an average deviation from the
+target pitches of 0.7 Hz (with an average of all of the stan-
+dard deviations of 1.1 Hz) was observed. On the B string,
+an average deviation of the target pitches of 2.2 Hz (with
+an average standard deviation from the targets of 1.2 Hz)
+was observed. These deviations lie both above and below
+the target, indicating that the errors are due not to inter-
+polation error but more likely to to mechanical actuator
+resolution, placement, and jitter: the table size of 25 tar-
+get pitches across three characterization curves is therefore
+deemed suﬃcient for Swivel 2.
+6. PERFORMANCE APPLICATIONS
+Parametrically-complicated musical robots require many in-
+structions to reach a desired state. The work presented
+in this paper (and in the authors’ accompanying ongoing
+research) aims to reduce the amount of low-level control
+required by a human performer, musician, or installation
+artist. Without the aid of SwivelAutoTune, the string must
+be tuned by hand, and each pitch shift event must be man-
+ually directed by sending a human-derived MIDI pitchbend
+command, followed by clamping, picking, and damping in-
+structions [8]. This self-tuning approach, then, allows for
+tuned compositions to be made rapidly and by those less
+familiar with the robot’s interface.
+To allow for daily self-tuning in long-term installation se-
+tups, the SwivelAutoTune application must be conﬁgured
+to run automatically upon startup. While Swivel has yet to
+be tested in such an environment, the increased ease of use
+will allow galleries and other installation venues to display
+the instrument with little need for human maintenance.
+In performance scenarios requiring musician-control over
+all of Swivel’s parameters, a complicated musical robot’s
+manual operation may be desirable, allowing for ﬂexible
+human-in-the-loop exploration of the instrument’s string
+behavior. However, for more traditional performances, the
+automatic tuning method described in this paper will be
+employed.
+7. CONCLUSIONS AND FUTURE WORK
+The self-tuning technique described herein compliments an
+underlying theme in much of the authors’ work on musi-
+cal robotics: that of using feedback and characterization to
+increase the musical expressivity of relatively complicated
+musical robots.
+The self-tuning scheme has been tested on two robots but
+can likely be extended to work on any pitched instrument
+capable of continuous pitch adjustment: self-tuning robotic
+tom-toms, pianos, and bowed chordophones should be pos-
+sible with minor changes to the procedure.
+This work aﬀords many opportunities for future improve-
+ments. To improve on the string characterization proce-
+dure, additional variables such as ambient humidity, tem-
+perature, and string gauge can be accounted for. Further,
+the string characterization procedure should be further au-
+tomated: currently, it is a partially manual process. Finally,
+the on-line fret assignment system can be improved with a
+larger library of intonation schemes, allowing composers to
+pick from a wider pool of virtual fret layouts including var-
+ious just intonation schemes and atonal approaches.
+8. REFERENCES
+[1] P. Esmonde. Trimpin: The sound of invention. Film,
+2009.
+[2] A. Focke. Trimpin: Contraptions for Art and Sound.
+Marquand Books, Seattle, Washington, 1st edition,
+2011.
+[3] E. Groven. Improvements in a tuning system for
+pianos. Patent, 1935.
+[4] A. Kapur. A history of robotic musical instruments.
+In Proceedings of the 2005 International Computer
+Music Conference, Barcelona, Spain, 2005.
+[5] T. R. Laura Maes, Godfried-Willem Raes. The man
+and machine robot orchestra at logos. Computer
+Music Journal, 35(4):28–48, 2011.
+[6] G. Minnick. Self-tuning tail piece for string
+instruments. US Patent 4,584,923, April 1986.
+[7] J. Murphy, A. Kapur, and D. Carnegie. Musical
+robotics in a loudspeaker world: Developments in
+alternative approaches to localization and
+spatialization.Leonardo Music Journal, 22(1):41–48,
+December 2012.
+[8] J. Murphy, A. Kapur, and D. A. Carnegie. Swivel 2:
+A systems overview and evaluation of a new
+mechatronic slide guitar. In Proceedings of the 2013
+Engineering New Zealand Conference (ENZCON),
+Auckland, New Zealand, 2013.
+[9] S. K. B. S. J. Neil Skinn, Frank Strazzabosco.
+Apparatus and method for self-tuning stringed
+musical instruments with an accompanying vibrato
+mechanism. US Patent, 2008.
+[10] G.-W. Raes. A personal story of music and
+technologies. Leonardo Music Journal, 2(1):29–35,
+1992.
+[11] D. M. G. T. M. C. Shawn Trail, Leonardo Jenkins
+and P. Driessen. Stari: A self tuning auto-monochord
+robotic instrument. In Proceedings of the 2013
+PACRIIM, Victoria, BC, 2013.
+[12] N. C. S. Stephen J. Freeland, Gerard F. Hallaren.
+Musical instrument self-tuning system with
+calibration library. US Patent, 1998.
+[13] Z. J. Wang and C. Ortega-Sanchez. Electronic
+assisting violin tuner. In TENCON 2012 - 2102 IEEE
+Region 10 Conference, Cebu, 2012.
+Proceedings of the International Conference on New Interfaces for Musical Expression
+568

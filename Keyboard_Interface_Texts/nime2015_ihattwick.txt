@@ -1,0 +1,448 @@
+Interactive Lighting in the Pearl: Considerations and
+Implementation
+Ian Hattwick
+Input Devices and Music Interaction Lab
+Centre for Interdisciplinary Research in
+Music Media and Technology
+McGill University
+Montreal, Quebec
+ian.hattwick@mail.mcgill.ca
+Marcelo M. Wanderley
+Input Devices and Music Interaction Lab
+Centre for Interdisciplinary Research in
+Music Media and Technology
+McGill University
+Montreal, Quebec
+marcelo.wanderley@mcgill.ca
+ABSTRACT
+The Pearlis a multi-modal computer interface initially con-
+ceived as an interactive prop for a multi-artistic theatrical
+performance. It is a spherical hand-held wireless controller
+embedded with various sensor technologies and interactive
+lighting. The lighting was a key conceptual component in
+the instrument’s creation both as a theatrical prop and also
+as an interface for musical performance as it helps to ad-
+dress conceptual challenges and opportunities posed by the
+instrument’s spherical form.
+This paper begins by providing a brief description of the
+Pearl and its use as a spherical instrument. We then dis-
+cuss mapping the Pearl both to generate sound and control
+its interactive lighting, and identify di↵erent strategies for
+its use. Strategies we identify include feedback regarding
+performer gesture, information about the state of the in-
+strument, and use as an aesthetic performance component.
+Author Keywords
+NIME, multi-modal, interactive lighting, mapping, sphere
+ACM Classiﬁcation
+J.5 [Computer Applications] Arts and Humanities — Per-
+forming Arts H.5.5 [Information Systems] Sound and Music
+Computing — Systems
+1. INTRODUCTION
+The Pearl is a multi-modal computer interface initially con-
+ceived as an interactive prop for an multi-artistic theatrical
+performance. As a musical instrument it is conceptually
+simple, yet presents challenges in both design and manufac-
+turing as well as in the conception of its use.
+The Pearl was designed for use in a theatrical produc-
+tion created by composer David Coubes and percussionist
+Krystina Marcoux. The production is an adaptation of John
+Steinbeck’s novelThe Pearlcreated for two performers, a
+dancer and a percussionist, and was premiered on March 27,
+2015. As the centre of the plot the Pearl becomes almost
+a third character in its own right, a fact which led to the
+desire for an interactive prop which could be programmed
+to respond appropriately over the course of the show. In
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’15,May 31-June 3, 2015, Louisiana State Univ., Baton Rouge, LA.
+Copyright remains with the author(s).
+Figure 1: A Pearl resting on its charging base.
+addition, as the show is conceived as a multi-artistic pro-
+duction in which both the main performers act, dance, and
+perform music, it made sense that the Pearl would also be
+able to fulﬁll a multi-functional role.
+The initial conception of the Pearl necessitated that its
+visual aesthetics would play a dominant role in its creation.
+The inclusion of individually addressable LEDs allow for
+complex lighting variations to be created. The visual ap-
+pearance and composition of the resin shell also plays a key
+role in the visual aesthetics. In addition, it was important
+that the Pearl be a monolithic, enclosed object, appearing
+as a wondrous object in accordance with its role in the story.
+2. SPHERICAL INTERFACES
+There is no shortage of computer interfaces/displays which
+take the form of a sphere. The simplest implementation is
+as a handheld device utilizing inertial sensing for their pri-
+mary interaction and with either no lighting or a single light
+source. For example, Panagiotis Tigas created theSonic-
+sphere, a palm-sized sphere containing a wireless transmit-
+ter and accelerometer [9] . In this instrument discrete ori-
+entations are mapped to pitches, with the pitch being trig-
+gered upon the transition from one orientation to another.
+Antonsen and Bjerknes created interactive juggling balls,
+consisting of white spheres lit internally with multi-colored
+LEDs and containing an inertial measurement unit.1 One
+mapping of these balls detects when the balls are in mid-air
+versus being held by the hand, and changes the lighting of
+the balls accordingly. The Orb, a similar DMI inspired by
+1https://www.youtube.com/watch?v=rXp2sXKVB58.
+201
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+Figure 2: The Pearl used in the production “La
+Perle,” with dancer Bryan Eliason and percussionist
+Krystina Marcoux. Photo by Julien Leroy.
+balance juggling, in which a “performer moves a ball around
+the body in smooth, rhythmic motions,” was conceptualized
+and prototyped at IDMIL by Gregory Longo [6] . In addi-
+tion to multi-colored LEDs and an accelerometer the Orb
+incorporates a piezo-electric sensor for knock detection and
+an IR distance sensor allowing for interacting with the space
+around the instrument.
+Several larger interactive spheres have been created by the
+DMI community. Mailis Rodrigues created theIntonaspa-
+cio as a controller for interacting with site-speciﬁc media
+installations [12] [8] . Roughly 30cm in diameter, the In-
+onaspacio incorporates several piezo sensors for sensing taps
+and strikes, an IR sensor for sensing the distance between
+the sphere and the performer, an IMU, and a microphone
+which is used for capturing audio in the space which is used
+both as source material and as a source of control data.
+The AlphaSphereis a spherical device which is mounted on
+a table-top stand [11] . As a non-held device it does not
+contain an IMU but instead utilizes an array of 48 pressure
+sensitive pads located around the surface of the sphere.
+TheSpherois a remote controlled sphere with an internal
+motor allowing it to be driven freely [7] . Slightly smaller
+than a baseball the Sphero contains an RGB LED which
+is used to communicate system status. In several ways the
+implementation of the Sphero is similar to that of the Pearl,
+including its size, communication strategy, and implemen-
+tation of inductive charging.
+3. TECHNICAL DESCRIPTION
+The Pearl is a spherical instrument consisting of a 3D-
+printed central structure embedded within translucent cast
+resin. The resin is pigmented in various ways in order to cre-
+ate a striated visual appearance as well as to aid in di↵usion
+of the embedded lighting. The centre of the Pearl contains
+modules consisting of sensors, lighting, wireless communi-
+cation, battery/power management, and a central micro-
+controller. The microcontroller is an 8-bit ATMEGA328p
+running at 8MHz. Due to its limited processing speed it
+was necessary to closely manage the timing of the di↵erent
+modules. We will discuss the impact of that in the various
+sections below.
+Three versions of the Pearl have been created so far. The
+ﬁrst two versions are 8cm in diameter, while the 3rd ver-
+sion is 10cm in diameter. The pigmentation of the resin
+shell varies between the versions as we are still researching
+the best approach for creating the preferred opacity and
+striation of the Pearl. The ﬁrst 8cm Pearl was delivered
+to the performers in early February in order to allow for
+pre-production and publicity of the show; the second 8cm
+Pearl was delivered in early March to serve as a backup
+during the performance. The 10cm version was created as
+an experiment with a larger form factor.
+3.1 Electronics implementation
+The Pearl contains four types of sensors. Inertial and po-
+sition sensing is carried out by a 9DoF MARG sensor con-
+sisting of an accelerometer, gyroscope, and magnetometer.
+The MARG sensor also contains an embedded temperature
+sensor. Two piezo-electric sensors are embedded within the
+resin on opposite sides of the Pearl. Two IR emitter-receiver
+are also embedded within the resin, orthogonal to the piezo
+sensors.
+The interactive lighting system consists of 24 RGB LEDs
+mounted in six strips of four along the circumference of
+the Pearl’s inner structure. Each LED contains an inte-
+grated WS2812 IC which communicates with a 1-wire pro-
+tocol which requires precise timing of the serial signal.
+The AD conversion of the piezo sensors takes place within
+an interrupt loop with a nominal frequency of 2kHz and
+the magnitude is taken and peak values stored for the next
+serial transmission. The same loop samples the IR sensors
+as well as the voltage of the battery at 33Hz. IMU data is
+read over I2C at 100Hz. Lighting control and sensor data
+transmission are also scheduled to occur at 100Hz, and serial
+data input at 33Hz.
+All of these processes are also driven by interrupts, and
+the interaction between them causes the timing at which the
+processes occur to vary considerably. This is most notice-
+able in two ways. First, despite sampling at 2kHz percussive
+impulses on the surface of the Pearl produce inconsistent
+sampled values. One possible explanation for this is if an
+impulse occurs when a di↵erent interrupt is in process. In
+that circumstance the sampling of the piezo signal will be
+delayed until the other process is completed.
+A second consequence of timing issues occurred when the
+performers requested the implementation of a strobe-light
+function. Once implemented it was immediately visually
+apparent that the speed of the strobe was inconsistent due
+to the many concurrent interrupts being called. To reconcile
+this the sampling of the piezo sensor is disabled when the
+strobe function is activated. Following that step the timing
+of the strobe function was satisfactory.
+4. MAPPINGS
+The development of the Pearl took place independently of
+the production of the show. While discussions were held
+to determine the overall direction of its development, the
+functionality of the Pearl as developed at IDMIL and that
+utilized for the show was signiﬁcantly di↵erent. Here we
+will discuss brieﬂy mappings which were created at IDMIL.
+202
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+4.1 Mapping 1
+The ﬁrst mapping was developed with a prototype of the
+Pearl which lacked piezo and IR sensors and consists of
+two synthesis blocks. The ﬁrst was based on the Granular
+Toolkit for Max/MSP by Nathan Wolek [14] and utilizes
+three granular synthesizers utilizing di↵erent source audio
+ﬁles. Parameters of the granular synthesizers such as grain
+location, dispersion, and length are mapped to the orien-
+tation of the Pearl. The amplitude of each synthesizer is
+mapped to the leaky integration of the derivative of one
+axis of rotation. So as the Pearl is rocked around one axis
+the amplitude of the synthesizer mapped to that axis in-
+creases. In practice, changing the orientation of the Pearl
+while rocking causes a crossfade between di↵erent granular
+synthesizers. Overall, this synthesis block is programmed
+to be highly sensitive to small motions.
+The second block is programmed to more less sensitive,
+and thus only apparent during larger performance gestures.
+For this block the magnitude of acceleration for each axis is
+mapped to the amplitude of a waveshaping synthesizer.The
+magnitude of modulation is a combination of orientation as
+well as magnitude of acceleration.
+4.2 Mapping 2
+The second mapping developed utilizes a synthesizer con-
+sisting of a signal chain consisting of a white noise source,
+resonant lowpass, waveshaping ﬁlter, and digital delay.
+Broadly speaking, the magnitude of the piezo signals con-
+trol amplitude of the signal split to both the delay and the
+DAC as well as the magnitude of modulation, the orienta-
+tion controls the waveshaping function, ﬁlter parameters,
+and delay parameters, and acceleration magnitude controls
+feedback and amplitude of the digital delay (which is set to
+cascade into feedback during high accelerations).
+4.3 Interactive Lighting
+The Pearl does not contain mechanically moving parts which
+might serve as indications of the state of the instrument, or
+visual markings to convey its orientation. In this case in-
+teractive lighting provides the opportunity to provide com-
+pensating visual information to both the performer and ob-
+server. Three possible uses of interactive lighting in this
+context are to display information regarding the state of
+the performance system, to convey information regarding
+performer gesture, or to add aesthetic elements to the per-
+formance.
+4.3.1 Lighting and Instrument State
+The display of information to display system state or infor-
+mation gathered by the system is common in digital devices.
+In the same fashion, many DMIs utilize interactive lighting
+to indicate the status of the system. In computer music
+performances this frequently takes the form of displaying
+information that is either sequenced by the performer or
+generated algorithmically by the computer in response to
+performer input. A notable example is the Monome con-
+troller, which has spawned a series of similar controllers
+consisting of grids of pushbuttons with integrated lighting
+[5] . In these instruments it is common to use interactive
+feedback to display currently activated steps of a step se-
+quencer, as well as a moving strip of lights which indicates
+the sequencer’s temporal location.
+The Yamaha Tenori-On is a similar instrument which
+adds a secondary grid of LEDs on the back of the instrument
+which mirrors the grid on the front of the instrument [10].
+The creators of the Tenori-On note that its construction
+is intended to make you “understand the musical structure
+visibly.” In this case we can see that displaying the system
+state to the audience as well as the performer can be helpful
+in performance.
+4.3.2 Performer Gesture and Aesthetics
+Interactive lighting can also be used to display information
+regarding performer gesture. It may be more e↵ective if this
+information is not already visible within the performance
+gesture - however, this distinction is not necessarily static.
+Consider the Laser Harp, for example, which triggers notes
+when a hand blocks a laser beam and is a highly visual spec-
+tacle.2 When the performer moves her hand to block the
+laser the important information regarding triggering a note
+is already contained within the performer’s arm movement.
+We could then consider the visual impact of the laser beam
+being blocked as an aesthetic addition. However, when per-
+forming in front of large numbers of people, or in a situation
+where the performer isn’t well-lit, the audience perception
+of the performer’s arms may be impaired. In this case the
+visual impact of blocking the beam provides fundamental
+information regarding performer gesture.
+4.3.3 Lighting Implementation in the Pearl
+We have implemented a variety of approaches to implement-
+ing interactive lighting in the Pearl. One approach is to
+visually display control signals generated by performer ges-
+tures. In this way small performance gestures, which may
+or may not be perceptible to the audience, can nonetheless
+be made visible. Examples from the mappings above in-
+clude both small rotations and small rubbing or scraping
+gestures. These small gestures contrast with larger gestures
+which may be used to generate amplitude control signals.
+One implementation consists of a two-stage lighting map-
+ping, in which a base lighting level is generated by ampli-
+tude levels (which tend to have relatively long decays in the
+mapping we describe) while rotation generates a brighter
+light of a similar colour but with a much faster decay.
+Lighting can also be used to display key information which
+may not be visible at all in the physical instrument. When
+using absolute orientation using a sphere, for example, there
+can be no way to know which orientation corresponds to
+neutral in any of the three axes. One way of helping is to
+use the lighting to provide landmarks – marking one side of
+the sphere as the ‘top,’ for example. Another way is to use
+di↵erent colour schemes for the sphere to indicate its gen-
+eral orientation. In one of the Pearl mappings, for example,
+di↵erent synthesis processes would be activated depending
+on the orientation of the sphere. For each orientation a
+base colour is generated, in which all of the LEDs assume
+a particular colour. By linking the orientations to di↵erent
+base colours it is possible to show the current orientation.
+This has the beneﬁt not only of providing information to the
+performer but also to demonstrate correlations between the
+instrument’s state and the sonic results of the performer’s
+gestures.
+5. DISCUSSION
+When implementing an interactive lighting system in a dig-
+ital musical instrument it can be helpful to take into ac-
+count many of the same considerations we would give to
+the relationship between performer gesture and sonic result
+as we go from considering a two-dimensional gesture-sound
+mapping relationship to a three-dimensional gesture-sound-
+lighting relationship.3 Due to this fact it makes sense that
+we should be just as concerned that the lighting bear some
+2http://jeanmicheljarre.com.3As in Bert Bonger’s depiction of human-machine interac-
+tion [1].
+203
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+kind of correspondence to both the performer gesture as well
+as the sonic result. Similarly, we should be concerned that
+the visual result of performer gesture be synchronous with
+both the sonic and gestural components, as well as sharing
+some energetic and morphological characteristics.4
+In some sense it may be that this three-dimensional rela-
+tionship shares certain burdens between both sonic and vi-
+sual response to performer gesture. For instance, some kind
+of feedback can be helpful in order to give both performer
+and audience conﬁdence that the performer’s gestures have
+been recognized by the system. In a gesture-sound map-
+ping where the system response is not instantaneous, for
+example, visual feedback may help make clear that that re-
+sponse is intentional. Such is the case in an instrument like
+the Monome discussed above, in which the performer enters
+steps into a sequencer asychronously from the sequencer’s
+actual temporal location.
+There may also be possibilities for the use of lighting to
+enhance the visual communication of performer gesture.5
+On the one hand, large performer gestures, of the kind that
+already clearly display performer expressivity, may not ben-
+eﬁt from complex visual responses – or it may be that cer-
+tain extreme lighting e↵ects during these moments can help
+make them over-the-top in a theatrical sense. On the other
+hand, small performer gestures of the sort that may not be
+readily discernible to the audience may beneﬁt from care-
+fully programmed visual responses.
+6. CONCLUSIONS
+The work presented in this paper demonstrates ways in
+which an interactive lighting system can enhance certain as-
+pects of performance on a digital musical instrument. The
+spherical form and materials of the Pearl create a relatively
+featureless exterior which, combined with the extensive use
+of orientation sensing, limits the visual cues regarding per-
+former gesture and instrument state. The use of interactive
+lighting presents one approach to solving this problem.
+In the discussion above we hope also to highlight the po-
+tential of interactive lighting to usefully complement the
+gesture-sound mapping paradigm. While it is tempting to
+implement wholly pragmatic lighting schemes in which we
+duplicate visual cues contained within performer gesture,
+there are many other possibilities for using an interactive
+lighting system. Making visible the subtle qualities of small
+performer gestures, for example, or displaying information
+regarding the state of the instrument which would would
+not be inherently visible.
+Challenges encountered during the creation of the Pearl
+led to the research described above, and we view the Pearl
+as an excellent platform for a continued exploration of the
+implementation of interactive lighting systems. Of particu-
+lar interest to us is research into the ways a system like the
+Pearl can help communicate performer intention and action
+during computer music ensemble performances. In these
+situations the challenge of associating each performer’s ges-
+ture and the resultant sound is heightened, and the use of
+interactive lighting to make the results of performers’ ges-
+tures explicit may prove helpful.
+7. ACKNOWLEDGMENTS
+We would like to thank the National Science and Engineer-
+ing Research Council for their support in the form of an
+individual Discovery Grant for the 2nd author, the Centre
+4For more discussion of these correlations see [2] [13].5See [3, 4] for more on visual perception of musical expres-
+sion.
+for Interdisciplinary Research in Music Media and Technol-
+ogy for their technical assistance, the production and per-
+formance team ofLa Perle, and Krystina Marcoux for her
+suggestions and enthusiasm.
+8. REFERENCES
+[1] B. Bongers. Physical Interfaces in the Electronic Arts:
+Interaction Theory and Interfacing Techniques for
+Real-time Performance. In M. M. Wanderley and
+M. Battier, editors,Trends in Gestural Control of
+Music, volume 6, pages 41–70. Ircam, Paris, 2000.
+[2] J. Croft. Theses on Liveness.Organised Sound,
+12(01):59–66, Apr. 2007.
+[3] S. Dahl and A. Friberg. Visual perception of
+expressiveness in musicians’ body movements .Music
+Perception: An Interdisciplinary Journal,
+24(5):433–454, 2007.
+[4] J. W. Davidson. Qualitative insights into the use of
+expressive body movement in solo piano performance:
+a case study approach.Psychology of Music,
+35(3):381–401, July 2007.
+[5] J. Dunne. Review: Monome 40h Multi-purpose
+Hardware Controller.Computer Music Journal,
+30(2):30–32, 2007.
+[6] G. Longo. The Orb: Wireless Interface for Motion
+Based Control, 2007. IDMIL Research Report.
+http://greglongoproductions.com/orbﬁnalpaper.pdf,
+accessed April 15, 2015.
+[7] C. Bonnington. Review: Orbotix Sphero 2.0.Wired,
+2013. http://www.wired.com/2013/08/sphero-new/,
+accessed Feb 1, 2015.
+[8] C. R. Mamedes, M. M. Wanderley, and
+P. Ferreira-Lopes. Composing for DMIs - Entoa,
+music for Intonaspacio.Proceedings of the
+International Conference on New Interfaces for
+Musical Expression, pages 509–512, 2014.
+[9] T. Murray-Browne, D. Aversano, S. Garcia,
+W. Hobbes, D. Lopez, T. Sendon, P. Tigas,
+K. Ziemianin, and D. Chapman. The Cave of Sounds:
+An Interactive Installation Exploring How We Create
+Music Together. InProceedings of the International
+Conference on New Interfaces for Musical Expression,
+pages 307–310, 2014.
+[10] Y. Nishibori and T. Iwai. TENORI-ON. In
+Proceedings of Conference on New Interfaces for
+Musical Expression, pages 172–175, 2006.
+[11] A. Place, L. Lacey, and T. Mitchell. AlphaSphere. In
+Proceedings of Conference on New Interfaces for
+Musical Expression, pages 491–492, 2013.
+[12] M. Rodrigues, M. M. Wanderley, and
+P. Ferreira-Lopes. Intonaspacio: A digital musical
+instrument for exploring site-speciﬁcities in sound. In
+Proceedings of CMMR, Marseille, France, 2007.
+[13] D. Wessel and M. Wright. Problems and Prospects for
+Intimate Musical Control of Computers.Computer
+Music Journal,2 6 ( 3 ) : 1 1 – 2 2 ,2 0 0 2 .
+[14] N. Wolek. Granular Toolkit v1. 0 for Cycling74’s
+Max/MSP.Journal SEAMUS, XVI(2):34–46, 2001.
+204
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 

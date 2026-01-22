@@ -1,0 +1,427 @@
+Highland Piping Ornament Recognition
+Using Dynamic Time Warping
+Duncan W. H. Menzies
+Centre for Digital Music
+Queen Mary University of London
+London, UK
+d.w.h.menzies@qmul.ac.uk
+Andrew P . McPherson
+Centre for Digital Music
+Queen Mary University of London
+London, UK
+a.mcpherson@qmul.ac.uk
+ABSTRACT
+This work uses a custom-built digital bagpipe chanter inter-
+face to assist in the process of learning the Great Highland
+Bagpipe (GHB). In this paper, a new algorithm is presented
+for the automatic recognition and evaluation of the various
+ornamentation techniques that are a central aspect of trad-
+itional Highland bagpipe music. The algorithm is evaluated
+alongside a previously published approach, and is shown to
+provide a signiﬁcant improvement in performance. The or-
+nament detection facility forms part of a complete hardware
+and software system for use in both tuition and solo practice
+situations, allowing details of ornamentation errors made
+by the player to be provided as visual and textual feed-
+back. The system also incorporates new functionality for
+the identiﬁcation and description of GHB ﬁngering errors.
+Author Keywords
+Great Highland Bagpipe, computer assisted instruction, auto-
+matic ornament detection, dynamic time warping
+ACM Classiﬁcation
+H.5.5 [Information Interfaces and Presentation] Sound and
+Music Computing, J.5 [Arts and Humanities] Performing
+Arts, H.5.2 [Information Interfaces and Presentation] User
+Interfaces
+1. INTRODUCTION
+The traditional repertoire and playing style of the Great
+Highland Bagpipe (described in [8]) are in many ways quite
+distinct from other genres of Western folk and classical mu-
+sic. In particular, the limited range of available pitches
+and absence of timbral or dynamic control have led to the
+development of a wide array of ornamentation techniques,
+which take the form of speciﬁc combinations of one or more
+short gracenotes. Such embellishments are rigorously and
+formally deﬁned, and are an essential element of Highland
+piping practice. This paper presents a novel approach for
+the automatic detection and evaluation of piping ornamen-
+tation performed on a digital chanter interface (Figure 1),
+using an iterative pattern matching process based on Dy-
+namic Time Warping (DTW). In Section 4, the algorithm
+is tested alongside a previous method from NIME 2012 [8].
+Extending previous work on assistive graphical user inter-
+face (GUI) design for one-to-one piping lessons [9], the orna-
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME’15,May 31-June 3, 2015, Louisiana State Univ., Baton Rouge, LA.
+Copyright remains with the author(s).
+Figure 1: Digital chanter interface in 3D printed casing.
+ment recognition algorithm forms part of a complete hard-
+ware and software system to support the GHB learning
+process in both expert tuition and solo practice situations.
+Based on expert feedback obtained during a pilot study with
+an early version of the GUI, the system described in this
+paper also incorporates new functionality to highlight and
+describe piping-speciﬁc ﬁngering errors.
+2. BACKGROUND
+2.1 Previous Work
+2.1.1 Digital Chanter Interface
+This work uses a custom-built digital chanter interface [9],
+which employs infrared reﬂectance sensors mounted inside
+the holes of a cylindrical chanter shell to detect the continu-
+ous movements of the player’s ﬁngers. This provides a phy-
+sical playing experience much closer to that of an acoustic
+chanter than the capacitive contacts used in commercially
+available electronic bagpipes such as the Redpipes1. The
+interface also incorporates an air pressure sensor [7, 12] in
+place of the chanter reed, allowing it to be connected to a
+traditional set of pipes. This enables the user to practice
+the breathing and bag pressure aspects of piping without
+the high volume levels associated with acoustic bagpipes.
+2.1.2 Automatic GHB Ornament Detection
+The formalised nature of GHB ornamentation makes it an
+ideal candidate area for automatic recognition and evalua-
+tion. The previous method presented in [8] employs a rule-
+based algorithm to detect potential ornaments and com-
+pare them to a series of templates, allowing errors in the
+execution of the movement to be identiﬁed. However, the
+accuracy of this approach is imperfect, particularly for stu-
+dent players whose technique can be inconsistent.
+2.1.3 GUI Program for One-to-One Piping Lessons
+The development of technological tools for music pedagogy
+is an active ﬁeld of research. A signiﬁcant proportion of
+existing work in this area concerns piano tuition. These
+projects use MIDI input from a digital keyboard to capture
+multiple aspects of the player’s technique and generate il-
+lustrative visualisations, either as solo practice tools [2, 4,
+1http://redpipes.eu/
+50
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+13], or in order to assist a human tutor in describing their
+observations to the pupil [14]. Visualisations to compare
+student and expert recordings have also been investigated
+[6]. The prototype system presented in [9] ﬁrst applied these
+concepts to GHB tuition, using sensor input from the digi-
+tal chanter to enable the recording, playback, visualisation
+and comparison of instructor and pupil performances.
+2.2 Musical Pattern Matching using DTW
+Dynamic Time Warping (DTW) is a popular technique for
+musical pattern recognition. In [15], DTW is employed
+to recognise melodic fragments in MIDI keyboard perfor-
+mances of a range of music from Bach fugues to bebop.
+Paulus and Klapuri [10] use DTW to assess the similar-
+ity between temporal rhythmic patterns extracted directly
+from audio signals. [11] presents a DTW-based method for
+the classiﬁcation of monophonic Greek traditional clarinet
+recordings according to 12 pre-deﬁned reference patterns.
+2.3 Ornament Detection in Other Genres
+Detection of musical ornamentation in genres other than
+Highland piping has been addressed in several recent stud-
+ies. Brown and Smaragdis [1] use independent component
+analysis to examine trills in piano and ﬂute recordings, in
+order to compare trill rates between performances. Gomez
+et al. [5] present a method based on the Smith-Waterman
+algorithm to identify a range of pre-deﬁned ornamentation
+techniques inac a p p e l l aﬂamenco pieces. [3] concerns the
+detection of ornamentation in Irish folk music. The system
+uses onset detection, audio segmentation and pitch recogni-
+tion to ﬁnd instances of single and multi-note ornaments.
+3. METHODS
+The goal of the system is to achieve robust detection of mis-
+takes made by beginning players, and to provide meaningful
+feedback on the nature of these errors using the GUI. This
+section describes the implementation of these functions.
+3.1 Ornament Recognition With DTW
+This work extends the method presented in [8] to an itera-
+tive pattern matching approach using DTW. The software
+includes an XML ﬁle containing 64 ornament templates, de-
+tailing the pitches and approximate durations of each gra-
+cenote in the movement, and all permitted previous and
+subsequent notes (e.g. abirl must always end on low A).
+The ﬁrst step in the process is to identify any series of one
+or more short notes orgracenotesas a potential ornament.
+A gracenote is deﬁned here as any note whose duration falls
+between two speciﬁed lengthsLmin and Lmax. However, it
+is often the case that the ﬁrst note of certain ornaments (e.g.
+throw on D) is elongated for emphasis. For this reason, the
+algorithm begins detecting a possible ornament when any
+note shorter than a higher limitLposs >L max is reached.
+If the next note is within the bounds of a normal gracenote,
+the longer ﬁrst note is included in the sequence. Once a
+complete gracenote sequence is detected, it is marked as a
+potential ornament and compared to each of the templates.
+Figure 2 depicts a ﬂow chart of the ornament recognition
+process. Firstly, the complete gracenote sequence is con-
+sidered. If both the melody notes immediately before and
+after the potential ornament are valid, then the DTW algo-
+rithm attempts to match the gracenote pitches to those in
+the template. DTW allows the duration of the performed
+gracenotes to di↵er greatly from the template and still be
+deemed correct. However, pitches that are either surplus to
+or missing from the template incur a penalty of one point
+for each millisecond sample that cannot be matched.
+Figure 2: Ornament recognition ﬂow chart.
+(a)
+ (b)
+ (c)
+Figure 3: (a)Taorluathornament notation, (b) detected
+taorluathwith erroneous note, (c) DTW plot.
+Should the DTW comparison return a penalty score of
+zero, this ornament is designated a perfect match and the
+detection is complete. If the score is non-zero, or the pre-
+vious and/or subsequent notes are invalid, the algorithm
+follows an iterative process, in which three alternative so-
+lutions are tested by dropping a gracenote from (a) the be-
+ginning of the sequence, (b) the end, and (c) both. If any
+of these alternatives provides a better score then this gra-
+cenote is dropped permanently (adding a ﬁxed penalty to
+the score) and the iteration continues until no improvement
+is found, before repeating for the next template.
+This approach allows embellishments performed with sig-
+niﬁcant deviations in both pitch and timing to be identiﬁed
+accurately, even in fast tunes where the durations of melody
+notes can be comparable to ornament notes. Figure 3 shows
+a correctly detectedtaorluathmovement containing an er-
+roneous note (circled in red), and the resulting DTW plot.
+3.2 GUI for Student Feedback
+Figure 4 shows the GUI displaying a performance recorded
+with the digital chanter. The solid green bars represent
+notes on a stave, with durations indicated using a propor-
+tional notation similar to the familiar piano roll format.
+Detected embellishments are enclosed in rectangular boxes,
+below which the ornament name is written. The red box in
+the top right of the display indicates that thetachummove-
+ment contains an error (an extra note between the G and B
+gracenotes) which has been highlighted by the system with
+a red circle. Detailed feedback on the execution of a partic-
+ular embellishment is available in the form of a pop-up text
+window by clicking on the ornament in the display.
+51
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+Figure 4: GUI showing ornaments detected in performance.
+Red box (top right) indicates an error.
+3.3 False Fingering Detection
+False ﬁngeringrefers to the act of playing a note on the
+top hand of the chanter without executing the proper bot-
+tom hand ﬁngering, and is seen as a serious technical ﬂaw in
+traditional piping circles. Nonetheless, to the inexperienced
+player, the comparatively subtle di↵erences in sound bet-
+ween correct and incorrect ﬁngerings can be di cult to dis-
+cern. During the pilot study described in [9], the instructor
+suggested that the ability to highlight instances of false ﬁn-
+gering would be a valuable addition to the system.
+Since there is only one correct ﬁngering for each of the
+nine notes in the traditional piping scale, this facility can
+be implemented conveniently using a simple lookup table
+approach, in which the correct state of the eight chanter
+holes is stored for each possible pitch. The GUI includes
+the option to highlight any note (or section thereof) which
+is ﬁngered incorrectly in red. Details of the false ﬁngering
+can be displayed in a text window (Figure 5), allowing the
+user to identify, recreate and rectify the error.
+Figure 5: False ﬁngering feedback.
+It should be noted that the concept of false ﬁngering ap-
+plies only to melody notes; gracenotes in an embellishment
+are usually performed with one ﬁnger at a time, and hence
+do not correspond to the correct ﬁngering for a given pitch.
+It is therefore a prerequisite to meaningful false ﬁngering de-
+tection that the ornament recognition algorithm performs
+e↵ectively, to avoid labelling gracenotes as false ﬁngerings.
+4. EV ALUATION
+This section describes a quantitative evaluation of the per-
+formance of the DTW ornament detection algorithm (here-
+after referred to as ORdtw), alongside the original approach
+[8] presented at NIME 2012 (termed OR2012). The algo-
+rithms were tested on a dataset of 30 performances recorded
+using the digital chanter interface: a ﬁrst set comprised of
+5 performances each by 3 professional bagpipers, and a sec-
+ond group of 15 recordings made by 11 piping students (1
+or 2 pieces by each player). The students were aged 11-17
+years, and had been learning the bagpipes for 1-4 years.
+The two algorithms were tested using identical settings
+for gracenote sequence detection:Lmin =1 5 m s ,Lmax =
+100ms andLposs = 170ms. These values were determined
+empirically during the development of the system, and were
+not altered at any point during the evaluation.
+4.1 Annotation of Ground Truth Ornaments
+Prior to the evaluation, the recordings were manually anno-
+tated to provide a ground truth reference for the type and
+location of each of the embellishments attempted by the
+player. In some cases, the incorrect execution of one orna-
+ment can manifest itself as a slightly distorted instance of
+a di↵erent technique. The aim of the algorithm is to iden-
+tify ornaments, however poorly executed, without any prior
+knowledge of the performer’s intention. For this reason,
+the criterion for annotation of the ground truth ornaments
+was whether or not an experienced human listener would
+be able to determine from the context which ornament was
+attempted, without necessarily knowing the correct orna-
+mentation of the tune. Over all 30 performances, a total of
+3629 ground truth ornament annotations were made.
+4.2 Results
+For each algorithm, the detected embellishments were com-
+pared to the ground truth annotations, giving a number
+NC of correct matches in each case. The algorithms were
+evaluated forprecisionP and recallR, which are given by:
+P = NC
+ND
+and R = NC
+NA
+where ND is the total number of ornaments detected, and
+NA is the number of ground truth annotations. TheP
+and R values can then be combined into a singleF-measure
+statistic by which to compare the algorithms:
+F =2
+✓ PR
+P + R
+◆
+The P, R and F values obtained by the two algorithms
+are presented in Table 1. Across all 30 test recordings, the
+ORdtw algorithm achieved an improvement of 6.8% over
+OR2012. To assess the statistical signiﬁcance of the results
+obtained, paired-samplet-tests were computed using theF-
+measures for each recording (Table 2). In all categories, the
+improvement in performance was found to reject the null
+hypothesis at a signiﬁcance level of 99.9% (p< 0.001).
+4.3 Discussion
+For the ORdtw algorithm to be valuable to students, it must
+provide an accurate account of which ornaments were per-
+formed, and which contained mistakes. Of the 1240 orna-
+ments detected in the student recordings, 249 (20%) were
+found to contain errors. 209 (84%) of these 249 ornaments
+were correctly matched to the ground truths. This is an en-
+couraging result; however, there are still instances in which
+the player’s technique leads to incorrect recognition.
+Ornament recognition errors generally occur for one of
+two reasons. The ﬁrst takes place in the gracenote se-
+quence detection step, when the duration of one or more
+notes in a performed embellishment falls outwith the pre-
+deﬁned bounds. In this case, single note ornaments are
+ignored entirely, and multi-note ornaments are often iden-
+tiﬁed as some combination of their constituent gracenotes.
+The second cause of mis-identiﬁcation is that poor exe-
+cution can result in the detected sequence more closely re-
+52
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+Group Algorithm No. AnnotationsNA No. DetectedND No. CorrectNC P R F-Measure
+Experts ORdtw 2340 2274 2226 0.979 0.951 0.9649
+OR2012 2276 2047 0.899 0.8748 0.887
+Students ORdtw 1289 1240 1094 0.882 0.849 0.8652
+OR2012 1296 1055 0.814 0.818 0.816
+All ORdtw 3629 3514 3320 0.9448 0.9149 0.930
+OR2012 3572 3102 0.868 0.8548 0.862
+Table 1: Comparison of ornament detection algorithms across all pieces in expert and student groups.
+Group Num Pieces t-value p-value
+Experts 15 4.5614* 4.4394 4
+Students 15 4.3431* 6.7492 4
+All 30 6.3840* 5.5854 7
+Table 2: Paired-samplet-tests for performance of ORdtw
+and OR2012 ornament detection algorithms (*p< 0.001).
+sembling a di↵erent ornament. For this reason, the pro-
+cess of annotating ground truth ornaments involved some
+ambiguity, particularly for the student performances. The
+annotations were made based on the contextual knowledge
+an expert piper would use to discern the player’s intention.
+This high-level understanding of the wider context of the
+piece is not implemented in the detection algorithm itself.
+5. OBSERVATIONS FROM USER STUDY
+The complete system was used in an extensive user study
+with an experienced piping instructor and 17 students, a full
+discussion of which is beyond the scope of this paper. This
+section highlights some observations that are of particular
+relevance to the developments described above.
+Firstly, it was observed that the instructor generally chose
+not to consult the textual description facility when dis-
+cussing the students’ execution of ornaments, opting instead
+to provide his own feedback based on the sound of the per-
+formed embellishment, and its appearance on the GUI. This
+is unsurprising, as the system can not provide the level of
+detail of an expert tutor; indeed, this function was devel-
+oped speciﬁcally for solo practice to avoid the introduction
+of bad habits in the absence of an instructor’s supervision.
+In contrast, the tutor made frequent use of the text win-
+dow to recreate and describe instances of false ﬁngering,
+many of which had not been identiﬁed during the origi-
+nal performance. Moreover, the instructor quickly became
+adept at distinguishing genuine false ﬁngerings (i.e. incor-
+rectly performed melody notes) from gracenotes which were
+too long to be detected by the algorithm, and were hence la-
+belled as false ﬁngerings. In such cases, the instructor was
+able to provide feedback tailored to the student’s level of
+experience. Beginning players were advised that it is bet-
+ter to exaggerate than to rush movements, and hence they
+should not consider the mis-detection as a mistake in their
+playing at this stage, while more advanced students were
+simply instructed that the gracenote was “too long”.
+6. CONCLUSION
+The system described in this paper is an example of a dig-
+ital interface designed to connect to a long established and
+highly formalised musical tradition. The success of such sys-
+tems is dependent not only on practical considerations such
+as appropriate sensing and mapping strategies, but also,
+critically, on ensuring that the particular constraints and
+implications of the cultural context are inherent in the de-
+sign. By integrating support for the ornamentation and ﬁn-
+gering techniques that are an integral aspect of traditional
+Highland piping practice, this work demonstrates how dig-
+ital technologies can provide a meaningful contribution to
+even the most conservative musical genres.
+Acknowledgements
+This work was funded by the Engineering and Physical Sci-
+ences Research Council (EPSRC) as part of the Centre for
+Doctoral Training in Media and Arts Technology at QMUL.
+7. REFERENCES
+[1] J. C. Brown and P. Smaragdis. Independent
+Component Analysis for Automatic Note Extraction
+from Musical Trills.JASA,1 1 5 ( 5 ) : 2 2 9 5 – 2 3 0 6 ,2 0 0 4 .
+[2] R. B. Dannenberg, M. Sanchez, A. Joseph, R. Joseph,
+R. Saul, and P. Capell. Results from the Piano Tutor
+Project. InProc. Fourth Biennial Arts and
+Technology Symposium, Mar 1993.
+[3] M. Gainza and E. Coyle. Automating Ornamentation
+Transcription. InProc. ICASSP, April 2007.
+[4] W. Goebl and G. Widmer. Unobtrusive Practice
+Tools for Pianists. InProc. Music Perception and
+Cognition, August 2006.
+[5] F. G´ omez, A. Pikrakis, J. Mora, J. D´ ıaz-B´ a˜ nez,
+E. G´ omez, and F. Escobar. Automatic Detection of
+Ornamentation in Flamenco. InInt. Workshop on
+Machine Learning and Music,2 0 1 1 .
+[6] T. Knight, N. Boulliot, and J. R. Cooperstock.
+Visualization feedback for musical ensemble practice:
+A case study on phrase articulation and dynamics. In
+IS&T/SPIE Electronic Imaging,2 0 1 2 .
+[7] D. Menzies and D. Howard. The CyberWhistle, An
+Instrument For Live Performance. InColloquium on
+Musical Informatics XII, Gorizia, Italy, Sept 1998.
+[8] D. W. H. Menzies and A. P. McPherson. An
+Electronic Bagpipe Chanter for Automatic
+Recognition of Highland Piping Ornamentation. In
+Proc. NIME, Ann Arbor, MI, USA, May 2012.
+[9] D. W. H. Menzies and A. P. McPherson. A Digital
+Bagpipe Chanter System to Assist in One-to-One
+Piping Tuition. InProc. SMC, July 2013.
+[10] J. Paulus and A. Klapuri. Measuring the Similarity of
+Rhythmic Patterns. InProc. ISMIR,O c t o b e r2 0 0 2 .
+[11] A. Pikrakis, S. Theodoridis, and D. Kamarotos.
+Recognition of Isolated Musical Patterns using
+Context Dependent DTW.IEEE Trans. Speech and
+Audio Processing,1 1 ( 3 ) : 1 7 5 – 1 8 3 ,2 0 0 3 .
+[12] G. P. Scavone. THE PIPE: Explorations with Breath
+Control. InProc. NIME, May 2003.
+[13] S. Shirmohammadi, A. Khanafar, and G. Comeau.
+MIDIATOR: A Tool for Analysing Students’ Piano
+Performance.Revue de Recherche en´Education
+Musicale,2 4 : 3 5 – 4 8 ,2 0 0 6 .
+[14] S. W. Smoliar, J. A. Waterworth, and P. R. Kellock.
+pianoFORTE: A System for Piano Education Beyond
+Notation Literacy. InProc. ACM MM,N o v1 9 9 5 .
+[15] D. R. Stammen and B. Pennycook. Real-time
+Recognition of Melodic Fragments Using the Dynamic
+Timewarp Agorithm. InProc. ICMC,1 9 9 3 .
+53
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 

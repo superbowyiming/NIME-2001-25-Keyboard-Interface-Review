@@ -1,0 +1,756 @@
+Expressive Articulation for Synthetic Music Performances
+Tilo H¨ahnel and Axel Berndt
+Department of Simulation and Graphics
+Otto-von-Guericke University, Magdeburg, Germany
+{tilo, aberndt}@isg.cs.uni-magdeburg.de
+ABSTRACT
+As one of the main expressive feature in music, articulation
+aﬀects a wide range of tone attributes. Based on experimen-
+tal recordings we analyzed human articulation in the late
+Baroque style. The results are useful for both the under-
+standing of historically informed performance practices and
+further progress in synthetic performance generation. This
+paper reports of our ﬁndings and the implementation in a
+performance system. Because of its ﬂexibility and univer-
+sality the system allows more than Baroque articulation.
+Keywords
+Expressive Performance, Articulation, Historically Informed
+Performance
+1. INTRODUCTION
+Humans achieve expression in music performances by sev-
+eral features. Whatever is additionally named by diﬀerent
+authors[12, 15, 5], all of them conform to three expressive
+features, which are timing, dynamics (loudness) and artic-
+ulation [10].
+Today’s performance systems established articulation as
+tone duration [15], sometimes reduced to the span between
+legato and staccato [7] or non-legato [13]. In this respect
+expressive articulation was measured [8, 14] and also imple-
+mented into expressive performance rule systems [4].
+Duration is indeed the most striking feature of articu-
+lation but is not its only one. Articulation describes the
+forming of a tone in all its facets. This also includes loud-
+ness, timbre, intonation, and envelope characteristics.
+This paper aims at three major tasks concerning expres-
+sive articulation: First, articulation is supposed to inﬂuence
+duration, but all remaining tone features like loudness, tim-
+bre, intonation, and envelope characteristics as well. Sec-
+tion 2 introduces the whole range of these aspects. Based
+on the ﬁrst task, Section 3 shows our method demonstrating
+that diﬀerent articulations change these tone features. The
+analysis exempliﬁes Baroque articulation. Consequently,
+Section 4 describes the implementation of articulation fea-
+tures including the possibility to freely deﬁne further artic-
+ulation styles. A conclusion follows in Section 5.
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME2010, June 15-18, 2010, Sydney, Australia.
+Copyright 2010 Copyright remains with the author(s).
+2. WHAT IS ARTICULATION?
+To trace the meaning of articulation it is ﬁrst necessary to
+be aware of the diﬀerence between the notation of music
+and its actual performance. Throughout this article the
+terms ‘note’ and ‘tone’ are strictly distinguished. A note is
+a symbol of a musical event. Its attributes indicate pitch,
+length, loudness, onset and timbre (instrumentation). A
+tone, by contrast, is the actual physical event in a perfor-
+mance. Its attributes are pitch, duration and so forth that
+all correspond to the referring indications of the note. Ex-
+pression in music performance touches deviations from tone
+attributes and note indications. Both timing and dynam-
+ics shape musical structure by inﬂuencing tone onsets and
+loudness values, respectively. Articulation as the forming
+of the single tone adds further deviations (e.g., an accent
+on a crescendo). This concerns all tone features, which are
+loudness, pitch, duration, envelope, and also timbre. The
+following description brieﬂy introduces the parameter space
+articulation is involved in.
+Envelope: A tone can consist of the four parts attack, de-
+cay, sustain and release. Every part can show diﬀerent
+proportions or even be absent. On the whole they de-
+scribe the loudness progression over a single tone.
+Duration: It is the time from tone-onset to its oﬀset, either
+proportional to the inter onset interval (IOI) or in
+absolute time.
+Loudness Deviations: Independently from the dynamic
+shape of a musical section, certain articulations inﬂu-
+ence loudness.
+Timbre Deviations: Some articulation instructions par-
+ticularly refer to playing techniques (pizzicato, ham-
+mered bow strokes). They aﬀect timbre changes that
+are neither exclusively caused by loudness changes nor
+depend on instrumentation.
+Intonation Deviations: Similar to loudness and timbre,
+diﬀerent articulations may inﬂuence intonation [9].
+Articulation can aﬀect one or more of these tone features.
+The following Section shows the analysis of envelope, tone
+duration, and loudness deviations.
+3. MEASURING ARTICULATION
+The meaning of articulations changed with time and place.
+We therefore considered a stylistic homogeneity. In addi-
+tion, we wanted to choose key articulations for testing. The
+focus on German late Baroque/early Classic music fulﬁlled
+both conditions; it reduced the range of interpretation and,
+on the other hand, supports articulations that are both rea-
+sonable and still valid today [1, 18].
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+277
+a:
+b:
+c:
+tenuto *
+d: neutral
+e: staccato*
+f: staccatissimo
+g: bow vibrato*
+h: portato
+Figure 1: Exercises from Mozart: a(original) and
+b(experimental); Reichardt: d-h; *: additional.
+3.1 Methodology
+Figure 1 shows all articulations that were analyzed. They
+are described as follows [1, 17, 18, 19]:
+tenuto: Tones are to play as long as possible but clearly
+separated from each other.
+neutral: If notes are without any annotation it is to decide
+how to articulate them. This depends on the respec-
+tive common practice. The analysis refers to a promi-
+nent example in Baroque music: Eighths (quavers) in
+the accompaniment are played short [17, 19].
+staccato/staccatissimo: It means very short/ as short as
+possible.
+bow vibrato: 1 All notes under a slur are played by a con-
+tinuous increasing and decreasing bow pressure but
+without any stopping of the bow stroke.
+portato: 1 All notes under a slur are played with one bow
+stroke but clearly separated by stopping the bow.
+Because most standard Baroque articulation instructions
+emphasize duration, two special articulations with an em-
+phasis on (string) playing technique were added (Figure 1g
+and h).
+We recorded ten professional musicians playing Baroque
+and modern instruments; altogether we recorded 14 diﬀer-
+ent instruments, including strings, brass and woodwinds.
+The exercises followed eighteenth century articulation prac-
+tises that had been taken from two major treatises on vio-
+lin playing: Johann Friedrich Reichardt [19], i.e., Reichardt
+exercise, and Leopold Mozart [17], i.e. Mozart exercise, as
+shown in Figure 1.
+Two AKG 1000 microphones were placed two meters in
+front of the instrument. A larger distance would have en-
+tailed less loudness diﬀerences and increased recorded re-
+verberation. On the contrary, a closer position would carry
+the risk that body movements inﬂuence the position of the
+1Both
+annotations diﬀer in Baroque string playing [16, 17]
+and largely in later epochs. The deﬁnition refers to the
+experimental exercises.
+articulation
+max percentile oﬀset percentile
+25 50 75 25 50 75
+ten
+uto .363 .661 .780 .799
+.893 .963
+neutral .339 .469 .586 .692
+.771 .876
+b
+ow vibrato .413 .495 .571 .693
+.780 .812
+portato 71 95 124 .533
+.727 .769
+staccato 73
+87 101 .532
+.567 .744
+160
+173 225
+staccatissimo 60 80 102 .466
+.523 .624
+143
+161 189
+T
+able 1: Loudness distributions show time propor-
+tions to IOI, except italic letters that are ms values.
+instrument. Regarding the directional characteristics of in-
+struments, this would have aﬀected the recorded loudness
+values too much. Being aware that recorded decibel values
+depend on all recording conditions, we ran a dynamic range
+test with the same setting. So all decibel values addition-
+ally were analyzed proportionally to thepiano – forte range.
+Tone onsets were extracted automatically by using the Sonic
+Visualiser2 and onset detection algorithms based on energy
+changes in frequency bands as well as power ﬂuctuations
+described by Duxbury et. al [6]. Missing and mismatched
+onsets were manually revised, for instance, if no or more
+than one onset were found on a single tone. Recordings
+were excluded, if musicians misinterpreted the annotations
+or were not able to perform them (thebow-vibrato is a par-
+ticular string annotation, so brass or woodwind instruments
+were not recorded).
+In the Reichardt exercises (see Figure 1c–h) all tones that
+belonged to the same articulation were averaged for every
+recorded instrument (see Figure 2). Envelope diﬀerences,
+release phase and reverberation impeded a deﬁnite oﬀset
+detection. To indicate oﬀsets we decided to label an oﬀset
+marker where the loudness falls below 66 percent of the par-
+ticular loudness range of the particular mean articulation.
+There the loudness decreased intensely but the signal was
+obviously not disrupted by reverberation. Figure 2 shows
+the oﬀset markers for all averaged articulations that were
+played by one musician with one string instrument. Even
+if the oﬀset marker and the real oﬀset point diﬀered, most
+articulations could be distinguished by the oﬀset markers.
+In addition to onset and oﬀset markers, we inserted max-
+imum markers where the maximum loudness was reached.
+The combined onset, maximum and oﬀset markers allowed
+a clear distinction of all tested articulations.
+3.2 Results
+The results taken from the experimental recordings con-
+cern duration, loudness and envelope characteristics. In all
+tests no systematic diﬀerences were found between mod-
+ern and Baroque instruments or between string, brass and
+woodwinds. Admittedly, modern instruments showed an
+increased maximum loudness value but no diﬀerences re-
+garding thepiano–forte range.
+Duration
+Table 1 summarizes the results of the Reichardt exercise.
+Every position of the maximum and oﬀset markers was an-
+alyzed in absolute time (absolute condition) and propor-
+tionally to the IOI (proportional condition). With a com-
+parison of the dispersion—represented by the interquartile
+range (IQR)—diﬀerent time attributions were made: The
+2www.sonicvisualiser.org
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+278
+•
+ten
+uto
+•
+neutral
+•
+staccato
+• staccatissimo•
+p
+ortato
+•
+b ow vibrato
+Figure
+2: Mean envelopes for one performer playing
+a modern violin. Dots=oﬀset markers.
+duration of particular articulations can always be the same
+proportionally to the IOI or depend on absolute time. If
+the duration depends on the IOI, the IQR is smaller in the
+proportional condition than in the absolute condition. For
+example: Legato tones are deﬁned to last 100 percent of
+the IOI. So the IQR in the proportional condition is zero,
+but the millisecond range, and therefore the dispersion for
+the absolute condition, would be as large as note values
+and tempi could ever be.Tenuto, neutral, and bow vibrato
+showed a smaller IQR in the proportional condition. Thus
+they depend on the IOI. On the contrary, we found smaller
+IQRs in the absolute condition for thestaccatissimo, stac-
+cato, and portato with respect to the maximum. The oﬀ-
+set IQR diﬀerences were very low for thestaccatissimo and
+staccato3, but the IQRs were still lower in the relative con-
+dition. A summary of the attributions is given in Table 2.
+If the IQR was smaller in the absolute condition, the values
+in Table 1 were given in milliseconds.
+Loudness Deviation
+The median loudness range frompiano to forte was 21.4 dB.
+To detect general loudness diﬀerences in the Reichardt exer-
+cise, the mean loudness of every articulation was compared
+to theneutral mean loudness (see Table 3). As one can see,
+staccatissimo and tenuto were played louder thanneutral.
+In the Mozart exercise the ﬁrst six notes were played in
+two diﬀerent ways4: Figure 3 shows the median decibel val-
+ues referring to the quietest tone for every of both accen-
+3IQR
+diﬀerences: tenuto = 0.39, neutral = 0.05 and
+staccato = 0.009.
+4Two of the 14 recordings did not ﬁt to one of these strate-
+gies and were excluded.
+articulation relation
+of time progression
+prop. to IOI absolute time
+legato
+& tenuto max, oﬀ att
+portato oﬀ att, max
+staccato & staccatissimo att, max, oﬀ
+bow vibrato att, max, oﬀ
+en
+velope prop. absolute
+attac
+k, decay shape X
+long tone sustain X
+short tone sustain X
+release X
+T
+able 2: Tone dependencies on time (prop=pro-
+portional, att=attack, max=maximum loudness,
+oﬀ=tone oﬀset).
+artic.
+dB % artic. dB %
+ten
+uto 1.62 7.6 neutral - -
+staccato -2.14 -10.0 staccatissimo 2.23 10.4
+portato -1.72 -8.0 bow vib. -1.88 -8.8
+T
+able 3: DB diﬀerences from neutral articulation
+(=artic.) and proportionally topiano–forte range.
+tuation concepts. The accent levels were similar to those
+being extracted from the Reichardt exercise. Remarkably,
+the last tones were played with a slightly crescendo in both
+versions.
+The second bar of the Mozart exercise included a crescen-
+do that in fact belongs to dynamics. Yet, we found changes
+in tone duration instead of loudness changes: Figure 5 shows
+two samples of a crescendo with astaccato articulation,
+taken from the second bar of the Mozart exercise. Unlike
+the violin, which continuously increases its loudness, the
+Baroque bassoon successively increased duration within the
+staccato range.
+Envelope
+Table 1 shows the position of maximum loudness, which is
+the attack time of short tones. Long tones are diﬀerent, for
+their maximum sustain loudness can be on a very late po-
+sition and raise above the attack maximum. In theportato
+condition of the Reichardt exercise, the maximum marker
+(see Table 1) and loudness values (see Table 3) were quite
+similar to the staccato articulation, but its tone duration
+was closer to theneutral articulation (see Table 1).
+Furthermore, there were cases of tones being as short as a
+staccatissimo or even shorter but with a clearer sound that
+resulted from a more concrete pitch and cleaner timbre:
+These were short tones bounded on previouslegato tones
+(see Figure 4).
+3.3 Discussion
+Articulations diﬀer not only in duration, though it is the
+most prominent feature.Tenuto, staccato and staccatissimo
+were discriminated by duration. Short articulations like the
+staccatissimoand also thestaccato did not completely turn
+out to be proportional to the IOI. Further analysis should
+focus on this problem in particular, for it is not unthinkable
+thatstaccato and staccatissimo oﬀsets depend on absolute
+time, which may be additionally inﬂuenced by the absolute
+IOI. Consequently, thestaccatissimo as an “as short as pos-
+sible” articulation showed an envelope nearly reduced to its
+attack and release. Thus, the fastest possible tempo in a
+tenutoarticulation can be deduced from these diﬀerences:
+It is reached if the notes are as short as thestaccatissimo
+attack (it corresponds to the maximum of 80ms, see Ta-
+ble 1) and at the same time correspond to thetenuto pro-
+portion. This is fulﬁlled by playing sixteenth notes at 167
+quarter notes per minute. In his masterpiece on Baroque
+•
+•
+• •
+•
+•
+2.23
+4.32
+1.35 1.57
+0.15
+2.90
+⋄
+⋄
+⋄ ⋄
+⋄
+⋄
+6.97
+0.00
+2.26 1.72
+3.73
+4.88
+Figure
+3: accentuation strategies (median dB val-
+ues) for the ﬁrst six notes of the Mozart exercise.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+279
+tone
+onset • 50ms
+past onset•
+Figure
+4: Tone transition from f♯ to d during the
+ﬁrst bar of the Mozart exercise (see Figure 1).
+ﬂute playing, Johann J. Quantz [18], composer and ﬂautist
+to King Friedrich II, wrote that the shortest notes should
+not be played faster than sixteenth notes in 150–170 quarter
+notes per minute!
+The annotations portato and bow vibrato refer to play-
+ing technique rather than to tone duration. This mainly
+resulted in envelope diﬀerences. Independently from loud-
+ness, the attack transition is highly responsible for the tone
+character [20]. With a diﬀerent playing technique the exci-
+tation of a tone gets modiﬁed, resulting in changes of the
+envelope and the perceived sound. However, the attack time
+is not the minimum limit. Short tones bounded on previous
+legatotones need no extra energy input to build up an at-
+tack. They take over the previous energy and only change
+pitch. This often occurs at the last note under a slur and
+can result in a very short duration (Figure 4).
+Certainly, only the envelope was analyzed and no timbre
+deviations; indeed, it can be argued that timbre alters sys-
+tematically with diﬀerent articulations, too. This, of course,
+requires further investigations of timbre deviations as well
+as in pitch deviations.
+Another ﬁnding concerned loudness: Being not as obvious
+as the duration feature, the analysis showed that articula-
+tions can also include accents. So thestaccatissimo did in
+contrast to thestaccato.
+Furthermore, we found evidence for an interweaving of
+diﬀerent expressive features, particularly articulation and
+dynamics: In a crescendo task (see Figure 5) the violin
+continuously increased loudness, whereas the Baroque bas-
+soon rapidly reached its limits. Incapable to get louder, the
+musician increased the emerged energy sum by successively
+lengthening the tones. Normally, articulation is not the ex-
+pressive feature responsible for a crescendo, but in this case
+it overtakes what dynamics cannot fulﬁl.
+In addition, we were confronted with a slightly crescendo
+at the end of the ﬁrst bar of the Mozart exercise. As an
+Mo
+dern Violin:
+Baroque Bassoon:
+Figure 5: Crescendo from second bar of the Mozart
+exercise (see Figure 1).
+underlying cause the subsequent crescendo may explain this
+(see Figure 1b): The ﬁrst tone of the second bar is the ﬁrst
+tone of the crescendo and usually quieter than the previous.
+Consequently, this previous tone, which is the last tone of
+the ﬁrst bar, has to become louder and therefore causes this
+slightly crescendo.
+The analysis was restricted to Baroque articulation. It is
+expected that diﬀerences in style have an eﬀect on all values
+that were found in this study. However, stylistic diﬀerences
+will hardly revise the fact that articulation inﬂuences every
+tone feature.
+From a musicological perspective, the analyzes serve as
+a ﬁrst step towards a greater compilation of diﬀerent artic-
+ulation style phenomena. Future research should not only
+consider other styles but also focus on nuances of single ar-
+ticulations. Finally, the simulation of diﬀerent performance
+styles shall oﬀer a new approach for listening analyzis.
+Therefore, it is a challenge for signal processing to ex-
+tract deviations of timbre, pitch and oﬀsets. To detect re-
+liable oﬀsets it is not suitable to restrict research to MIDI-
+instruments. One possibility might be to involve visual per-
+formance information.
+The question of random ﬂuctuations also remains unan-
+swered. In this way progress can be achieved by interdisci-
+plinary approaches, including further psychomotor discov-
+eries.
+4. IMPLEMENTATION
+Articulating a note means more than changing its duration.
+The investigations described in the previous Section reveal,
+for instance, a very distinctive loudness component which
+did not derive from conventional dynamics or metrical ac-
+centuation.
+Furthermore, all articulations are not created equal. Iden-
+tical instructions are rendered diﬀerently in diﬀerent stylis-
+tic or expressive contexts. It can even be inhomogeneous
+within one and the same style. A neutral articulation in
+a light-footed Baroque dance is shorter and more detached
+than in Baroque hymns. Moreover, the articulation vocabu-
+lary is not ﬁxed. The basic articulations, as introduced and
+analyzed in the previous Section, were established in the
+Baroque era. The Romantic period and Serialism, however,
+invented a lot of further articulations, mostly ﬁner diﬀeren-
+tiations of the Baroque articulations. In addition, multiple
+articulation instructions can be combined. A typical exam-
+ple is the addition of an accent over a somehow articulated
+note for additional dynamic emphasis.
+Our approach to articulation in synthetic performances
+shall provide this ﬂexibility and extensibility. This would,
+for instance, facilitate an analysis-by-synthesis approach to
+expressive articulation and further customization.
+All implementations were done in a MIDI-based music
+engine framework [2]. It loads the raw MIDI data and sev-
+eral performance styles in XML format which explicitly de-
+scribe how to render expressive MIDI sequences. Such a
+performance style includes information on all performative
+aspects such as tempo, rubato (self-compensating micro-
+deviations in timing), asynchrony, ‘human’ imprecision, dy-
+namics, metrical emphasis, and, of course, articulation. It
+can be created, for instance, by a performance generation
+system and/or manually edited. Regarding the aspect of
+articulation, the following formalisms have been developed
+and implemented.
+4.1 Concept
+The basic idea is to formally separate the deﬁnition of ar-
+ticulations from their application to the concrete musical
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+280
+con
+text. Therefore, the formalisms articulation style and
+articulation map are introduced.
+An articulation style is a pool of articulation deﬁnitions.
+One such deﬁnition describes the manipulations which the
+articulation makes to an input note. The developer can
+freely edit them and create any, even new, articulations.
+Several styles with possibly diﬀering deﬁnitions can be de-
+ﬁned.
+An articulation map is a sequence of instructions to ar-
+ticulate a concrete musical context, in our implementation
+a raw MIDI sequence. Only high-level descriptors are used
+which act as lookup references to the deﬁnitions in an artic-
+ulation style. Articulation maps can be manually edited or
+output of a performance generation system. For playback,
+the instructions are then rendered into an expressive MIDI
+sequence.
+4.2 Articulation Style
+An articulation styleSs (s = 0...t) is an element of a set
+of stylesS = {S0, ..., St}. It is a set of articulation instruc-
+tions.
+Ss = {Is
+0, ..., Is
+j }
+An articulation instruction deﬁnes the manipulations it ap-
+plies to a raw note by a list of manipulators.
+Is
+i = (Ms,i
+0 , ..., Ms,i
+n ) :i = 0...j, n≥ 0
+One such manipulator is a triple which indicates mode and
+value of the manipulation, and the note attribute to be
+changed.
+Ms,i
+m = (modes,i
+m , attributes,i
+m, values,i
+m) :m = 0...n
+Possible attributes to change are the note’s duration and
+velocity. Three manipulation modes are distinguished
+attribute :=
+
+
+
+value : set mode
+attribute + value : add mode
+attribute · value : percent mode
+Negative results are restricted in either case. The imple-
+mentation further rounds the results to integers for proper
+performance in MIDI. If the velocity attribute is modiﬁed,
+the result is capped if greater than 127. While the set mode
+sets the attribute absolutely, the add and percent mode as-
+sume that the attribute is already set at the basic value
+(e.g., dynamics). Articulation quasi adds ﬁner diﬀerentia-
+tions.
+For the manipulation of duration values the implemen-
+tation provides a millisecond version. Thereby, it allows to
+set durations not just in MIDI ticks but also in milliseconds.
+Corresponding timing conversions are described in [3].
+In the implementation, the indicess (style index) andi
+(instruction index) were replaced by unique name strings.
+These descriptors are used in the articulation map as lookup
+references. They ease the manual editing of articulation
+maps as they allow to call a spade a spade. This is par-
+ticularly necessary for sample-based MIDI playback. The
+Vienna Instrumentssampler [21], for instance, provides spe-
+cialized sample sets named ‘staccato’, ‘legato’, ‘portamen-
+to’, ‘pizzicato’ and so forth. These have to be triggered
+separately by designated controller messages. If an instruc-
+tion with a known name occurs, our system automatically
+activates the respective sample set. The current vocabu-
+lary comprizes the terms ‘portamento’, ‘legato’, ‘moltoLega-
+to’, ‘legatissimo’, ‘nonlegato’, ‘portato’, ‘marcato’, ‘tenuto’,
+‘staccato’, ‘staccatissimo’, ‘spiccato’, and ‘pizzicato’.
+Nonetheless, the developer is free to deﬁne and name any
+articulation. Only the neutral articulation plays a special
+role. If an articulation style deﬁnes a neutral articulation,
+it is applied to all notes except for those with individual
+instructions in the articulation map.
+4.3 Articulation Map
+The articulation map is a sequentially ordered list with two
+types of elements,style switches and articulators. A style
+switch is a tuple
+switch = (d, s) :d ≥ 0, Ss ∈ S
+with the tempo-independent date d (e.g., in MIDI ticks)
+from when on articulation styleSs acts as the underlying
+style, quasi as the lookup style. Its range is terminated by
+the date of the next style switch. The ﬁrst element in an
+articulation map has to be a style switch.
+The other elements in the map are articulators. This is
+a tuple
+articulator = (note, (i0, ..., ik)) :Is
+i0...k ∈ Ss, k≥ 0
+that indicates the notenote to be articulated, and the ar-
+ticulation instructionsIs
+i0...k therefore. The instructions are
+successively applied to the note. In this way, instruction
+combinations are possible, liketenuto and accent, or even
+double accent (one accent may raise the velocity by a cer-
+tain amount, double accent does it twice then).
+But the note to be articulated must be located in the
+MIDI sequence. All necessary information therefore are
+given by thenote term. It is a list of properties (date,
+pitch, duration, MIDI channel and port). Most of them are
+optional, only the date (in MIDI ticks) is always required.
+If the given information allow no clear discrimination of
+several notes, all contemplable notes are articulated.
+4.4 Discussion
+The described system allows to model a broad variety of
+articulations. All basic articulations and a big spectrum of
+nuances are possible. The quality of the sounding results de-
+pends, of course, also largely on the underlying sound tech-
+nology (quality of samples or synthesized sound). Nonethe-
+less, the expressive intentions of the articulation are still
+discernible, even with low-quality sounds.
+The system implements articulation manipulations in the
+loudness and duration domain. Even the timbre domain can
+be handled to a certain extent through specialized sampler
+control. Serious boundaries exist with regard to envelope
+and pitch/intonation. The latter can be added easily: The
+manipulators’attribute domaine can be extended bypitch.
+The respective changes can be implemented by pitch wheel
+controller messages.
+The ﬂexible manipulation of envelope characteristics, by
+contrast, necessitates more access to the sound generation
+process. Special playing techniques, likecon sordino/mu-
+ting the instrument, bowing with bridge proximity, playing
+and singing into the mouthpiece at the same time etc. ne-
+cessitate advanced synthesis methods and full synthesizer
+control.
+Up to now, articulations are rendered into MIDI sequen-
+ces without any variance. A human performer is not able to
+reproduce an articulation that exactly, though. By a certain
+random variation further liveliness can be introduced. But
+which amount of variance would be reasonable, anyway? It
+can be more for layman musicians and less for profession-
+als. Concrete values are still unknown and await detailed
+analysis and evaluation.
+Similarly, our implementation uncovered a further very
+fundamental question. Is articulation additive? Astaccato
+articulation may set the tone length to 170ms. Adding a
+marcatoarticulation may shorten the tone length by further
+twenty percent and raise its velocity to the next dynamic
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+281
+lev
+el (e.g., frommf to f ). Is this adequate? More mean-
+ingful combinations, likestaccato+tenuto, staccato+legato
+or tenuto+legato are well known from music notation. On
+the other hand, combinations of instructions which aﬀect
+the tone duration might rather averaged than added. A
+short articulation combined with a long may result in a
+medium duration (e.g.,staccato + tenuto ≈ portato). But
+how are both articulations weighted? The generative nature
+of our articulation approach inspires further investigation
+into such eﬀects.
+5. CONCLUSION
+Articulation, if not reduced to a mere tone duration fea-
+ture, oﬀers a big potential for synthetic music performances.
+When human performers change articulation, they alter
+tone features like loudness, envelope, duration, and, as pre-
+sumed, timbre and pitch. Our analyses of late Baroque ar-
+ticulation showed that these variations do not derive from
+other performance features like timing and dynamics.
+Although these features are systematically distinguished
+they are perceived as fused. As an example, we demon-
+strated the pseudo-crescendo by increasing duration, which
+is already known in theory [1] and practise. These fusion
+eﬀects are worth further investigations.
+Music includes a great amount of common practices, but
+these can disappear every time as music progresses. Re-
+search into music and its original performance accordingly
+should consider both structure and origin. Synthetic per-
+formance systems can contribute to this rediscovery.
+This paper further described the implementation of ar-
+ticulation features as part of such a performance system.
+The implementation allows to ﬂexibly deﬁne any articula-
+tion styles and apply them to a given raw MIDI sequence. A
+musicologically interesting part is the chance to easily ren-
+der one and the same raw sequence in diﬀerent styles, adapt
+the styles, and explore the eﬀects on the performance.
+Of course, were articulation added solely, no performance
+would sound expressive. Articulation rather supplements
+music expression as timing and dynamics do as well. Hence
+synthetic and expressive music cannot sound human-like un-
+til these three are combined.
+Acknowledgement
+We like to express thanks to all musicians for their partici-
+pation in the recordings and for the inspiring dialogs.
+6. REFERENCES
+[1] C. P. Bach.Versuch ¨ uber die wahre Art das Clavier
+zu spielen. B¨ arenreiter, 1753-97. Faksimile-Reprint
+(1994) of Part 1 (Berlin, 1753 and Leipzig 1787) and
+Part 2 (Berlin, 1762 and Leipzig 1797).
+[2] A. Berndt. Decentralizing Music, Its Performance,
+and Processing. InProc. of the Int. Computer Music
+Conf. (ICMC), New York, USA, June 2010.
+International Computer Music Association.
+[3] A. Berndt and T. H¨ ahnel. Expressive Musical Timing.
+In Proced. of the Audio Mostly 2009: 4th Conf. on
+Interaction with Sound, Glasgow, Scotland, Sept.
+2009.
+[4] R. Bresin. Articulation rules for automatic music
+performance. In R. Dannenberg, editor,Proceedings
+of the 2001 International Computer Music Conferenc,
+pages 294––297, Havana, 2001. International
+Computer Music Association.
+[5] E. Clarke. Expression in performance: generativity,
+perception and semiosis. In J. Rink, editor,The
+Practice of Performance. Studies in Musical
+Interpretation, chapter 2, pages 21–54. Cambridge
+University Press, 1995.
+[6] C. Duxbury, J. P. Bello, M. Davies, and M. Sandler.
+Complex domain onset detection for musical signals.
+InProceedings of the 6th Conference on Digital Audio
+Eﬀects (DAFx-03), London, UK, September 2003.
+[7] A. Friberg, R. Bresin, and J. Sundberg. Overview of
+the kth rule system for musical performance.
+Advances in Cognitive Psychology, Special Issue on
+Music Performance, 2(2-3):145–161, 2006.
+[8] A. Friberg, E. Schoonderwaldt, and P. N. Juslin.
+CUEX: An Algorithm for Automatic Extraction of
+Expressive Tone Parameters in Music Performance
+from Acoustic Signals .Acta Acustica united with
+Acustica, 93(3):411–420, 2007.
+[9] J. Fyk.Melodic Intonation, Psychoacoustics, and the
+Violin. Organon, Zielona G´ ora, 1995.
+[10] A. Gabrielsson. The relationship between musical
+structure and perceived expression. In S. Hallam,
+I. Cross, and M. Thaut, editors,The Oxford
+Handbook of Music Psychology, chapter 13, pages
+141–150. Oxford University Press, Oxford, 2009.
+[11] P. N. Juslin. Cue Utilisation in Communication of
+Emotion in Music Performance: Relating Performance
+to Perception.Journal of Exp. Psychology: Human
+Perception and Performance, 26(6):1797–1813, 2000.
+[12] P. N. Juslin. Emotion in music performance. In
+S. Hallam, I. Cross, and M. Thaut, editors,The
+Oxford Handbook of Music Psychology, chapter 35,
+pages 377–389. Oxford University Press, Oxford, 2009.
+[13] P. N. Juslin and P. Laukka. Communication of
+emotions in vocal expression and music performance:
+Diﬀerent channels, same code?.Psychological
+Bulletin, 129(5):770 – 814, 2003.
+[14] R. Lopez de Mantaras and J. L. Arcos. AI and Music:
+From Composition to Expressive Performance.AI
+Magazine, pages 43–57, 2002.
+[15] G. Mazzola, S. G¨ oller, and S. M¨ uller.The Topos of
+Music: Geometric Logic of Concepts, Theory, and
+Performance. Birkh¨ auser Verlag, Zurich, Switzerland,
+2002.
+[16] G. Moens-Haenen.Das Vibrato in der Musik des
+Barock. Akademische Druck- und Verlagsanstalt,
+Graz, 1988.
+[17] L. Mozart.Gr¨ undliche Violinschule. B¨ arenreiter,
+Augsburg, 1789. Faksimile- reprint (1968) of the 3rd
+ed.
+[18] J. J. Quantz.Versuch einer Anweisung die Fl¨ ote
+traversi` ere zu spielen. B¨ arenreiter, Berlin, 1752.
+Faksimile-reprint (1997).
+[19] J. F. Reichardt.Ueber die Pﬂichten des
+Ripien-Violinisten. George Jacob Decker, Berlin and
+Leipzig, 1776.
+[20] J.-C. Risset and D. L. Wessel. Exploration of Timbre
+by Analysis and Synthesis. In D. Deutsch, editor,The
+Psychology of Music, pages 113–169. Academic
+Press/Elsevier, San Diego, 1999.
+[21] Vienna Symphonic Library GmbH. Vienna
+Instruments. http://vsl.co.at/ [last visited: Dec.
+2009], 2009.
+Proceedings of the 2010 Conference on New Interfaces for Musical Expression (NIME 2010), Sydney, Australia
+282

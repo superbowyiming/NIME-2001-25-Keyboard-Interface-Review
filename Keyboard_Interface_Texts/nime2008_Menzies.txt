@@ -1,0 +1,693 @@
+Virtual Intimacy : Phya as an Instrument
+Dylan Menzies
+Dept. Computer Science and Engineering
+De Montfort University
+Leicester, UK
+rdmg dmu.ac.uk
+ABSTRACT
+Phya is an open source C++ library originally designed for
+adding physically modeled contact sounds into computer
+gamee n v i r o nments equipped with physics engines. We re-
+view somea s p e c t so ft h i ss y s t em, and also consider it from
+the purely aesthetic perspective ofmusical expression.
+Keywords
+NIME, musical expression, virtual reality, physicalmodel-
+ing, audio synthesis
+1. INTRODUCTION
+The use of impact sounds coupled to amodeled environ-
+ment was introduced in [5]. Reﬁnements of impact sound
+models have since beenmade [1] . The ﬁrst workingmod-
+els for sustained contact sounds integrated with a physical
+environment wasmade in [13], greatly expanding the over-
+all realism of the simulation by relating audio and visual
+elements continuously. Frictional models have been cre-
+ated for musical instruments, and have also been applied
+to surfaces in simulated environments [2]. Further models
+have have been proposed for other environmental sounds
+including ﬂuids [12]. In [7] a framework was presented for
+ap h y s i c a la u d i os y s t em,d e s i g n e dt oo p e r a t ec l o s e l yw i t ha
+physics engine providing rigid body dynamics. The empha-
+sis was on using robust techniques that could be scaled up
+easily, and accommodate an environment that was rapidly
+changing. This work developed into the Phya physical audio
+library discussed here.
+The principle goal for Phya has been to generate sounds
+that arise from dynamical interactions, that are either that
+are clearly visually apparent, or directly aﬀected by user
+control. This is because when audio can be closely causally
+correlated to other percepts, the overall perceptual eﬀect
+and sense of immersion is magniﬁed considerably. A wide
+selection of sounds fall into this category, including colli-
+sions between discrete solid and deformable objects. The
+complex dynamics of these objects is captured well by the
+many physics engines that have been developed. The au-
+dio generated is amodulation of the audio rate dynamics of
+excitation and resonance, by the relatively slow large scale
+dynamics of objects. Simple audio synthesis processes can
+Permission to make digital or hard copies of all or part of this work for
+personal or classroom use is granted without fee provided that copies are
+not made or distributed for proﬁt or commercial advantage and that copies
+bear this notice and the full citation on the ﬁrst page. To copy otherwise, to
+republish, to post on servers or to redistribute to lists, requires prior speciﬁc
+permission and/or a fee.
+NIME08, Genova, Italy
+Copyright 2008 Copyright remains with the author(s).
+lead to convincing results, but only if coupled carefully with
+the large scale dynamics.
+While physicalmodeling provides a powerful way to gen-
+erate strong percepts, a balance must be struck on the
+level of detail, so that the output is not overly constrained.
+In practice this leads to the development of semi-physical-
+perceptual models that provide somef r e e d om for the sound
+designer to more easily mould a virtual world.
+It was apparent from early on, that Phya oﬀers an in-
+herently musical experience, even from the limited control
+environment of a desktop. The richness of dynamic behav-
+ior and multi-modal feedback are characteristic ofmusical
+performance. A later section explores this further. Use
+of coupled musical-visual performances has becomec om-
+mon, however performances within a physical audio-visual
+world are still apparently scarce, as are physical audio-
+visual worlds in computer games. This state of aﬀairs has
+prompted this article.
+2. TECHNOLOGICAL REVIEW
+Below we brieﬂy review the components of Phya, and the
+overall structure used to accommodate them.
+2.1 Impacts
+2.1.1 Simple spring
+The simplest impacts consist of a single excitation pulse,
+which then drives the resonant properties of the colliding
+objects. The spectral brightness of the pulse depends on
+the combined hardness of the two surfaces. Using a spring
+model, the combined spring constant, which determines the
+duration and so spectral proﬁle of a hit, isk =( k−1
+1 +k−1
+2 )−1
+where k1 and k2 are the spring constants of the individual
+surfaces. A model which just takesk to be the lesser value
+is also adequate. The duration isπ
+p
+m/k where m is the
+eﬀective mass (m−1
+1 + m−1
+2 )−1.T h e eﬀective mass can be
+approximated by the lessermass. If one object is ﬁxed like
+aw a l l ,t h eeﬀective mass is the free object’smass.
+The impact displacement amplitude in thismodel is,A =
+v
+p
+m/k where v is the relative normal contact speed. To
+give the sound designermore freedom over the relation be-
+tween collision parameters and the impact amplitude, a lin-
+ear breakpoint schemei su s e dw i t ha nu p p e rl imit also pro-
+viding a primary stage of audio level limiting. Note that
+the masses used for impact generation do not have to be in
+exact proportion to the dynamics enginemasses.
+Audio sensitivity to surface hardness and objectmass,
+helps to paint a clearer picture of the environment. From a
+musical perspective it adds variation to the sound that can
+be generated, in an intuitive way.
+2.1.2 Stiffness
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+71
+constant k/m pulses
+displacement
+time
+pulse shorter
+because k increases
+above threshold
+Figure 1: Displacements from three impacts, one of
+which is stiﬀ.
+contact layer
+Figure 2: A grazing impact.
+Impact stiﬀness is important for providing cues to the
+listener about impact dynamics, because it causes spec-
+tral changes in the sound depending on impact strength,
+whereas impact strength judged from the amplitude level
+of an impact received by a listener is ambiguous because
+of the attenuating eﬀect of distance. Stiﬀness can bemod-
+eled by making the spring constant increase with impact
+displacement. This causes an overall decrease in impact
+duration for an increase in impact amplitude, andmakes it
+spectrally brighter, illustrated in Figure 1. The variation
+in stiﬀness with impulse is a property of the surface and
+can be modeled reasonably well with a simple breakpoint
+scheme, that can be tuned by the sound designer directly.
+Increasing brightness with note loudness is an important
+attribute of many musical instruments, acoustic and elec-
+tronic, and is rooted in our everyday physical experience.
+It might even be called a universal element of expression.
+Phya incorporates this behavior naturally.
+2.1.3 Multiple hits and grazing
+Sometimes several hits can occur in rapid succession. A
+given physics engine would be capable of generating this im-
+pact information down to a certain times c a l e . T h eeﬀect
+can be simulated by generating secondary impulses accord-
+ing to a simple poisson-like stochastic process, so that for
+al a r g e rimpact the chance of secondary impacts increases.
+Also common are grazing hits, in which an impact is as-
+sociated with a short period of rolling and sliding. This
+is because the surfaces are uneven, and themain impulse
+causing the rebound occurs during a period of less repulsive
+contact. Such ﬁne dynamics cannot be captured by a typ-
+ical physics engine. However, good results can be achieved
+by combining an audio impulse generation with a continu-
+ous contact generation, according to the speed of collision
+and angle of incidence, see Figure 2. The component of ve-
+locity parallel to the surface is used for the surface contact
+speed.
+2.2 Continuous contacts
+2.2.1 Basic model
+Continuous contact generation is a more complex pro-
+cess. The ﬁrst method introduced, [13], was to mimic a
+needle following the groove on a record. This corresponds
+to a contact point on one surface sliding over another sur-
+face, and is implemented by reading or generating a surface
+proﬁle at the contact point to generate an audio excitation.
+Rolling is similar to sliding, except there is no relative
+movement at the contact point, resulting in a spectrally
+less bright version of the sliding excitation. This can be
+modeled by appending a lowpass ﬁlter that can be varied
+according to the slip speed at the contact, creating a strong
+cue for the dynamics there. See Figure 3. A second or-
+der ﬁlter is useful to shape the spectrum better. The con-
+tact excitation is also ampliﬁed by the normal force, in the
+samew a yimpacts are modiﬁed by collision energy. More
+subtle aremodiﬁcations to spectral brightness according to
+the m/k ratio that determines the brightness of an impact.
+Low m/k corresponds to a light needle reading the surface
+at full brightness. Heavier objects result in slower response,
+which can modeled again by controlling the lowpass ﬁlter.
+Although simple, this eﬃcient model is eﬀective because it
+generator
+surface profile
+speed
+contact
+/ position
+lowpass
+freq
+m/k
+slip speed
+gain
+normal force
+surface
+exittion
+Figure 3: Surface excitation from rolling and slid-
+ing.
+takes in the full dynamic information of the contact and
+uses it to shape the audio which we then correlate with the
+visual portrayal of the dynamics. It is also easily customized
+to ﬁt the sound designers requirements. When ﬂat surfaces
+are in contact over a wide area this can be treated as sev-
+eral spaced out contact points, which can often be supplied
+directly by the dynamics-collision system.
+2.2.2 Contact jumps
+Even for a surface that is completely solid and smooth,
+the excitations do not necessarily correspond very well with
+the surface proﬁle. A contact may jumpc r e a t i n gasmall
+micro-impact, due to the blunt nature of the contact sur-
+faces, see Figure 4. The sound resulting from this is signiﬁ-
+cant and cannot be produced by reading the surface proﬁle
+directly. Again, the detailedmodeling of the surface inter-
+actions is beyond the capabilities available from dynamics
+and collisions engines, which are not designed for this level
+of detail. Good results can instead be achieved by adding
+the jumps, pre-processed, into the proﬁle, Figure 5. Down-
+sampling a jumpr e s u l t si nab ump, unless it is sampled
+with suﬃcient initial resolution, which may be impracti-
+cal. A useful variation is therefore to downsample jumps to
+jumps, by not interpolating. This retains the ’jumpiness’
+and avoids the record-slowing-down eﬀect.
+2.2.3 Programmatic and stochastic surfaces
+Stored proﬁles can bemapped over surface areas to cre-
+ate varying surface conditions. This can be acceptable for
+sparse jump-like surfaces that can be encoded at reduced
+sample rates, but in general thememory requirements can
+be unreasonable. An alternative is to describe surfaces pro-
+grammatically, either in a deterministic or fully stochastic
+way. The advantage of a largely deterministic process is
+that repetitions of a surface correlate closely, for instance
+when something is rolling back and forth, providing consis-
+tency cues to the dynamic behavior even without visuals.
+Indexable random number generators provide a way to de-
+terministically generate random surfaces. Others include
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+72
+impact
+Figure 4: Micro-impact occuring due to contact ge-
+ometry
+Figure 5: Preprocessing a surface proﬁle to include
+jumps.
+repeating functions to generate pattern based surfaces such
+as grids.
+Au s e f u lr a n g eo fs u r f a c e sc a nb eg e n e r a t e db ys t o c h a s -
+tically generating pulses of diﬀerent widths, with control
+over the statistical parameters. A change of contact speed
+is then achieved by simply varying the parameters.
+Secondary excitations can also be generated stochasti-
+cally, for instance to simulate the disturbance of gravel on
+as u r f a c e ,i nas imilar manner to the physically informed
+footsteps in [3], Figure 6. In this schemet h ec o l l i s i o np a -
+amp pulse
+lowpass
+filter
+lowpass
+filter
+poisson
+event gen
+particle
+resonance
+tangent speed
+normal force
+random
+Figure 6: Modeling loose surface particle sound.
+rameters are used to determine the activity rate of a poisson
+like process which then generates impulses mimicking the
+collisions of gravel particles. A low frequency lowpass ﬁl-
+ter is used to simulate the duration of the particle spray
+following an impact. The impulses have randomly selected
+amplitudes and are shaped or ﬁltered to reﬂect increased
+particle collision brightness with increased contact force and
+speed, before exciting a particle resonance. Thismodel sim-
+pliﬁes the fact that at high system collision energies there
+will still be particle collisions occurring at low energy. It
+also assumes all particles have the samer e s o n a n c e . T h e
+model does however have suﬃcient dynamic temporal and
+spectral behavior to be interesting. Three levels of dynam-
+ics can be distinguished here, the gross object dynamics,
+the simulated gravel dynamics, and audio resonance. The
+detail that can be encoded in surface excitations is critical
+from the musical point of view. It provides the foundation
+from which the full sounds evolves.
+2.2.4 Friction
+Friction stick and slip processes are important in string
+instruments. In virtual environ ments they are much less
+common source of sound than the interactions considered
+so far. A good example is door creaking, which is visually
+linked to themovement of the door. Stick and slip for dis-
+crete solid objects is simulated well by the generation of
+pulses at regular linear or angular intervals. The amplitude
+and spectral proﬁle of the pulsesmodifying as the contact
+force and speed changes. As contact force increases, nor-
+mally the interval between each pulse increases, due to the
+increased static friction limit, with more or less constant
+lateral spring constant.
+2.2.5 Buzzing
+Common phenomena are buzzing and rattling at a con-
+tact, caused by objects in light contact that have been set
+vibrating. Like i mpact stiﬀness, it provides a distant in-
+dependent cue of dynamic state, which in this case is the
+amplitude of vibration. Objects that are at ﬁrst very quiet
+can becomel o u dw h e nt h e yb e g i nt ob u z z ,d u et ot h en o n -
+linear transfer of low frequency energy up to higher frequen-
+cies that are radiated better. Precisemodeling of this with
+ad y n amics-collision engine would be infeasible. However,
+the process can bemodeled well by clipping the signal from
+the main vibrating object, as shown in Figure 7, and feed-
+ing it to the resonant objects that are buzzing against each
+other. The process could be made more elaborate by cal-
+culating the mutual excitation due to two surfacesmoving
+against each other.
+Figure 7: Clipping of resonator output to provide
+buzz excitation.
+2.3 Resonators
+2.3.1 Modal resonators, calibration, location de-
+pendence
+There are many types of resonator structure that have
+been used to simulate sounding objects. For virtual envi-
+ronments we require aminimal set of resonators that can be
+easily adapted to a wide variety of sounds, and can be eﬃ-
+ciently run in numbers. The earliest formso fr e s o n a t o ru s e d
+for this purpose weremodal resonators [5, 13] which con-
+sist of parallel banks of second order resonant ﬁlters, each
+with individual coupling constants and damping. These are
+particularly suited to objects withmainly sharp resonances
+such as solid objectsmade from glass, stone andmetal. It is
+possible to identify spectral peaks in the recording of a such
+an object, and also the damping by tracking how quickly
+each peak decays, [11]. A command line tool is included
+with Phya for automating this process. The resultant data
+is many times smaller than even a single collision sample.
+Reﬁnements to this process included sampling over a range
+of impact points, and using spatial sound reconstruction.
+The associated complexities were not considered a priority
+in Phya. Hitting an object in diﬀerent places produces dif-
+ferent sounds, but just hitting an object in the samep l a c e
+repeatedly produces diﬀerent sounds each time, due to the
+changing state of the resonant ﬁlters. It is part of the at-
+traction of physicalmodeling that such subtleties areman-
+ifested. If needed, an collision object can be broken up into
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+73
+several diﬀerent collision objects, and diﬀerent Phya sound
+objects associated with these.
+2.3.2 Diffuse resonance
+For a large enough ob ject of a givenmaterial the modes
+becomev e r yn umerous andmerge into a diﬀuse continuum.
+This coincides with the emergence of timed omain struc-
+ture at scales of interest to us, so that for instance a large
+plate of metal can be used to create echos and reverbera-
+tion. For less dense,more damped material such as wood,
+pronounced diﬀuse resonance occurs atmodest sizes, for in-
+stance in chairs and doors. Such objects are very common
+in virtual environments and yet amodal resonator is not
+eﬃciently able to model diﬀuse resonance, or be matched
+to a recording. Waveguidemethods have been employed to
+model diﬀuse resonance either using abstract networks, in-
+cluding banded waveguides [4], feedback delay networks [9]
+or more explicit structures such as waveguidemeshes [14,
+15]. An alternative approach introduced in [6], is tomimic
+ad iﬀuse resonator by dividing the excitation into frequency
+bands, and feeding the power in each into amulti-band noise
+generator, via a ﬁlter that generates the timed e c a yf o re a c h
+band, see ﬁgure 8. Thisperceptual resonatorprovides a dif-
+fuse response that responds to the input spectrum.W h e n
+combined with modal modeling for lower frequencies it can
+eﬃciently simulate wood resonance, and can be easilyma-
+nipulated by the sound designer. A similar approach had
+been used in [10] to simulate the diﬀuse resonance of sound
+boards to hammer strikes, however the diﬀerence here is
+that the resonator follows the spectral proﬁle of a general
+input.
+lowpass
+bandpass gain
+bandpass gain
+noise
++
+bandpass envelope
+follower
+lowpass
+bandpass envelope
+follower
+Figure 8: Outline of a perceptual resonator.
+2.3.3 Surface damping
+Ac ommon feature of resonant objects is that their damp-
+ing factors are increased by contact with other objects. For
+instance a cup placed on a table sounds less resonant when
+struck. This behavior has a strong visual-dynamic coupling,
+and provides information about the surfaces. It can be sim-
+ulated by accumulating a damping factor for each resonator
+as a sum of damping factors associated with the surfaces
+that are in contact.
+2.3.4 Nonlinear resonance
+Many objects enter non-linear regimes when vibrating
+strongly, sometimes causing a progressive shift of energy
+to higher frequencies. For amodal system this can bemod-
+eled by exciting highermodes by lowermodes via nonlinear
+couplings. In waveguide systemst h en o n - l i n e a r i t i e sc a nb e
+built into the network.
+2.3.5 Deformable objects
+There is a common class of objects that are not com-
+pletely rigid, but still resonate clearly, for example a thin
+sheet of metal. Such objects have variable resonance char-
+acteristics depending on their shape. While explicitmodel-
+ing of the resonance parameters according to shape is pro-
+hibitive, an excellent qualitative eﬀect that correlates well
+with visual dynamics is to vary the resonator parameters
+about a calibrated set, according variations of shape from
+the nominal. This can be quantiﬁed in a physical model
+of a deformable model by using stress parameters or linear
+expansion factors. The large scale oscillation of such a body
+modulates the audio frequencies providing an excellent ex-
+ample of audiovisual dynamic coupling.
+2.4 Phya overall structure and engine
+Phya is built in the C++ language, and is based around
+ac o r es e to fg e n e r a lo b j e c tt y p e s ,t h a tc a ns p e c i a l i z e da n d
+extended. Sounding objects are represented by a contain-
+ing object called aBody,w h i c hr e f e r st oa na s s o c i a t e dSur-
+face and Resonator object, see Figure 9. Specializations
+of these include SegmentSurface for recorded surface pro-
+ﬁles, RandSurface for deterministically generated stochas-
+tic surfaces, GridSurface for patterns. The resonator sub-
+types are ModalResonator and PerceptualResonator.B o d -
+ies can share the sames u r f a c ea n dr e s o n a t o ri fr e q u i r e di n
+order to handle groups of objects more eﬃciently. Colli-
+sions states are represented usingImpact and Contact ob-
+jects that are dynamically created and released as collisions
+occur between physical objects. These objects take care of
+updating the state of any associated surface interactions.
+contact generator
+impact
+body1
+body2
+impact generator
+body
+surfaceresonator
+contact
+body1
+body2
+Figure 9: Main objects in Phya.
+2.4.1 System view
+The top level system view is shown in Figure 10. The
+collision system in the environment simulator must gener-
+ate trigger updates in Phya’s collision update section, for
+example using a callback system.T h i s i n t u r n r e a d s d y -
+namic information from the dynamics engine and updates
+parameters that are used by the Phya audio thread to gen-
+erate audio samples. The most awkward part of the process
+is ﬁnding a way for Phya to keep track of continuous con-
+tacts.
+Phya
+Dynamics
+Collision
+Collision update
+DSP / Audio
+Physics engine
+Figure 10: Phya system overview.
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+74
+2.4.2 Tracking contacts
+Most collision engines do not usepersistent contacts, mean-
+ing they forget information about contacts from one colli-
+sion framet oa n o t h e r . O nt h eo t h e rh a n dP h y aw i s h e s
+to remember contacts because it has audio processes that
+generate excitations continuously during a contact. The
+problem can be attacked either bymodifying the collision
+engine, which is hard or not possible, or searching contact
+lists. In the simplest case, the physics engine provides a list
+of non-persistent physical contacts at each collision step,
+and no other information. For each physical contact, the
+associated Phya bodies can be found and compared with
+al i s to fc u r r e n tP h y ac o n t a c tp a i r s . I fn op a i rmatches a
+new Phya contact is formed. If a pair is found, it is asso-
+ciated with the current physical contact. For any pairs left
+unmatched, the associated Phya contact is released. See
+Figure 11. This works on the,mostly true, assumption that
+if a physical contact exists between two bodies in two suc-
+cessive frames then that is a continuous contact evolving. If
+two bodies are in contact inmore than one place then some
+confusion can occur, but this is oﬀset by the fact that the
+sound is more complex. Engines that keep persistent con-
+tacts are easier to handle. The ability to generate callbacks
+when contacts are created and destroyed helps evenmore.
+Physical Body2
+Physical
+Contacts
+look in Phya
+Phya Body1
+Phya Body2
+Phya
+Contact
+Physical Body1
+Contact
+Figure 11: Find a Phya contact fro m aP h y s i c a l
+contact.
+2.4.3 Smooth surfaces
+Another problem of continuous contacts arises from the
+collision detection of curved surfaces. For example the col-
+lision of a cylinder can be detected using a dedicated algo-
+rithm,o ra more general one applied to a collision net that
+approximates a cylinder. From av i s u a ld y n amic point of
+view the general approachmay appear satisfactory. How-
+ever, the dynamic information produced may lead to audio
+that is clearly consistent with an object with corners and
+not smooth. A way to improve this situation is to smooth
+the dynamic information when it is intended that the sur-
+face is smooth, using linear ﬁlters. This requires Phya to
+check the tags on the physical objects associated with a new
+contact to see if smoothing is intended.
+2.4.4 Limiters
+The unpredictable nature of physical environmental sound
+requires automated level control, both to ensure it is suf-
+ﬁciently audible and also not so loud to dominate other
+audio sources or to clip the audio range. This has already
+been partly addressed at the stage of excitation generation,
+however because of the unpredictability of the whole sys-
+tem,i ti sa l s on e c e s s a r yt oa p p l yl imiters to the ﬁnalmix.
+This is best achieved with a short look-ahead brick wall lim-
+iter, that can guarantee a limit, while also reducing annoy-
+ing artifacts that would be caused without any look-ahead.
+Too much look-ahead would compromise interactivity, how-
+ever the duration of a single audio system processing vector,
+which is typically 128 samples, is found to be suﬃcient.
+3. A VIRTUAL MUSICAL INSTRUMENT
+While Phya was designed for general purpose virtual worlds,
+the variety and detail of sonic interactions on oﬀer lend
+themselves to the creation ofmusical virtual instruments.
+From a more abstract view, the layered,multi-scale dynam-
+ics within Phya capture the layered dynamics present in
+real acoustic instruments. It is sometimes claimed that this
+structure is particularly relevant tomusical performance,
+[8]. Electronic performance systemso f t e nf a i lt oembody
+the full range of dynamic scales, even within physically
+modeled instruments, which sometimes lack physical con-
+trol interfaces with appropriate embedded dynamics.
+Although grounded in physical behavior, and therefore
+naturally appealing to human psychology, the intimate in-
+teractions can be tailored tomore unusual simulations that
+would be diﬃcult or impossible in the real world. For
+instance very deep resonances can be easily created that
+would require very heavy objects, and unusual resonances
+can be created. Likewise, the parameters of surfaces can be
+composed to ensure the desiredmusical eﬀect. The physical
+behavior of objects can bematched to any desired scale, of
+distance, timeo rg r a v i t y . B e c a u s et h eg r a p h i c a lw o r l di s
+virtual it too can be composed artistically withmore free-
+dom than the real world.
+The graphical output not only provides additional feed-
+back to the performer, but adds the kind of intimate visual
+association, present in traditionalmusical performance, but
+lacking inmuch live electronicmusic, especially that focused
+around keyboard andmouse control. Phya provides the au-
+dience with an alternative to the performer as a visual focus.
+The mouse interface is readily extended to amore hapti-
+cally and visually appropriate controller using a device such
+as a Nintendo Wii remote. This has the eﬀect ofmaking the
+control path correspond directly to the object path, improv-
+ing the sense of immersion for the performer. In a CAVE
+like environment the performer canmaneuver within a spa-
+tial audio environment, although without an audience. In a
+full headset virtual reality environment, the performer can
+interact directly with objects through virtual limbs, with
+virtual co-performers and virtual audience.
+While Phya has not been used yet to produce an extended
+musical work, we discussmusical aspects of somed emon-
+strations. Figures 12 and 13, show simple examples of sonic
+toys constructed with Phya. In the ﬁrst nested spheres form
+a kind of virtual rattle, with the lowest resonance associated
+with the biggest sphere. The user interacts by dragging the
+middle sphere around by invisible elastic. The second shows
+ad e f o rmable teapot with a range of resonances. The defor-
+mation parameters are used tomodify the resonant frequen-
+cies on the ﬂy. The eﬀect is at once familiar and surreal.
+Further examples demonstrate the stacking ofmany diﬀer-
+ent resonant blocks. Conﬁguring groups of blocks becomes
+a musical, zen-like process.
+Figure 12: Nested sonic spheres.
+4. COPING WITH NETWORK LATENCY
+There has been considerable interest in collaborative in-
+teractive musical performance over networks. One aspect
+of such systemsi st h ed e l a yo rl a t e n c yr e q u i r e dt ot r a n smit
+information around the network, which can bemusically
+signiﬁcant for long distance collaborations. In the case of
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+75
+Figure 13: Deformable sonic teapot.
+performance with acoustic instruments, it is impossible to
+make each side hear the samet o t a lp e r f o rmance while also
+playing their instruments normally. Virtual instruments of
+the kind described here oﬀer another possibility, due to the
+fact that the dynamics of the virtual world is strictly sepa-
+rated from the control in the outer world. Figure 14 shows
+ac o l l a b o r a t i o nb e t w e e nt w op e r f o rmers across a network.
+Adding local delays tomatch the network latency keeps the
+Latency DDelay D Virtual world Delay DVirtual world
+Figure 14: Two perfor mers with local virtual
+worlds.
+two virtual worlds synchronized. In each world the audio
+and graphical elements are of course synchronized. Per-
+formance gestures are delayed, but this is not such a severe
+handicap because the visual feedback remains synchronized,
+and is a price worth paying tomaintain overall synchroniza-
+tion over the network. If control is by force rather than po-
+sition, the gesture delay is even less intrusive. To eliminate
+drift between the virtual worlds, and handlemany perform-
+ers eﬃciently, a central virtual world can be used, shown in
+Figure 15 This adds return latency delays.
+Latency 2
+Virtual world
+Latency 1
+Figure 15: Many performers with a central virtual
+world.
+5. BACK TO REALITY
+The aesthetics of Phya partly inspired a tangiblemusi-
+cal performance piece, that wemention brieﬂy because it
+provides an interesting example of how the boundary be-
+tween virtual and real can becomeb l u r r e d .Ceramic Bowl1
+centers around a bowl with 4 contactmicrophones attached
+around the base, where there is a hole. Objects are launched
+manually into the bowl where they roll, slide and collide in
+orbit until they exit. The captured sound is computer pro-
+cessed under realtimec o n t r o la n dd iﬀused onto an 8 speaker
+rig. The microphone arrangement allows the spatial sound
+events to bemagniﬁed over a large listening area.
+1First performed at the Electroacoustic Music Studies con-
+ference, Leicester, 14 June 2007. Broadcast on BBC Radio
+3H e a ra n dN o w ,2 5A u g u s t2 0 0 7
+6. CONCLUSION
+The original goal was to create a system that can capture
+the sonic nuance and variety of collisions, and that was easy
+to conﬁgure and use within a virtual reality context. This
+required the consideration of a variety of inter-dependent
+factors. The result is a system that is not only useful from
+the point of view of virtual reality, but has natural aesthetic
+interest and application inmusical performance. The inte-
+grated graphical output is part of a fused perceptual aes-
+thetic. Phya is now an open source project.2.
+7. REFERENCES
+[1] F. Avanzini, M. Rath, and D. Rocchesso.
+Physically-based audio rendering of contact. InProc.
+IEEE Int. Conf. on Multimedia and Expo,
+(ICME2002), Lausanne,v o l ume2 ,p a g e s4 4 5 – 4 4 8 ,
+2002.
+[2] F. Avanzini, S. Seraﬁn, and D. Rocchesso. Interactive
+simulation of rigid body interaction with
+friction-induced sound generation.IEEE Tr. Speech
+and Audio Processing,1 3 ( 5 . 2 ) : 1 0 7 3 – 1 0 8 1 ,2 0 0 5 .
+[3] P. Cook. Physically informed sonic modeling (phism):
+Synthesis of percussive sounds.Computer Music
+Journal,2 1 : 3 ,1 9 9 7 .
+[4] G. Essl, S. Seraﬁn, P. Cook, and J. Smith. Theory of
+banded waveguides.Computer Music Journal,s p r i n g
+2004.
+[5] J. K. Hahn, H. Fouad, L. Gritz, and J. W. Lee.
+Integrating sounds andmotions in virtual
+environments. InSound for Animation and Virtual
+Reality, SIGGRAPH 95,1 9 9 5 .
+[6] D. Menzies. Perceptual resonators for interactive
+worlds. InProceedings AES 22nd International
+Conference on Virtual, Synthetic and Entertainment
+Audio,2 0 0 2 .
+[7] D. Menzies. Scenemanagement formodelled audio
+objects in interactive worlds. InInternational
+Conference on Auditory Display,2 0 0 2 .
+[8] D. Menzies. Composing instrument control dynamics.
+Organized Sound,7 ( 3 ) ,A p r i l2 0 0 3 .
+[9] D. Rochesso and J. O. Smith. Circulant and elliptic
+feedback delay networks for artiﬁcial reverberation.
+IEEE trans. Speech and Audio,5 ( 1 ) : 1 9 9 7 ,1 9 9 7 .
+[10] J. O. Smith and S. A. Van Duyne. Developments for
+the commuted piano. InProceedings of the
+International Computer Music Conference, Banﬀ,
+Canada,1 9 9 5 .
+[11] K. van den Doel.Sound Synthesis for Virtual Reality
+and Computer Games.P h Dt h e s i s ,U n i v e r s i t yo f
+British Columbia, 1998.
+[12] K. van den Doel. Physically-basedmodels for liquid
+sounds. ACM Transactions on Applied Perception,
+2:534–546, 2005.
+[13] K. van den Doel, P. G. Kry, and D. K. Pai.
+Foleyautomatic: Physically-based sound eﬀects for
+interactive simulation and animation. InComputer
+Graphics (ACM SIGGRAPH 01 Conference
+Proceedings),2 0 0 1 .
+[14] S. A. Van Duyne and J. O. Smith. Physicalmodeling
+with the 2-d digital waveguidemesh. InProc. Int.
+Computer Music Conf., Tokyo,1 9 9 3 .
+[15] S. A. Van Duyne and J. O. Smith. The 3d tetrahedral
+digital waveguidemesh withmusical applications. In
+Proceedings International Computer Music
+Conference,2 0 0 1 .
+2Details at www.zenprobe.com/phya
+Proceedings of the 2008 Conference on New Interfaces for Musical Expression (NIME08), Genova, Italy
+76

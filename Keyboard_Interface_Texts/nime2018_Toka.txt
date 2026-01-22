@@ -1,0 +1,591 @@
+Siren: Interface for Pattern Languages
+Mert Toka
+Media Arts and Technology,
+UC Santa Barbara
+Santa Barbara, CA, USA
+merttoka@ucsb.edu
+Can Ince
+Creative Coding Lab,
+University of Huddersﬁeld
+Huddersﬁeld, UK
+can.ince@hud.ac.uk
+Mehmet Aydın Bayta¸ s
+Koç University
+Istanbul, Turkey
+mbaytas@ku.edu.tr
+ABSTRACT
+This paper introducesSiren, a hybrid system for algorithmic
+composition and live-coding performances. Its hierarchical
+structure allows small modiﬁcations to propagate and ag-
+gregate on lower levels for dramatic changes in the musical
+output. It uses functional programming language TidalCy-
+cles [13, 14] as the core pattern creation environment due
+to its inherent ability to create complex pattern relations
+with minimal syntax. Borrowing the best from TidalCycles,
+Siren augments the pattern creation process by introducing
+various interface level features: a multi-channel sequencer,
+local and global parameters, mathematical expressions, and
+pattern history. It presents new opportunities for record-
+ing, reﬁning, and reusing the playback information with the
+pattern roll component. Subsequently, the paper concludes
+with a preliminary evaluation of Siren in the context of user
+interface design principles [18], which originates from the
+cognitive dimensions framework for musical notation design
+[6, 20].
+Author Keywords
+Siren, hierarchical structure, algorithmic composition, pat-
+tern programming, interface design, live-coding, pattern vi-
+sualization
+CCS Concepts
+•Applied computing →Sound and music computing;
+Media arts; •Human-centered computing →Informa-
+tion visualization;
+1. INTRODUCTION
+For musicians who compose and/or perform with a personal
+computer as their main instrument, a number of diﬀerent
+user interface paradigms are available. The digital audio
+workstation (DAW) with a graphical user interface (GUI)
+that is designed to be accessible and intuitive is arguably
+the most popular among these paradigms. However, with
+DAWs designed for accessibility, workﬂows for composing
+music rely extensively on navigating graphical user inter-
+face elements, and live performances are often predicated
+on extensive preparation. As such, computer musicians who
+desire to emphasize aspects of liveness [22], ﬂow [17], and
+virtuosity in both composition and performance often turn
+Licensed under a Creative Commons Attribution
+4.0 International License (CC BY 4.0). Copyright
+remains with the author(s).
+NIME’18,June 3-6, 2018, Blacksburg, Virginia, USA.
+to trackers and live-coding [7, 20, 19]. While trackers af-
+ford virtuosity, most are geared towards composition rather
+than being eﬀective tools for improvisation and performance
+out-of-the-box, due to limited integration of synthesis capa-
+bilities. On the other hand, live-coding can be a powerful
+paradigm for performances, but setting up the toolchains
+required for live-coding and learning the intricacies of pro-
+gramming languages can be inconvenient for many musi-
+cians.
+We introduce Siren, a performance and composition en-
+vironment that marries a tracker-inspired user interface de-
+sign with a hierarchical structuring of textual code blocks
+for deﬁning musical patterns (Fig. 1). As such, it represents
+a hybrid approach to musical composition based on a fusion
+of the tracker paradigm and a purely textual, programming-
+oriented notation. This approach lowers the barriers to en-
+try for live-coding while enabling for a more intuitive visual
+representation of compositions.
+The design of the system is informed by previous works
+in the ﬁelds of programming and music. In this paper, we
+ﬁrst review these strands of research that provide the back-
+ground for our work and situate it in the context of research
+on interfaces for musical expression. Thereafter we describe
+the details of Siren’s design and implementation, and con-
+clude with a discussion on how we have utilized Siren as a
+powerful engine for live performance and composition.
+Siren is available online as a free and open-source soft-
+ware1 published under the GNU General Public License
+v3.02, and accepts contributions .
+2. BACKGROUND RESEARCH
+The underlying concepts and user interface design in Siren
+have been inﬂuenced by previous works. This includes re-
+search in the psychology of interaction with notations from
+the perspective of programming and music, and previously
+developed musical creation software and practices surround-
+ing their use.
+2.1 Notation and User Interface Design
+One approach in previous research that guides the design
+of information artifacts—in particular, software for interact-
+ing with musical and algorithmic notation—is predicated on
+breaking down diﬀerent aspects of the user experience into
+various cognitive dimensions. Based on notions introduced
+by Green and Petre [9] for investigating the experience of
+interacting with programming languages, researchers have
+developed a framework of cognitive dimensions to evaluate
+and guide the design of music notation systems and musical
+user interfaces [5, 6, 18, 20]. This framework also serves
+as the basis for design heuristics for supporting virtuosity
+1https://github.com/inceio/Siren
+2https://www.gnu.org/licenses/gpl-3.0.en.html
+53
+Figure 1: One possible layout of the interface – (top-left) the list of scenes; (middle) the multi-channel
+sequencer; (top-right) pattern dictionary; (middle-left) pattern history per channel; (bottom-left) pattern
+roll; (bottom-right) the text-based compiler
+and ﬂow states in musical user interfaces, and distilled into
+a set of questions that apply to such designs [21]. These
+approaches have been used to comparatively investigate a
+wide variety of notations and and interactive systems for
+musical creation, including traditional paper scores, graph-
+ical audio synthesis programming (Max or PureData), and
+DAWs. The scope and space in this paper does not allow
+for a comprehensive discussion of this body of research and
+how it is manifest in speciﬁc features in Siren, but a few of
+the most prominent aspects are unpacked in Section 4.
+2.2 Trackers
+The tracker user interface depicts notation as rows of dis-
+crete musical events positioned in columnar channels. Each
+cell in a channel can hold a note, parameter change, an eﬀect
+toggle and other commands. Diﬀerent patterns or loops can
+have independent timelines, which can be organized into a
+sequential master-list to form a complete composition. The
+tracker paradigm has been found in the aforementioned lit-
+erature to be a highly eﬀective digital instrument that sup-
+ports virtuosity, liveness, and ﬂow states while composing.
+The earliest implementations of the tracker concept were
+released for the AmigaOS platform in the late 80s and early
+90s, in applications such as Ultimate Soundtracker (1987)
+[8], NoiseTracker (1989) and Protracker 3 (1990). (A com-
+prehensive history of tracker software can be found online,
+courtesy of the Tracker History Graphing Project 4.
+2.3 Live-coding
+3https://sourceforge.net/projects/protracker
+4http://helllabs.org/tracker-history/
+An early example of networked computer music platforms
+is SuperCollider (1996), an environment for audio synthesis
+and algorithmic composition that relies on the Open Sound
+Control (OSC) protocol. More recently, Conductive [2], of-
+fered a higher-level abstraction that uses density look-ups
+for the pattern programming [3]. As an interactive pro-
+gramming environment for live-coding, Foxdot [12] provides
+a fast and user-friendly abstraction to SuperCollider. Fi-
+nally, TidalCycles [13, 14] introduced an embedded Domain
+Speciﬁc Language (eDSL) for composing patterns as higher
+order structures with a highly economical syntax. Most of
+these languages allow using the interpreter for the Glasgow
+Haskell compiler (GHCi) to trigger a synth by communicat-
+ing with SuperCollider via the OSC protocol [15].
+Siren utilizes TidalCycles as its main pattern program-
+ming structure, and constructs a strategically designed user-
+interface around it. Main concepts regarding the software
+and interface design emerge from pragmatic reasons such
+as keeping past playback data, parameterization, and ab-
+stractions. We created a back-end structure for patterns to
+achieve a fusion between the aﬀordances of TidalCycles and
+SuperCollider, while allowing both to be used as the main
+pattern language in Siren.
+3. PATTERN CREATION AND SEQUENC-
+ING WITH SIREN
+Siren is based on a hierarchical structure of data, and a
+tracker-inspired user interface, initially intending to build
+on the concepts and technology of TidalCycles. The main
+idea is to support a hybrid interaction paradigm where the
+54
+musical building blocks of patterns are encoded in a textual
+programming language, while the arranging and dispatching
+of patterns is done via a grid-based user interface inspired
+by musical trackers [19]. Here, the concept of a pattern is
+borrowed from the TidalCycles’ pattern language. It oﬀers
+means to represent encoding of musical patterns, a library of
+pattern generators and combinators, a scheduling system for
+dispatching events. By augmenting the patterns, Siren uses
+pattern functions that are stored in a pattern dictionary .
+These pattern functions can be called from the cells of the
+tracker grid along with their optional parameters.
+The creation of a pattern introduces a rhythmic element
+or a cycle. Sequencing the code allows the user to break
+out of linearity by modifying the cycle with diﬀerent vari-
+ables and transitions while allowing events remain coher-
+ent in their single and linear timeline. We implemented
+a timer based on a concurrent tick mechanism, generated
+from Ableton Link [1]. This allows events to be compiled
+synchronously and provides a precise timing mechanism in-
+between the patterns and other time-related modules (i.e.
+pattern roll, and global modiﬁers).
+In the tracker grid, per convention, each column repre-
+sents a channel. Channels here are analogous to tracks in
+contemporary DAWs. Each cell in a channel can be ﬁlled
+with a single function call , and its corresponding pattern
+function is located in the pattern dictionary. As such, cells
+in channels contain only the call for a function, which, as
+is conventional in many programming languages, comprises
+its name and the parameters to be passed with it.
+A function that is deﬁned in the pattern dictionary can
+be called from any cell of any channel. The execution hap-
+pens as follows: The timer scans each channel from top
+to bottom, triggering pattern functions in cells as they are
+encountered. On trigger, Siren performs a look-up in the
+pattern dictionary. Once the desired pattern is found, the
+pattern is called by parsing its parameters and replacing
+them with the user input provided in the calling cell. If the
+related pattern in the dictionary is reconstructed correctly,
+the channel’s interpreter or compiler executes the function
+(see Fig. 3).
+3.1 Hierarchical Composition
+The main musical structure in Siren is a scene, which acts
+as a top-level container and a framework for a composition
+[10]. Each scene can be thought of as a grid where each of
+its columns are the channels and rows are temporal tracker
+steps. The timer cycles through the rows, from top to bot-
+tom, and triggers the content of each cell. Each scene has
+a pattern dictionary for the storage of pattern functions,
+their parameters and implementations. Instances of these
+pattern functions can be written into the grid to act as
+a function call to patterns on trigger. A user can create
+multiple scenes with unique sets of pattern functions and
+channels.
+3.2 Modules
+The layout of Siren is designed to operate in a modular
+fashion with modules that contain speciﬁc elements of the
+system (see Fig. 1). The user can choose to toggle visi-
+bility of these modules at will. It is also possible to store
+four customs layouts with diﬀerent modules. For example,
+one layout can maximize the channel module to take up
+the full screen, allowing the user to focus on sequencing,
+or the console could be made to take up the full screen for
+a user experience similar to a text editor, favored by pro-
+grammers. Navigating between the layouts is also possible
+using convenient key-bindings.
+Figure 2: A comparison of example patterns and
+their visualization in Pattern Roll module – Hori-
+zontal dimension denotes time (i.e., 8 seconds quan-
+tized into 12 x 8 = 96 bins), and vertical dimension
+lists unique samples and notes (i.e. “gen2” as the
+sample name and [0,1,2,3] as its notes)
+3.3 Features
+Some of the most powerful aspects of Siren are the features
+added on top of pattern manipulation mechanisms.
+3.3.1 Parameters and Modulations
+The pattern functions on Siren can contain any number of
+literal, temporal, and random parameters. These parameters
+do not have a speciﬁc type, and any kind of input that
+reconstructs a syntactically correct pattern is accepted (see
+Fig. 3).
+A literal parameter is deﬁned as any substring enclosed in
+grave accents ( ‘ ). They can be used in multiple places in
+the same instance, resulting in the ability to create complex
+relationships and modulations.
+The parameter ‘t‘ is reserved for the temporal parameter
+and provides the value of timer on execution to the pattern
+function. It creates connections that behave diﬀerently over
+time and it is especially powerful when used in conjunction
+with mathematical expressions.
+Siren allows the user to incorporate random parameters,
+which are constructed by surrounding two numbers with
+vertical bars and separated with a comma (e.g. ‘|0,3|‘ ).
+It supports integer and ﬂoating point numbers, and could
+also be combined with mathematical expressions. This has
+the potential to add an extra level of randomness to the
+compositions.
+3.3.2 Mathematical Expressions
+Siren allows using a wide range of mathematical expressions
+that enhance the computational and algorithmic aspects of
+pattern creation. These expressions can be employed in any
+part of the implementation of pattern functions, and upon
+successful reconstruction, the expression is replaced with its
+ﬁnal value. It is notated by surrounding the expression with
+ampersands ( & ). An example with temporal parameter is:
+slow &log(‘t‘, 2)& $ sound "gen1" # end "‘t‘"
+where the duration of triggers is in relation with the loga-
+rithm of the speed of the pattern. The expressions support
+numerical spaces, symbolic calculations, trigonometry, vec-
+tor and matrix arithmetic [11].
+3.3.3 Global Modiﬁers
+Another feature of Siren is the global modiﬁers that behave
+either by prepending transformation functions or append-
+ing parameters to the patterns. For example, #speed -1
+55
+playback data
+compiled pattern
+Figure 3: Block Diagram of Siren – On the left,front-end lays out the hierarchical structure, and on the right,
+back-end reveals behind-the-scene components. Solid boxes denote prominent modules and their placement
+reveals the hierarchy relations. Dashed boxes and arrows provide examples to the components. Solid arrows
+denote message propagation and double-dashed lines represent labeled actions. Square brackets ([ ]) mark
+optional ﬁelds.
+reverses current playback, and #coarse 2 halves the sam-
+pling rate. These modiﬁers could be either applied to all
+active channels, or a subset of those based on the user in-
+put (‘1 2’ aﬀects ﬁrst two channels where ‘0’ is applied
+on all channels).
+Included within this module is a sequencer which can ap-
+ply the modiﬁers in speciﬁc time intervals. In addition to
+its dramatic altering power in the musical output, this se-
+quencer supports the main time structure by introducing
+another mechanism for algorithmic control.
+3.3.4 Pattern History
+The live-coding paradigm does not account for the past
+playback data due to its intrinsic liveness. However, when
+the paradigm is transformed into compositional structure
+with various parameterizations, reviewing historical data
+gains importance. This module stores successfully compiled
+patterns in each channel to ease referring back to the recent
+playback.
+3.3.5 Pattern Roll
+It is possible for algorithms to create complex enough pat-
+terns that could challenge its user to take a mental note
+of the current playback in greater accuracy. Pattern roll
+module in Siren (Fig. 2), inspired by the piano-roll in tra-
+ditional DAWs, operates as the playback visualization tool
+that ultimately relieves a portion of this cognitive load and
+transfers it onto the interface. It is dedicated to record in-
+stances of SuperCollider playback and serves as a visual tool
+to understand relationships between individual triggers.
+The horizontal axis denotes quantized time bins, and ver-
+tical lists the names of unique samples and notes. The visi-
+bility of labeling on the vertical axis can be toggled to reduce
+clutter (see Fig. 1 and 2). Default sequence length is 8 sec-
+onds and each second is quantized into 12 bins. However,
+both parameters can be edited using the dedicated ﬁelds on
+the interface.
+3.4 Implementation Details
+The current implementation of the system is built as a
+JavaScript web application using Node.js [23]. It relies on
+a number of open-source libraries, notably, React 5 for the
+construction of the user interface, and CodeMirror6 for edit-
+ing text with syntax highlighting for pattern code.
+The back-end, which interfaces with GHC7 and SuperCol-
+lider, is built using Node.js. This core of the system acts
+as a bridge between GHC and the Read-Eval-Print-Loop
+(REPL) class of JavaScript. It is integrated with SuperCol-
+liderJS8 which is a JavaScript library for communicating
+with and controlling SuperCollider. The back-end starts a
+terminal that communicates directly with the compiler, and
+compiles the given Haskell code in the same way as contem-
+porary text editors such as Atom, Emacs and Vim do.
+4. COGNITIVE DIMENSIONS
+Originally introduced by Green to investigate the psychol-
+ogy of programming languages [9] based on research in cog-
+nitive science, and subsequently adapted towards music no-
+tation systems and musical user interfaces [6, 20, 18], the
+Cognitive Dimensions of Notations framework stands out
+as an important criterion for formalized evaluation of Siren.
+5https://reactjs.org/
+6https://codemirror.net/
+7Glasgow Haskell Compiler
+8https://crucialfelix.github.io/supercolliderjs/
+56
+Each dimension is intended to describe a distinct factor re-
+lated to the usability of a particular notation and interfaces.
+The dimensions aim to relate to the properties such asgran-
+ularity (considered on a continuous scale from high to low),
+orthogonality (independence from other dimensions), polar-
+ity (characterizing ’desirability’ in a continuous manner for
+a given context, not necessarily in terms of the ’good’ and
+’bad’), and applicability (in terms of a broad relevance to
+any kind of notation)” [18]. Due to the real-estate restric-
+tions of this paper, we omit enumerating and explaining
+each dimension individually but challenge the reader to ex-
+amine them at their leisure.
+Building on Green’s deﬁnitions, Nash translates the cog-
+nitive dimensions into a set of questions that can easily
+inform the end-users. He investigates these questions in
+the context of traditional paper scores, Max audio synthe-
+sis environment (Max/MSP), and digital audio workstations
+(DAWs) [18]. In the case of using these dimensions to evalu-
+ate Siren, it would not be tractable to formulate one-to-one
+mappings between the features and speciﬁc questions. Be-
+low we propose a personal evaluation to a subset of them
+based on our experience with the software.
+Visibility - “How easy is it to view and ﬁnd elements or
+parts of the music during editing?”
+The transparency is one of the key aspects in Siren as it
+interfaces the textual information (i.e. pattern language).
+Channels lay out the temporal view and pattern roll serves
+a visualization tool for the current playback that provides
+greater resolution on how each pattern unfolds over time
+(see Fig. 2). Just like in DAWs, the distribution of the mu-
+sical information over the layout may enhance the visibility
+if related elements are placed and re-sized eﬃciently.
+Juxtaposability - “How easy is it to compare elements
+within the music?”
+Among the modules in Siren, the major components that
+inﬂuence musical output are channels and patterns. The
+possibility to reorder items inside these modules allows side-
+by-side comparisons of musical elements. As the pattern
+dictionary expands, it may become harder to ﬁnd and re-
+order a pattern of interest; however, the hierarchical scene
+structure could be used to prevent dictionary clutter.
+Hard Mental Operations - “When writing music, are
+there diﬃcult things to work out in your head?”
+Textual programming can be considered one-dimensional
+in the sense that the relationships are encoded only in text.
+In visual programming (i.e. Max/MSP), in addition to the
+textual input inside the elements, their placements and in-
+terconnections also matters. However at the end, since the
+encoding is compiled into machine instructions regardless of
+its visual representation, this dimensionality only pertains
+to the user experience, not to the workings of the process
+itself [16]. In the case of Siren, the introduction of a tempo-
+ral structure, which is essentially textual but communicated
+as a visual component, eases the cognitive load on the user
+by visualizing the execution order. In addition, pattern roll
+visualizes the playback and provides another sensory input
+that ultimately helps the perception of the pattern progres-
+sion.
+Hidden Dependencies - “How clear are the relation-
+ships between related elements in the notation?”
+Siren uses channels and pattern dictionaries to commu-
+nicate between sequencer calls and actual patterns. This
+simple communication presents a familiar approach to cross-
+reference diﬀerent patterns across the system. In the case
+of crowded scenes, it may be harder to diﬀerentiate between
+similarly titled elements. However, following a descriptive
+and distinctive naming system could eventually overcome
+this issue.
+Conciseness / Diﬀuseness - “How concise is the nota-
+tion? What is the balance between detail and overview?”
+Sequencing the elements using the channel grid provides
+greater visibility on the progression of items in its cells. The
+size of each step in the grid is virtually unlimited, and thus
+may require for scrolling and re-scaling to peek at the big-
+ger picture. Subsequently, the pattern roll module provides
+visual insight into detailed playback data in terms of its
+timing and properties.
+Provisionality - “Is it possible to sketch things out and
+play with ideas without being too precise about the exact re-
+sult?”
+In Siren, every scene can be used as a sketchbook to incu-
+bate compositional ideas. As such, the volatile sketching of
+patterns can be executed very quickly by utilizing the con-
+sole module that acts as a traditional text editor. Findings
+in the initial experimentation stage lay out the fundamen-
+tal ideas, which are subsequently implemented in a more
+exacting form in the composition.
+Secondary Notation - “How easy is it to make infor-
+mal notes to capture ideas outside the formal rules of the
+notation?”
+On the interface of Siren, each module serves a deﬁned
+purpose and oﬀers ﬁxed tools to manipulate data. In terms
+of functionality, the system falls short on transforming the
+notation to an informal and improvisational tool, yet rear-
+ranging the layout to meet speciﬁc needs yields powerful
+scenarios for experimentation. Moreover, Siren supports
+secondary notations through a fusion of textual and visual
+approaches to the programming. Annotating the program-
+ming languages is still possible through descriptive com-
+ments on the text body. It provides non-executable and
+convenient statements to realize quick notes, sketches, and
+prototyping.
+Role Expressiveness - “Is it easy to see what each part
+is for, in the overall format of the notation?”
+Siren uses a single view that exposes desirable elements
+of a composition through a modular layout. Each mod-
+ule has a header that clearly speciﬁes its purpose of the
+component, however diﬀerentiating items at the ﬁrst glance
+might be puzzling. The hierarchical structure is not imme-
+diately visible on the interface but inherently constructed
+throughout the system. Also, channel headers uses color to
+demonstrate diﬀerent types.
+Premature Commitment - “Do edits have to be per-
+formed in a prescribed order, requiring you to plan or think
+ahead?”
+Creation and manipulation of the composition can be per-
+formed in any order. This ﬂexible workﬂow allows for mu-
+sical accidents, which may ultimately turn out to be son-
+ically enjoyable. On the other hand, in conventional step
+sequencers, the edits need to be planned if the aim is to in-
+troduce, for instance, a big breakdown in the middle of the
+composition. This requires precise adjustments before and
+after the event. Comparatively, the scene concept in Siren
+can be utilized to introduce a break or a verse. In a way,
+it is designed to allow mistakes which may end up fueling
+inspiration.
+Error Proneness - “How easy is it to make annoying
+mistakes?”
+The system, in its essence, depends on text input for
+naming scenes, patterns, parameters and many other as-
+pect of the interface. It is possible to make mistakes in
+cross-referencing the grid entries and corresponding pattern
+function names. However, if the function call fails to re-
+57
+construct syntactically correct patterns, both the interface
+and back-end compensates the mistake without disturbing
+the musical output. Substantial actions, such as completely
+removing a scene, is guarded with a two-step action require-
+ment: clicking the remove button, and approving the selec-
+tion on the alert box.
+5. CONCLUSION
+In this paper, we introduced Siren, an environment that
+supports algorithmic composition and live-coding through
+pattern programming. It constructs a carefully designed
+user-interface on top of the computational pattern creation
+and features various interface-level properties that, ultimately,
+empowers users to be articulate in music creation. After dis-
+cussing the key features of the interface and providing an
+overview of technical aspects, we analyze the usability of
+the system in the perspective of the cognitive dimensions
+[9], and answer a subset of questions that are developed
+around these concepts [18].
+6. ACKNOWLEDGMENTS
+Authors would like to thank to creators and contributors
+of TidalCycles and SuperCollider for their endeavours in
+creating and actively maintaining these languages. In addi-
+tion, we also thank Kim Bjørn for including Siren into the
+successfully crowdfunded book Push Turn Move: Interface
+Design for Electronic Music [4] along with SuperCollider
+and TidalCycles.
+7. REFERENCES
+[1] Ableton. Link. https://github.com/Ableton/link,
+2016.
+[2] R. Bell. An approach to live algorithmic composition
+using conductive. Proceedings of LAC 2013, 2013.
+[3] R. Bell. Experimenting with a generalized rhythmic
+density function for live coding. In Linux Audio
+Conference, 2014.
+[4] K. Bjørn. PUSH TURN MOVE: Interface Design for
+Electronic Music. Kim Bjørn, Vanløse, Denmark,
+2017.
+[5] A. Blackwell and N. Collins. The programming
+language as a musical instrument. Proceedings of
+PPIG05 (Psychology of Programming Interest Group) ,
+3:284–289, 2005.
+[6] A. F. Blackwell, T. R. Green, and D. J. Nunn.
+Cognitive dimensions and musical notation systems.
+In Proceedings of International Computer Music
+Conference, Berlin, 2000.
+[7] L. Church, C. Nash, and A. F. Blackwell. Liveness in
+notation use: From music to programming. In
+Proceedings of the 22nd Annual Workshop of the
+Psychology of Programming Interest Group (PPIG
+2010), pages 2–11, 2010.
+[8] K. Collins. Game sound: an introduction to the
+history, theory, and practice of video game music and
+sound design. Mit Press, 2008.
+[9] T. R. G. Green and M. Petre. Usability analysis of
+visual programming environments: a ‘cognitive
+dimensions’ framework. Journal of Visual Languages
+and Computing, 7:131–174, 1996.
+[10] C. Ince and M. Toka. Siren: Hierarchical composition
+interface. In Proceedings of International Computer
+Music Conference, Shanghai, 2017.
+[11] J. Jong. Math.js.
+https://github.com/josdejong/mathjs, 2018.
+Accessed: 2017-03-20.
+[12] R. Kirkbride. Foxdot: Live coding with python and
+supercollider. In Proceedings of the International
+Conference on Live Interfaces , 2016.
+[13] A. McLean. The textural x. Proceedings of
+xCoAx2013: Computation Communication Aesthetics
+and X, pages 81–88, 2013.
+[14] A. McLean. Making programming languages to dance
+to: live coding with tidal. In Proceedings of the 2nd
+ACM SIGPLAN international workshop on
+Functional art, music, modeling & design , pages
+63–70. ACM, 2014.
+[15] A. McLean and G. Wiggins. Tidal–pattern language
+for the live coding of music. In Proceedings of the 7th
+sound and music computing conference , 2010.
+[16] C. A. McLean et al. Artist-programmers and
+programming languages for the arts . PhD thesis,
+Goldsmiths, University of London, 2011.
+[17] J. Nakamura and M. Csikszentmihalyi. The concept
+of ﬂow. In Flow and the foundations of positive
+psychology, pages 239–263. Springer, 2014.
+[18] C. Nash. The cognitive dimensions of music notations.
+In The Cognitive Dimensions of Music Notations ,
+2015.
+[19] C. Nash and A. Blackwell. Tracking virtuosity and
+ﬂow in computer music. In Proc. ICMC, 2011.
+[20] C. Nash and A. Blackwell. Liveness and ﬂow in
+notation use. In Proc. NIME, 2012.
+[21] C. Nash and A. Blackwell. Flow of creative
+interaction with digital music notations. In K. Collins,
+B. Kapralos, and H. Tessler, editors, The Oxford
+Handbook of Interactive Audio, pages 387–404. Oxford
+University Press, New York, 2014.
+[22] S. L. Tanimoto. Viva: A visual language for image
+processing. Journal of Visual Languages &
+Computing, 1(2):127–139, 1990.
+[23] S. Tilkov and S. Vinoski. Node.js: Using javascript to
+build high-performance network programs. IEEE
+Internet Computing, 14(6):80–83, Nov 2010.
+58

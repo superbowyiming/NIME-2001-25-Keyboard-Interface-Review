@@ -1,0 +1,222 @@
+Sonification of Fish Movement Using Pitch Mesh Pairs 
+  
+ 
+Andrew Mercer-Taylor 
+Columbia University 
+Department of Computer Science 
+ajm2209@columbia.edu 
+ 
+Jaan Altosaar 
+Princeton University 
+Department of Physics 
+altosaar@princeton.edu 
+ 
+   
+ABSTRACT 
+On a traditional keyboard, the actions required to play a consonant 
+chord progression must be quite precise; accidentally strike a 
+neighboring key, and a pleasant sonority is likely to become a jarring 
+one. Inspired by the Tonnetz (a tonal diagram), we present a new 
+layout of pitches defined using low-level harmonic notions. We 
+demonstrate the potential of our system by mapping the random 
+movements of fish in an aquarium to this layout. Qualitatively, we 
+find that this captures the intuition behind mapping motion to sound. 
+Similarly moving fish produce consonant chords, while fish moving 
+in non-unison produce dissonant chords. We introduce an open 
+source MATLAB library implementing these techniques, which can 
+be used for sonifying multimodal streaming data.  
+Keywords 
+Sonification, computer vision, generative music 
+1. INTRODUCTION 
+In Tonnetz, a pitch layout first devised by Leonhard Euler [3] and 
+widely used in modern neo-Riemannian theory [2], pitches are 
+placed on the vertices of a triangle mesh such that all triangles 
+correspond to a major or minor triad. We refine this definition by 
+loosening the constraint on the quality of the triads to permit all 
+diatonic triads (major, minor, or diminished). We also add the 
+constraint that adjacent triads can differ by only a single whole step. 
+The resulting pitch chain is aligned with a second pitch chain to 
+reflect the resolution of diminished fifths. We capture register using 
+an additional dimension, creating pitch meshes. 
+ To produce a consonant chord, a user may select any sufficiently 
+narrow cluster of pitches from a pitch mesh. To produce a functional 
+change in harmony, the user just switches the cluster to the opposite 
+mesh. Because of this flexibility, a musical instrument based on the 
+pitch mesh pair system could be particularly valuable to children and 
+those with impaired fine motor skills. 
+ We use our system to create music from video of an aquarium such 
+that clusters of fish moving in the same direction produce consonant, 
+diatonic chord progressions and changes in direction produce 
+changes in harmonic function. We also demonstrate sonification of 
+Van Gogh’s The Starry Night and randomly generated input. 
+2. PITCH MESH PAIRS 
+2.1 Definition 
+For any diatonic triad (major, minor, or diminished), there are exactly 
+two other diatonic triads that are attainable by moving a single voice 
+by a whole step. For example, from the G major triad we can reach 
+the E minor triad or the B diminished triad. Ultimately, this operation 
+generates a loop of 18 of the 36 possible diatonic triads (assuming 
+octave and enharmonic equivalence). Since each triad shares two 
+pitches with the previous one, this can simply be represented as a 
+chain of pitches a major or minor third apart (Figure 1).  
+ 
+Figure 1. Section of pitch chain generated from G major. 
+ From Figure 1, it is clear that the neighborhood of five triads 
+centered on B diminished all belong to the key of C major. These five 
+triads all have dominant or subdominant harmonic function 
+according to German harmonic theory, which classifies them as 
+dominant parallel (E minor), dominant (G major), incomplete 
+dominant seventh (B diminished), subdominant parallel (D minor), 
+and subdominant (F major) [5]. Notably absent are the two diatonic 
+triads having tonic function in C, the tonic parallel (A minor) and the 
+tonic (C major). However, both of these triads can be found in the 
+pitch chain generated from the C major triad itself. In fact, this 
+second pitch chain will contain exactly the 18 triads absent from the 
+first. We graphically align these two pitch chains such that each 
+major third is positioned between the diminished fifth that resolves to 
+it: for instance, C and E are positioned between B and F.  
+ 
+ 
+Figure 2. Section of aligned pitch chain pair. 
+ To introduce register, we generalize our notion of a pitch 
+chain to that of a pitch mesh consisting of vertically stacked 
+pitch chains in parallel octaves (see Figure 3). We align pairs of 
+pitch meshes as we aligned their respective pitch chains.  
+ 
+Figure 3. Section of aligned pitch mesh pair. 
+2.2 Some harmonic properties 
+In a pitch chain, two adjacent pitches produce a diatonic third, three 
+produce a diatonic triad, four produce a seventh chord, five produce a 
+ninth chord, and so on. Larger clusters are generally more dissonant. 
+ Any cluster of seven pitches on both chains of an aligned pitch 
+chain pair is a diatonic scale (see Figure 2). Furthermore, when 
+ 
+Permission to make digital or hard copies of all or part of this work for personal 
+or classroom use is granted without fee provided that copies are not made or 
+distributed for profit or commercial advantage and that copies bear this notice 
+and the full citation on the first page. To copy otherwise, to republish, to post on 
+servers or to redistribute to lists, requires prior specific permission and/or a fee. 
+NIME’15, May 31-June 3, 2015, Louisiana State University, Baton Rouge, LA. 
+Copyright remains with the author(s). 
+ 
+28
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 
+traversing the aligned pitch chain pair beyond a diatonic region, one 
+encounters chromaticism only in the form of predictable modulation 
+about the circle of fifths.  While ascending, sharps are added or flats 
+are removed every three pitches (including pitches on both chains). 
+We observe that chords from slightly beyond a diatonic region are 
+closely related to the key of that region. For instance, F# diminished, 
+the triad built on the first pitch below the diatonic region of C major, 
+is the incomplete dominant seventh chord of the key of G major and 
+thus a secondary dominant in C major. 
+ Finally, we observe that shifting a cluster of notes from one pitch 
+chain to the other produces a progression from a chord of tonic 
+function (that is, the tonic or the tonic parallel) to one with dominant 
+or subdominant harmonic function, or vice versa. On the other hand, 
+shifting a cluster along a pitch chain may not produce a significant 
+change in harmonic function. 
+3. SONIFICATIONS 
+3.1 Aquarium 
+We use the pitch layout defined above as the basis of the sonification 
+of a video of fish swimming in an aquarium. The video is resized to 
+64x32 pixels to reduce computational demands and susceptibility to 
+noise. We compute dense optical flow at intervals of 0.2 seconds and 
+search the results for local maxima in magnitude, which we assume 
+correspond to fish in motion (the aquarium background is immobile). 
+Whenever a sufficiently large local maximum is detected, a note is 
+triggered (rapid repetition of the same note is filtered out). An aligned 
+pitch mesh pair is projected across the video. One of the meshes is 
+selected based on the horizontal direction of the optical flow at the 
+maximum, and the pitch in that mesh which is nearest the location of 
+the maximum determines the pitch of the triggered note. The velocity 
+of note is proportional to the magnitude. Notes are synthesized in 
+Ableton Live. The link to the demo video is in Section 5.  
+ 
+Figure 4. Visualization of aligned pitch mesh pair projected 
+onto aquarium video. Fish velocities greater than a 
+threshold trigger the respective pitch at their location. 
+ This strategy means that when fish move in sufficiently 
+narrow clusters in the same horizontal direction, they produce 
+consonant sonorities. We observe that this type of collective 
+movement is common behavior in fish. (Fish swimming in 
+opposite directions are likely to produce dissonance, while 
+changes in direction, especially of an entire cluster at once, 
+produce changes in functional harmony.) By increasing the 
+horizontal scale of the projection, we allow broader clusters to 
+sound consonant and thus increase the consonance of the music 
+produced. However, this means reducing the number of 
+accessible chords and key areas, which sacrifices some 
+harmonic possibilities. Translating the projection horizontally 
+causes the music to be transposed (potentially between modes). 
+ Furthermore, the vertical position of a fish loosely 
+corresponds to the register of the notes it triggers. This effect 
+can be increased or decreased by changing the vertical scaling. 
+Vertically translating the projection causes the music to rise or 
+fall in register. The above parameters for threshold and vertical 
+or horizontal scaling ensure a variety of harmonic possibilities 
+from the same data. 
+ The generation of music from the movement of fish has been the 
+subject of several previous works. These include the Quiet 
+Ensemble’s “Quintetto” [4], which translates the vertical positions of 
+five fish in separate vertical tanks into sound, and the Accessible 
+Aquarium Project [6], which studies sonification as a tool to improve 
+the accessibility of aquariums to visually impaired visitors. The 
+closest precedent to our approach is that of “Musica Sull’Acqua” [1], 
+which maps the position, velocity, and appearance of fish in an 
+aquarium to a range of musical parameters with the intention of 
+producing an aesthetically pleasing experience. In contrast with our 
+focus on the selection of harmonically plausible pitches, “Musica 
+Sull’Acqua” determines the pitches of triggered notes by mapping 
+the vertical position of a fish linearly into a predetermined scale. 
+3.2 The Starry Night 
+We transform an image of The Starry Night into the HSV color 
+space and shrink it. We then sweep across the image from left 
+to right, pausing for a fraction of a second on each column of 
+pixels. Every pixel with sufficiently high saturation and value 
+triggers a note. The saturation value specifies a horizontal 
+location on the pitch mesh pair, while the height of the pixel 
+specifies the vertical location and either the first or second pitch 
+mesh is selected based on whether the hue is closer to blue or 
+yellow. The nearest pitch on the selected pitch mesh determines 
+the pitch of the triggered note, and the value of the pixel 
+determines its velocity. The demo video is linked in Section 5. 
+3.3 Random input 
+We generate a random, geometrically distributed number of 
+samples from a bivariate Gaussian distribution with variable 
+mean. The first or second pitch mesh is randomly selected, and 
+each sample triggers the nearest pitch on the selected mesh 
+(with a small probability of using the opposite mesh instead). 
+Note velocities are selected randomly. We pause for a fraction 
+of a second, randomly adjust the mean of our Gaussian 
+distribution, and repeat. This video can again be found  in 
+Section 5. 
+4. REFERENCES 
+[1] S. Baldan, L.A. Ludovico, and D.A. Mauro. “Musica 
+Sull’Acqua”: A Motion Tracking Based Sonification of an 
+Aquarium in Real Time. In Proceedings of the 9th Sound and 
+Music Computing Conference (Copenhagen, Denmark, July 
+11-14, 2012). Aalborg University, Copenhagen, Denmark, 
+2012, 69-74. 
+[2] R. Cohn. Introduction to Neo-Riemannian Theory: A Survey 
+and a Historical Perspective. Journal of Music Theory, 42, 2 
+(Autumn 1998), 167-180. 
+[3] L. Euler. Tentamen novae theoriae musicae ex certissismis 
+harmoniae principiis dilucide expositae. St. Petersburg 
+Academy, St. Petersburg, Russia, 1739. 
+[4] Quiet Ensemble. 2009. Quintetto. 
+[5] R.O. Gjerdingen. A Guide to the Terminology of German 
+Harmony. In C. Dahlhaus, Studies on the Origin of Harmonic 
+Tonality. Princeton University Press, 1990, xi–xv. 
+[6] B.N. Walker, M.T. Godfrey, J.E. Orlosky, C. Bruce, and J. 
+Sanford. Aquarium Sonification: Soundscapes for Accessible 
+Dynamic Informal Learning Environments. In Proceedings of 
+the 12th International Conference on Auditory Display (ICAD 
+2006) (London, UK, June 20-23, 2006). University of London, 
+London, UK, 2006, 238-241. 
+5. SOURCE CODE AND DEMO 
+MATLAB code for these demonstrations is available at:  
+https://github.com/andrewjmt/fishmusic  
+Demo video available at: http://youtu.be/HzsFGQyIpuc  
+29
+Proceedings of the International Conference on New Interfaces for Musical Expression, Baton Rouge, LA, USA, May 31-June 3, 2015 

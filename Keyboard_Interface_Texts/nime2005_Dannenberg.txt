@@ -1,0 +1,426 @@
+McBlare: A Robotic Bagpipe Player
+Roger B. Dannenberg, Ben Brown, Garth Zeglin, and Ron Lupish 
+Carnegie Mellon University 
+School of Computer Science 
+Pittsburgh, PA 15213 USA 
++1-412-268-3827 
+{rbd, hbb, garthz}@cs.cmu.edu
+ABSTRACT 
+McBlare is a robotic bagpipe player developed by the 
+Robotics Institute at Carnegie Mellon University. McBlare 
+plays a standard set of bagpipes, using a custom air 
+compressor to supply air and electromechanical “ fingers”  to 
+control the chanter. McBlare is MIDI controlled, allowing 
+for simple interfacing to a keyboard, computer, or hardware 
+sequencer. The control mechanism exceeds the measured 
+speed of expert human performers. On the other hand, 
+human performers surpass McBlare in their ability to 
+compensate for limitations and imperfections in reeds, and 
+we discuss future enhancements to address these problems. 
+McBlare has been used to perform traditional bagpipe 
+music as well as experimental computer generated music. 
+Keywords: bagpipes, robot, music, instrument, MIDI 
+1. INTRODUCTION 
+In 2004, Carnegie Mellon University’s Robotics Institute 
+celebrated its twenty-fifth anniversary. In preparing for the 
+event, it was suggested that the festivities should include a 
+robotic bagpiper as an entertaining acknowledgement of 
+Carnegie Mellon’s technical reputation and Scottish 
+connection.1 We set out to build a robotic system that could 
+play an ordinary, off-the-shelf traditional set of Highland 
+Bagpipes with computer control. The system is named 
+McBlare.  
+Mechanized instruments and musical robots have been 
+around for centuries. [6] Although early mechanical 
+instruments were usually keyboard-oriented, many other 
+electro-mechanical instruments have been constructed, 
+including guitars and percussion instruments. [7, 8, 10] 
+Robot players have also been constructed for wind 
+instruments including the flute [9] and trumpet [1, 11]. 
+We are aware of two other robotic bagpipe projects. Ohta, 
+Akita, and Ohtani [5] developed a bagpipe player and 
+presented it at the 1993 International Computer Music 
+Conference. In this player, conventional pipes are fitted to a 
+specially constructed chamber rather than using the 
+traditional bag. Their paper describes the belt-driven 
+“ finger”  mechanism and suggests some basic parameters as 
+a starting point for the design: 
+· 4 mm finger travel; 
+·  20 msec total time to open and close tone hole; 
+· 100 gf minimum closing force for tone holes. 
+ 
+Sergi Jorda also describes bagpipes used in his work, 
+consisting of single pitched pipes that can only be turned on 
+and off. [2] In a separate email communication, Jorda 
+indicated that “ Pressure is very tricky”  and may depend on 
+humidity, temperature and other factors. In contrast to 
+previous efforts, we decided to use off-the-shelf bagpipes to 
+retain the traditional bagpipe look and playing 
+characteristics. 
+Additional basic information was obtained by meeting with 
+Alasdair Gillies, CMU Director of Piping, and Patrick 
+Regan, a professional piper. We observed and videotaped 
+their playing and tried to learn what we could about the 
+instrument and playing techniques. From slow-motion video 
+(25% speed) we estimated the fastest fingering to be about 
+15 Hz. Required finger pressure on the chanter appeared to 
+be very light. We noted breathing cycle periods of about 4 
+seconds, and measured the time to exhaust the air from the 
+bag playing a low A: 12 seconds; and a high A: 8 seconds. 
+This gives a rough indication of the air flow requirement to 
+be between 0.045 and 0.07 cubic meters per minute (1.6 
+and 2.5 cubic feet per minute), based on a measured bag 
+volume of 0.0093 cubic meters (0.33 cubic feet). Alasdair 
+said he maintains a pressure of 32" water column (7.9 kPa 
+or 1.15 PSI) in the bag.  Soshi Iba, experienced piper and  
+then PhD candidate in Robotics, also provided substantial 
+input and was our primary test subject. 
+We give an overview of McBlare, beginning with a brief 
+description of bagpipes and how they work. There are two 
+ 
+Permission to make digital or hard copies of all or part of this work for 
+personal or classroom use is granted without fee provided that copies are 
+not made or distributed for profit or commercial advantage and that 
+copies bear this notice and the full citation on the first page. To copy 
+otherwise, or republish, to post on servers or to redistribute to lists, 
+requires prior specific permission and/or a fee. 
+Nime’05, May 26-28, , 2005, Vancouver, BC, Canada. 
+Copyright remains with the author(s). 
+ 
+ 
+Permission to make digital or hard copies of all or part of this work for 
+personal or classroom use is granted without fee provided that copies are 
+not made or distributed for profit or commercial advantage and that 
+copies bear this notice and the full citation on the first page. To copy 
+otherwise, or republish, to post on servers or to redistribute to lists, 
+requires prior specific permission and/or a fee. 
+Nime’05, May 26-28, , 2005, Vancouver, BC, Canada. 
+Copyright remains with the author(s). 
+ 
+__________________________ 
+1 Andrew Carnegie, who founded Carnegie Mellon (originally 
+the Carnegie Institute of Technology) was born in Scotland. 
+The University has an official tartan, the School of Music 
+offers a degree in bagpipe performance, and one of the student 
+ensembles is the pipe band. 
+ 
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+80
+major robotic components of McBlare: the air supply, and 
+the chanter control, which are described in Sections 3 and 
+4. One of the major difficulties we encountered has been 
+properly setting up the bagpipes and coaxing them into 
+playing the full melodic range reliably. Section 5 reports on 
+our findings and current status. 
+2. Bagpipes 
+Bagpipes are some of the most ancient instruments, and 
+they exist in almost all cultures. There are many variations, 
+but the most famous type is the Highland Bagpipes (see 
+Figure 1), and this is the type played by McBlare. There are 
+three long, fixed pipes called drones. Two tenor drones are 
+tuned to the same pitch, which is traditionally called A, but 
+which is closer to B4. The third drone (bass drone) sounds 
+an octave lower. Drones each use a single reed, 
+traditionally, a tongue cut into a tube of cane, more 
+recently, a cane or artificial tongue attached to a hollow 
+body of plastic or composite material. The fourth pipe is the 
+chanter, or melody pipe. The chanter is louder than the 
+drones and uses a double reed, similar in size to a bassoon 
+reed, but shorter in length and substantially stiffer.  Like a 
+basson reed, however, it is constructed around a small 
+copper tube, or “ staple” .  
+ 
+Figure 1. Traditional Highland Bagpipes. 
+The chanter has sound holes that are opened and closed 
+with the fingers, giving it a range from G4 to A5 (as 
+written). All four pipes are inserted into the bag, a leather or 
+synthetic air chamber that is inflated by the player’s lung 
+power through a fifth pipe, or blowstick. This tube has a 
+one-way check-valve, so the player can take a breath while 
+continuing to supply air to the pipes by squeezing  the bag 
+under his or her arm to regulate pressure.  
+Reeds at rest are slightly open, allowing air to pass through 
+them. As pressure increases and air flow through the open 
+reed increases in response, the Bernoulli effect decreases 
+the pressure inside the reed, eventually causing the reed to 
+close. The resulting loss of airflow reduces the pressure 
+drop inside the reed, and the reed reopens. When things are 
+working properly, the pressure fluctuations that drive the 
+reed are reinforced by pressure waves reflected from the 
+open end of the pipe, thus the oscillation frequency is 
+controlled by the pipe length. The acoustic length of the 
+chanter is mainly determined by the first open sound hole 
+(i.e., the open sound hole nearest to the reed), allowing the 
+player to control the pitch. 
+Pressure regulation is critical. It usually takes a bit more 
+pressure to start the chanter oscillating (and more flow, 
+since initially, the reeds are continuously open). This initial 
+pressure tends to be around 8.3 kPa (1.2 pounds per square 
+inch). Once started, the chanter operates from around 5.5 to 
+8.3 kPa (0.8 to 1.2 psi). The drone reeds take considerably 
+less pressure to sound than does the chanter reed, and 
+drones operate over a wider pressure range, so it is the 
+chanter reed that determines the pressure required for the 
+overall instrument. Unfortunately, the chanter tends to 
+require lower pressure at lower pitches and higher pressure 
+at higher pitches. At the low pitches, too high a pressure 
+can cause the pitch to jump to the next octave or produce a 
+warbling multiphonic effect (sometimes referred to as 
+“ gurgling” ). If insufficient pressure is maintained on the 
+chanter reed for the higher pitches, it will cease vibrating. 
+Thus, there is a very narrow range in which the full range of 
+the chanter is playable at a fixed pressure. Furthermore, 
+pressure changes affect the chanter tuning (much more than 
+the drones), so the chanter intonation can be fine-tuned with 
+pressure changes.  Typically, this is not done; rather, 
+experienced pipers carefully attempt to adjust the stiffness 
+and position of the reed in the chanter so as to be able to 
+play the full 9-note range of the chanter with little or no 
+pressure variation. 
+In some informal experiments, we monitored air pressure 
+using an analog pressure gauge while an experienced player 
+performed. We observed that air pressure fluctuated over a 
+range from about 6.2 to 7.6 kPa (0.9 to 1.1 psi), with a 
+tendency to use higher pressure in the upper register. 
+Because of grace notes and some fast passages, it is 
+impossible to change pressure with every note, and we 
+speculate that the player anticipates the range of notes and 
+grace notes to be played in the near future and adjusts 
+pressure to optimize their sound and intonation. 
+Whether pressure should be constant or not is not well 
+understood. For example, Andrew Lenz’s “ bagpipejourney”  
+web site described how to construct and use a water 
+manometer. He says “ Theoretically you should be playing 
+all the notes at the same pressure, but it's not uncommon for 
+people to blow harder on High-A.”  [3] 
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+81
+3. The Air Supply 
+McBlare uses a custom-built air compressor. A 1/16 HP, 
+115VAC electric motor drives a gearbox that reduces the 
+speed to about 250 rpm. Two 76 mm (3” ) diameter air 
+pump cylinders, salvaged from compressors for inflatable 
+rafts, are driven in opposition so that they deliver about 500 
+pump strokes per minute. (See Figure 2.) The radius of the 
+crank arm driving the cylinders is adjustable from 15 mm to 
+51 mm (0.6”  to 2.0” ); we found that the smallest radius 
+provides adequate air flow, calculated to be 0.034 cubic 
+meters per minute (1.2 cubic feet per minute).1 A small air 
+storage tank sits between the pump and the bagpipes. The 
+bagpipes are connected with a rubber hose that slips over 
+the same tube that a human performer would blow into. By 
+blowing in air more-or-less continuously, we can achieve a 
+fairly steady pressure without squeezing the bag. (Earlier 
+designs called for a mechanical “ squeezer”  but at 7 kPa (1 
+psi), a squeezer in contact with many square inches would 
+have to be very powerful, adding significantly to McBlare’s 
+weight and complexity.) 
+ 
+Figure 2. The McBlare air compressor. Electric motor (not 
+visible) drives eccentric (center) through a gearbox. Eccentric 
+drives two air pump cylinders (right and left) in opposition. 
+Pressure regulation is very simple at present. First, the 
+stroke length of the pump cylinders is adjustable to set the 
+flow rate just above what is needed by the bagpipes. 
+Second, a relief valve, which is simply a weighted plug, 
+vents high pressure (around 10 kPa or 1.5 psi) to prevent 
+over-pressure and avoid damaging the bagpipes.  A second 
+bleed valve can be adjusted to release air and lower the 
+pressure. 
+4. The Chanter Control 
+The chanter requires “ fingers”  to open and close sound 
+holes. Analysis of video indicates that bagpipers can play 
+sequences of notes at rates up to around 25 notes per 
+second. Human players can also uncover sound holes 
+slowly, partially, using either an up-down motion or a 
+sideways motion. The design for McBlare restricts 
+“ fingers”  to up-and-down motion normal to the chanter 
+                                                           
+1 This is less than the 0.045-0.07 cubic meters per minute based 
+on bag deflation measurements above. This may be due to 
+differences in instruments and/or measurement errors. 
+surface. Fortunately, this is appropriate for traditional 
+playing. The actuators operate faster than human muscles, 
+allowing McBlare to exceed the speed of human pipers. 
+McBlare’s “ fingers”  are modified electro-mechanical 
+relays. (See Figure 3.) Small coils pull down a metal plate, 
+which is spring loaded to return. Lightweight plastic tubes 
+extend the metal plate about 3 cm, ending in small rubber 
+circles designed to seal the sound hole. The length of travel 
+at the sound hole is about 2.5 mm, and the actuators can 
+switch to open or closed position in about 20 ms. The 
+magnet coils consume about 1 Watt each, enough to keep 
+the mechanism warm, but not enough to require any special 
+cooling. The magnet mechanism has the beneficial 
+characteristic that the finger force is maximum (around 100 
+gf) with the magnet closed, the point at which finger force 
+is needed for sealing the tone hole.  
+ 
+Figure 3. Chanter is mounted on aluminum block along with 
+electromagnetic coils that open and close sound holes using 
+rubber pads at the end of lightweight plastic tubes. 
+The whole “ hand”  assembly is designed to fit a standard 
+chanter, but the individual finger units can be adjusted 
+laterally (along the length of the chanter) and vertically. 
+The lateral adjustment accommodates variations in hole 
+spacing. The vertical adjustment is critical so that the 
+magnet closure point corresponds to the point of finger 
+closure. 
+The actuator current is controlled by a current driver IC, 
+which is in turn controlled by a microcontroller. The 
+microcontroller receives MIDI, decodes MIDI note-on 
+messages to obtain pitch, and then uses a table-lookup to 
+determine the correct fingering for that pitch. MIDI notes 
+outside of the bagpipe range are transposed up or down in 
+octaves to fall inside the bagpipe range. 
+5. Findings and Status 
+The chanter control works extremely well. The speed 
+allows for authentic-sounding grace notes and some very 
+exciting computer-generated sequences. In its original 
+configuration (see Figure 4), McBlare included a small 
+Yamaha hardware MIDI sequencer so that it could play 
+traditional tunes that we found on the web in the form of 
+standard MIDI files. We also developed a small laptop-
+based program to allow users to select and play a tune or to 
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+82
+record and play a melody from a MIDI keyboard. A further 
+option can automatically ornament the recorded melody 
+using typical bagpipe figures that are automatically 
+extracted from our database of MIDI files. 
+ 
+Figure 4. Garth Zeglin with McBlare shortly before its debut 
+at the Robotics Institute’s Twenty-Fifth Annivesary. Bagpipes 
+are mounted on a display board that conceals the pump and 
+additional electronics. 
+The use of MIDI control makes it possible to adapt all sorts 
+of controllers to McBlare, including keyboards (which are 
+very useful for experimentation), novel sensors, or even 
+MIDI bagpipe controllers. [4] For now, the bagpipes 
+themselves are so captivating that we have not pursued the 
+use of special controllers. Since bagpipes have no control 
+over dynamics, pitch is really the only controllable 
+parameter. Therefore, any bagpipe interface should be 
+particularly agile as a pitch controller.  
+As might be expected, there is considerable mechanical 
+noise generated by the air compressor. In addition, the 
+electro-mechanical chanter “ fingers”  make clicking sounds. 
+However, the chanter is quite loud, and few people notice 
+the noise once the chanter begins sounding. 
+Under ideal conditions, McBlare can play sequences 
+covering the full range of pitches from G4 to A5. More 
+typically, however, the lowest two notes do not cooperate at 
+the pressures needed to sustain oscillation at the top end of 
+the range. We suspect a number of factors are causing 
+difficulties. First, chanter reeds are very delicate and 
+problematic even for human players. They are made from 
+natural cane and take time to adjust and break in. McBlare’s 
+reeds seem to be drying out in the dry compressed air. 
+Second, the pump does not deliver absolutely steady air 
+pressure, and sometimes a very slight modulation can be 
+heard that matches the pump frequency. Third, we have no 
+dynamic control over pressure, whereas the lowest notes 
+can often be brought under control if the pressure is 
+lowered. 
+6. Future Work 
+We intend to explore options for chanter reeds, including 
+artificial reeds, adding a humidifier to the pump input to 
+prevent reeds from drying out during performances, and 
+regulating the air pressure to avoid fluctuations caused by 
+piston strokes. Recent experiments with human lung power 
+providing steady pressure indicate that pressure regulation 
+is needed. As a last resort, we might control air pressure via 
+MIDI to coax less-than-ideal reeds into sounding over their 
+full range. One possibility is to adapt a standard gas 
+pressure regulator with a servo motor to change the 
+pressure setting. Further experiments and measurements of 
+expert pipers should tell us whether this is really necessary. 
+An automated “ arm”  to squeeze the bag is still a possibility, 
+and could provide some interesting control aspects to the 
+problem.  
+Since the chanter pitch can be adjusted with air pressure, 
+with minimal effect on the drone pitch, there is the 
+possibility of tuning the bagpipes by capturing the chanter 
+and drone audio on separate channels, analyzing their 
+fundamental frequencies, and then adjusting pressure to 
+bring the chanter reed in tune. Again, this practice is 
+frowned upon by experts, so we need to conduct further 
+observations and experiments to determine whether 
+pressure changes are really necessary. 
+Once the basics are under complete control, there are some 
+finer points of piping to consider. One is the fact that 
+humans can cover tone holes partially to achieve pitch 
+bending effects. We chose to ignore this possibility, which 
+would greatly complicate the design and which is not 
+required for most performances. However, a design that 
+allows for pitch bends, either using tone holes— or perhaps 
+a radical change such as a telescoping chanter or slide-
+whistle-like piston— could offer many new interesting 
+musical possibilities. 
+7. ACKNOWLEDGEMENTS 
+The School of Computer Science, which includes the 
+Robotics Institute, supported this work by providing funds 
+for equipment and purchasing bagpipes. Three of the 
+authors received support from the Robotics Institute and the 
+Department of Computer Science. We thank Alasdair 
+Gillies, Patrick Regan, and Soshi Iba, and Marek 
+Michalowski for teaching us about the bagpipe and being 
+subjects for our tests; and Carl Disalvo for helping with 
+McBlare’s aesthetics. Thanks to Ivan Sutherland for 
+suggesting the concept initially.  
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+83
+8. REFERENCES 
+ 
+[1] BBC News UK Edition. Robot trumpets Toyota's 
+know-how, BBC, http://news.bbc.co.uk/1/hi/ 
+technology/3501336.stm (accessed April 2005), 2004. 
+[2] Jorda, S. Afasia: the Ultimate Homeric One-man-
+multimedia-band. In Proceedings of New Interfaces 
+for Musical Expression, (Dublin, Ireland, 2002), 
+2002. 
+[3] Lenz, A. Andrew's Tips: Making a Water Manometer, 
+http://www.bagpipejourney.com/articles/ 
+manometer.shtml (accessed April 2005), 2004. 
+[4] Music Thing. Burns Night Special: MIDI Bagpipes 
+are everywhere!, http://musicthing.blogspot.com/ 
+2005/01/burns-night-special-midi-bagpipes-are.html 
+(accessed April 2005), 2005. 
+[5] Ohta, H., Akita, H. and Ohtani, M. The Development 
+of an Automatic Bagpipe Playing Device. In 
+Proceedings of the 1993 International Computer 
+Music Conference, (Tokyo, Japan, 1993). 
+International Computer Music Association, San 
+Francisco, 1993, 430-431. 
+[6] Roads, C. Sequencers: Background. in The Computer 
+Music Tutorial, MIT Press, Cambridge, 1996, 662-
+669. 
+[7] Sekiguchi, K., Amemiya, R. and Kubota, H. The 
+Development of an Automatic Drum Playing Device. 
+In Proceedings of the 1993 International Computer 
+Music Conference, (Tokyo, Japan, 1993). 
+International Computer Music Association, San 
+Francisco, 1993, 428-429. 
+[8] Singer, E., Larke, K. and Bianciardi, D. LEMUR 
+GuitarBot: MIDI Robotic String Instrument. In 
+Proceedings of the 2003 International Conference on 
+New Interfaces for Musical Expression (NIME-03), 
+(Montreal, 2003). McGill University, 2003, 188-191. 
+[9] Takanishi, A. and Maeda, M. Development of 
+Anthropomorpic Flutist Robot WF-3RIV. In 
+Proceedings of the 1998 International Computer 
+Music Conference, (Ann Arbor, MI, 1998). 
+International Computer Music Association, San 
+Francisco, 1998, 328-331. 
+[10] Tosa, N. The Nonsense Machines. Maywa Denki, 
+Japan, 2004. 
+[11] Vergez, C. and Rodet, X. Comparison of Real 
+Trumpet Playing, Latex Model of Lips and Computer 
+Model. In 1997 International Computer Music 
+Conference, (Thessaloniki, Greece, 1997). 
+International Computer Music Association, San 
+Francisco, 1997, 180-187. 
+ 
+ 
+Proceedings of the 2005 International Conference on New Interfaces for Musical Expression (NIME05), Vancouver, BC, Canada
+84
