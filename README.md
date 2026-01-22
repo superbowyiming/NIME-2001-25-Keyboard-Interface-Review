@@ -32,7 +32,7 @@ This project provides a robust pipeline to transform unordered NIME paper collec
 To ensure high accuracy and coverage, the pipeline cross-references multiple data sources:
 - **NIME Official Bibliography**: Metadata sourced from the [NIME Bibliography](https://nime-conference.github.io/NIME-bibliography/).
 - **Metadata Analyzers**: `export.csv` data generated via the [NIME Proceedings Analyzer](https://github.com/jacksongoode/NIME-proceedings-analyzer).
-- **Official PDF Archives**: Support for both legacy ZIP archives and modern PubPub-hosted papers.
+- **Official PDF Archives**: Support for both legacy ZIP archives and PubPub-hosted papers.
 
 ---
 
