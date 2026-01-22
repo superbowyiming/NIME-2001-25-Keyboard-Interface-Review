@@ -43,7 +43,7 @@ To ensure high accuracy and coverage, the pipeline cross-references multiple dat
 If you have access to the original NIME PDF archives, you can rebuild the corpus using these scripts:
 
 1. **Standardization**: [rename_pdfs_by_nime_id.py](rename_pdfs_by_nime_id.py)  
-   Standardizes raw PDF filenames (`nimeYYYY_Author.pdf`) using a dual-mapping system for legacy and modern PubPub IDs.
+   Standardizes raw PDF filenames (e.g. nimeYYYY_Author.pdf) by mapping them to official NIME paper IDs through a dual-mapping mechanism.
 2. **Filtering**: [filter_renamed_pdfs_combined.py](filter_renamed_pdfs_combined.py)  
    Categorizes papers and performs critical pre-screening by removing bibliographies to eliminate false positive keyword hits.
 3. **Extraction**: [extract_keyboard_pdfs_to_txt.py](extract_keyboard_pdfs_to_txt.py)  
