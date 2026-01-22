@@ -4,7 +4,7 @@ Automated workflow for building, intelligently scoring, and screening a corpus o
 
 ---
 
-## � Quick Start
+## 🚀 Quick Start
 
 1. **Setup Environment**:
    ```bash
@@ -23,7 +23,7 @@ Automated workflow for building, intelligently scoring, and screening a corpus o
 
 ---
 
-## �🔍 Overview
+## 🔍 Overview
 This project provides a robust pipeline to transform unordered NIME paper collections into a filtered, high-quality text corpus for systematic review. It addresses common challenges like messy file naming, bibliography noise, and extraction artifacts.
 
 ---
@@ -75,7 +75,3 @@ $$S_{total} = S_{hits} + S_{instrument} + S_{context} - S_{noise}$$
 The final stage involves human validation of the high-priority papers identified by the pipeline.
 - **Manual Decision**: Review snippets in `kwic_context_screening.csv` and mark relevant papers in the `KEEP(1)_or_EXCLUDE(0)` column.
 - **Metatada Export**: Use [merge_screening_with_metadata.py](merge_screening_with_metadata.py) to unify your final selection with BibTeX entries and full metadata for your literature review.
-
----
-
-## � Overview
