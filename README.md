@@ -24,30 +24,36 @@ The repository includes the pre-extracted text corpus in [Keyboard_Interface_Tex
 ---
 
 ## 🔍 Project Structure
+- `Crawler/`: Contains the scraping pipeline for NIME papers spanning **2001–2025**.
 - `Keyboard_Interface_Texts/`: The processed text corpus (Ready for analysis).
-- `Metadata_Filtered_Results/`: Final output storage.
-- `*.py`: Processing and analysis scripts.
+- `Metadata_Filtered_Results/`: Final output storage for screened CSVs.
+- `*.py`: Core pipeline scripts for standardization, filtering, and extraction.
 - **Note**: The `Renamed_PDFs/` and `NIME Papers/` directories are excluded (~17GB) to comply with GitHub limits.
 
 ---
 
-## 📊 Data & Source Verification
-To ensure high accuracy and coverage, the pipeline cross-references multiple data sources:
-- **NIME Official Bibliography**: Metadata sourced from the [NIME Bibliography](https://nime-conference.github.io/NIME-bibliography/).
-- **Metadata Analyzers**: `export.csv` data generated via the [NIME Proceedings Analyzer](https://github.com/jacksongoode/NIME-proceedings-analyzer).
-- **Official PDF Archives**: Support for both legacy ZIP archives and PubPub-hosted papers.
+## 📊 Data Source Verification
+To ensure maximum accuracy and coverage, the pipeline cross-references multiple data sources to calibrate the corpus:
+
+- **Metadata Analysis**: `export.csv` is generated via [NIME Proceedings Analyzer](https://github.com/jacksongoode/NIME-proceedings-analyzer) to extract structural metadata.
+- **NIME Official Bibliography**: `nime_papers.csv` is sourced from the [NIME Bibliography Archive](https://nime-conference.github.io/NIME-bibliography/).
+- **Crawled Data & Archives**:
+  - The `Crawler/` folder contains scripts used to scrape the NIME portal for papers from **2001–2024**, plus a dedicated script for **2025**.
+  - Historical data is also supplemented by the official [NIME ZIP Archives](https://www.nime.org/proceedings/ZIPs/).
+- **Validation**: This multi-source comparison ensures that renamed PDFs align perfectly with official bibliography entries.
 
 ---
 
-## ⚙️ Rebuilding from Scratch
-If you have access to the original NIME PDF archives, you can rebuild the corpus using these scripts:
+## ⚙️ Data Preparation & Corpus Rebuilding
+If you need to rebuild the corpus or add new conference years, follow these steps:
 
-1. **Standardization**: [rename_pdfs_by_nime_id.py](rename_pdfs_by_nime_id.py)  
-   Standardizes raw PDF filenames (e.g. nimeYYYY_Author.pdf) by mapping them to official NIME paper IDs through a dual-mapping mechanism.
-2. **Filtering**: [filter_renamed_pdfs_combined.py](filter_renamed_pdfs_combined.py)  
-   Categorizes papers and performs critical pre-screening by removing bibliographies to eliminate false positive keyword hits.
-3. **Extraction**: [extract_keyboard_pdfs_to_txt.py](extract_keyboard_pdfs_to_txt.py)  
-   Converts curated PDFs into plain text using the **`pypdf`** engine, which specifically resolves the "word spacing bug" found in NIME 2013 papers.
+1. **Acquisition**: Use the `Crawler/` tools to fetch metadata and PDFs for **2001–2025**, or download ZIP containers from the official [NIME Archives](https://www.nime.org/proceedings/ZIPs/).
+2. **Standardization**: [rename_pdfs_by_nime_id.py](rename_pdfs_by_nime_id.py)  
+   Aligns raw PDFs with official metadata and resolves inconsistent naming schemes.
+3. **Filtering**: [filter_renamed_pdfs_combined.py](filter_renamed_pdfs_combined.py)  
+   Categorizes papers and performs pre-screening by stripping bibliographies to avoid false positives.
+4. **Extraction**: [extract_keyboard_pdfs_to_txt.py](extract_keyboard_pdfs_to_txt.py)  
+   Converts PDFs to TXT (specifically fixing the 2013 word-spacing bug).
 
 ---
 
